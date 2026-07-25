@@ -5,6 +5,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { registerIpcHandlers } from "./ipc";
 import { killSidecar, spawnNextServer, waitForHealth } from "./server";
+import { initLogging, writeLog } from "./logging";
+import { createMenu } from "./menu";
 
 const isDev = !app.isPackaged;
 let mainWindow: BrowserWindow | null = null;
@@ -58,6 +60,38 @@ function createMainWindow(port: number, authToken: string): BrowserWindow {
     },
   );
 
+  // Persist zoom factor
+  const zoomFactorKey = "pi-web-zoom-factor";
+  const savedZoom = state.unmanage;
+  let zoomLoaded = false;
+
+  win.webContents.on("dom-ready", () => {
+    // Restore saved zoom from store
+    if (!zoomLoaded) {
+      zoomLoaded = true;
+      try {
+        const stateObj = state as unknown as Record<string, unknown>;
+        const zoom = Number(stateObj[zoomFactorKey] ?? 1);
+        if (zoom >= 0.2 && zoom <= 10) {
+          win.webContents.setZoomFactor(zoom);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  });
+
+  win.webContents.on("zoom-changed", (_event, zoomDirection) => {
+    const factor = win.webContents.getZoomFactor();
+    // Persist to window state store
+    try {
+      const stateObj = state as unknown as Record<string, unknown>;
+      stateObj[zoomFactorKey] = factor;
+    } catch {
+      // ignore
+    }
+  });
+
   const url = `http://127.0.0.1:${port}`;
   void win.loadURL(url);
 
@@ -87,6 +121,13 @@ async function main() {
     }
   });
 
+  // Initialize logging
+  initLogging();
+  writeLog("main", "app starting", {
+    version: app.getVersion(),
+    packaged: app.isPackaged,
+  });
+
   // Generate per-launch auth token
   const crypto = await import("node:crypto");
   const authToken = crypto.randomBytes(32).toString("hex");
@@ -102,6 +143,7 @@ async function main() {
   try {
     await waitForHealth(port, authToken);
   } catch (err) {
+    writeLog("main", "health check failed", { error: String(err) });
     console.error("Next.js server failed to become healthy:", err);
     killSidecar();
     app.quit();
@@ -109,20 +151,28 @@ async function main() {
   }
 
   mainWindow = createMainWindow(port, authToken);
+
+  // Build macOS application menu
+  createMenu(() => mainWindow);
+
+  writeLog("main", "ready", { port, dev: isDev });
 }
 
 // ── Lifecycle ──────────────────────────────────────────────────────────
 
 app.on("before-quit", () => {
+  writeLog("main", "before-quit");
   killSidecar();
 });
 
 app.on("will-quit", () => {
+  writeLog("main", "will-quit");
   killSidecar();
 });
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, () => {
+    writeLog("main", "signal", { signal });
     killSidecar();
     app.exit(0);
   });

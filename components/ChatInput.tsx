@@ -9,6 +9,7 @@ import React, {
   forwardRef,
   KeyboardEvent,
 } from "react";
+import "@/lib/desktop-types";
 import type {
   BuiltinSlashCommandResult,
   CompactResultInfo,
@@ -966,13 +967,33 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
   }, []);
 
   const handlePaste = useCallback(
-    (e: React.ClipboardEvent) => {
+    async (e: React.ClipboardEvent) => {
       const items = Array.from(e.clipboardData?.items ?? []);
       const imageItems = items.filter((item) => item.type.startsWith("image/"));
-      if (!imageItems.length) return;
-      e.preventDefault();
-      const files = imageItems.map((item) => item.getAsFile()).filter((f): f is File => f !== null);
-      processImageFiles(files);
+      if (imageItems.length) {
+        e.preventDefault();
+        const files = imageItems
+          .map((item) => item.getAsFile())
+          .filter((f): f is File => f !== null);
+        processImageFiles(files);
+        return;
+      }
+
+      // Fallback: try desktop clipboard for image (Electron)
+      if (typeof window !== "undefined" && window.piDesktop) {
+        const img = await window.piDesktop.readClipboardImage();
+        if (img) {
+          e.preventDefault();
+          const byteChars = atob(img.buffer);
+          const bytes = new Uint8Array(byteChars.length);
+          for (let i = 0; i < byteChars.length; i++) {
+            bytes[i] = byteChars.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: "image/png" });
+          const file = new File([blob], "clipboard.png", { type: "image/png" });
+          processImageFiles([file]);
+        }
+      }
     },
     [processImageFiles],
   );

@@ -18,6 +18,8 @@ import {
   normalizeFilePathSlashes,
 } from "@/lib/file-paths";
 import type { GitFileStatus, GitFileStatusKind, GitStatusResponse } from "@/lib/git-types";
+import "@/lib/desktop-types";
+import { copyText } from "@/lib/clipboard";
 
 interface FileEntry {
   name: string;
@@ -227,6 +229,46 @@ function DismissButton({ onClick, title }: { onClick: () => void; title: string 
   );
 }
 
+// ── Context menu helpers ──────────────────────────────────────────────
+
+function ContextMenuItem({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      style={{
+        padding: "4px 12px",
+        fontSize: 12,
+        color: "var(--text)",
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "transparent";
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
+function ContextMenuSeparator() {
+  return (
+    <div
+      style={{
+        height: 1,
+        margin: "4px 0",
+        background: "var(--border)",
+      }}
+    />
+  );
+}
+
 function TreeNode({
   node,
   depth,
@@ -262,6 +304,7 @@ function TreeNode({
   const [loaded, setLoaded] = useState(node.loaded ?? false);
   const [loading, setLoading] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const loadChildren = useCallback(
     async (force = false) => {
@@ -307,10 +350,45 @@ function TreeNode({
     onToggleExpanded,
   ]);
 
+  // Context menu handlers
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const closeContextMenu = useCallback(() => setContextMenu(null), []);
+
+  // Close context menu on any click outside
+  useEffect(() => {
+    if (!contextMenu) return;
+    const handler = () => setContextMenu(null);
+    window.addEventListener("click", handler, { once: true });
+    return () => window.removeEventListener("click", handler);
+  }, [contextMenu]);
+
+  const handleRevealInFinder = useCallback(() => {
+    closeContextMenu();
+    window.piDesktop?.revealPath(node.fullPath);
+  }, [node.fullPath, closeContextMenu]);
+
+  const handleOpenWithDefault = useCallback(() => {
+    closeContextMenu();
+    window.piDesktop?.openPath(node.fullPath);
+  }, [node.fullPath, closeContextMenu]);
+
+  const handleCopyPath = useCallback(async () => {
+    closeContextMenu();
+    await copyText(node.fullPath);
+  }, [node.fullPath, closeContextMenu]);
+
+  const isDesktop = typeof window !== "undefined" && !!window.piDesktop;
+
   return (
     <div>
       <div
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -496,6 +574,34 @@ function TreeNode({
           </a>
         )}
       </div>
+      {/* Context menu */}
+      {contextMenu && (
+        <div
+          style={{
+            position: "fixed",
+            left: contextMenu.x,
+            top: contextMenu.y,
+            zIndex: 9999,
+            background: "var(--bg-panel)",
+            border: "1px solid var(--border)",
+            borderRadius: 6,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+            minWidth: 180,
+            padding: "4px 0",
+          }}
+        >
+          {isDesktop && (
+            <>
+              <ContextMenuItem label="Reveal in Finder" onClick={handleRevealInFinder} />
+              {!node.isDir && (
+                <ContextMenuItem label="Open with Default App" onClick={handleOpenWithDefault} />
+              )}
+              <ContextMenuSeparator />
+            </>
+          )}
+          <ContextMenuItem label="Copy Path" onClick={handleCopyPath} />
+        </div>
+      )}
       {node.isDir && open && (
         <div>
           {children.map((child) => (

@@ -2,6 +2,8 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { appendFileSync } from "node:fs";
+import { sidecarOutPath, sidecarErrPath, writeLog } from "./logging";
 
 let sidecarProcess: ChildProcess | null = null;
 
@@ -43,6 +45,9 @@ export async function spawnNextServer(authToken: string): Promise<{
   const nextBin = join(projectRoot, "node_modules", "next", "dist", "bin", "next");
   const nextArgs = ["dev", "-p", String(port)];
 
+  const outPath = sidecarOutPath();
+  const errPath = sidecarErrPath();
+
   const child = spawn(nodeBin, [nextBin, ...nextArgs], {
     cwd: projectRoot,
     stdio: ["ignore", "pipe", "pipe"],
@@ -60,22 +65,44 @@ export async function spawnNextServer(authToken: string): Promise<{
 
   child.stdout?.on("data", (chunk: Buffer) => {
     const text = chunk.toString("utf8").trimEnd();
-    if (text) process.stdout.write(`[pi-web] ${text}\n`);
+    if (text) {
+      process.stdout.write(`[pi-web] ${text}\n`);
+      try {
+        appendFileSync(outPath, `[${new Date().toISOString()}] ${text}\n`);
+      } catch {
+        // log file may not be writable
+      }
+    }
   });
 
   child.stderr?.on("data", (chunk: Buffer) => {
     const text = chunk.toString("utf8").trimEnd();
-    if (text) process.stderr.write(`[pi-web] ${text}\n`);
+    if (text) {
+      process.stderr.write(`[pi-web] ${text}\n`);
+      try {
+        appendFileSync(errPath, `[${new Date().toISOString()}] ${text}\n`);
+      } catch {
+        // log file may not be writable
+      }
+    }
   });
 
   child.on("exit", (code) => {
     if (code !== 0 && code !== null) {
-      console.error(`[pi-web] Next.js server exited with code ${code}`);
+      const msg = `Next.js server exited with code ${code}`;
+      console.error(`[pi-web] ${msg}`);
+      writeLog("server", msg, { code });
     }
     sidecarProcess = null;
   });
 
+  child.on("error", (err) => {
+    writeLog("server", "spawn error", { error: err.message });
+  });
+
   sidecarProcess = child;
+  writeLog("server", "spawned", { port, pid: child.pid ?? undefined });
+
   return { port, process: child };
 }
 
@@ -104,6 +131,7 @@ export async function waitForHealth(port: number, authToken: string): Promise<vo
 /** Kill the sidecar Next.js process. */
 export function killSidecar(): void {
   if (!sidecarProcess) return;
+  writeLog("server", "killing sidecar", { pid: sidecarProcess.pid });
   try {
     sidecarProcess.kill("SIGTERM");
     // Force kill after 3s

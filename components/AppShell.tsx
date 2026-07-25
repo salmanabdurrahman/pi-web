@@ -16,6 +16,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { copyText } from "@/lib/clipboard";
 import { getFileName } from "@/lib/file-paths";
+import "@/lib/desktop-types";
 import {
   buildAtMentionText,
   buildFileAtMentionsText,
@@ -328,6 +329,27 @@ export function AppShell() {
     onNewSession: (cwd: string) => handleNewSession(`kb-${Date.now()}`, cwd),
     activeCwd,
   });
+
+  // Desktop menu command listener
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.piDesktop) return;
+    return window.piDesktop.onMenuCommand((command) => {
+      switch (command) {
+        case "new-session":
+          if (activeCwd) handleNewSession(`menu-${Date.now()}`, activeCwd);
+          break;
+        case "open-project":
+          // Trigger cwd selection in sidebar
+          break;
+        case "open-settings":
+          setPiRuntimeOpen(true);
+          break;
+        case "toggle-sidebar":
+          // Handled by SessionSidebar visibility state
+          break;
+      }
+    });
+  }, [activeCwd, handleNewSession]);
 
   // Client-built transient SessionInfo (new session / fork) lacks the
   // server-computed projectRoot, which the same-project check in

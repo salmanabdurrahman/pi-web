@@ -1,6 +1,7 @@
 "use client";
 import { registerAbortHandler } from "@/hooks/useKeyboardShortcuts";
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import "@/lib/desktop-types";
 import type {
   AgentMessage,
   AssistantContentBlock,
@@ -238,7 +239,19 @@ export function ChatWindow({
       playDoneSoundRef.current();
     }
     onAgentEnd?.();
-  }, [onAgentEnd]);
+
+    // Desktop notification when window is unfocused
+    if (typeof window !== "undefined" && window.piDesktop) {
+      window.piDesktop.getWindowFocused().then((focused) => {
+        if (!focused) {
+          window.piDesktop?.showNotification(
+            "Pi Web",
+            session?.name ? `Agent completed: ${session.name}` : "Agent completed",
+          );
+        }
+      });
+    }
+  }, [onAgentEnd, session?.name]);
 
   // 稳定化 onEditContent 引用，配合 React.memo 防止历史消息重渲染
   const handleEditContent = useCallback(

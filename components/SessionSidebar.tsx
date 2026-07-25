@@ -11,14 +11,7 @@ import {
 } from "react";
 import type { SessionInfo } from "@/lib/types";
 import { FileExplorer, type FileExplorerHandle } from "./FileExplorer";
-
-declare global {
-  interface Window {
-    piDesktop?: {
-      selectDirectory: () => Promise<string | null>;
-    };
-  }
-}
+import "@/lib/desktop-types";
 
 interface Props {
   selectedSessionId: string | null;
