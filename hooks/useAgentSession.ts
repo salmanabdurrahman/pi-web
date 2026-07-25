@@ -66,6 +66,28 @@ interface LastAssistantTextResponse {
   text?: string;
 }
 
+type ToolStateInfo = {
+  name: string;
+  description: string;
+  active: boolean;
+  sourceInfo?: {
+    path: string;
+    source: string;
+    scope: "user" | "project" | "temporary";
+    origin: "package" | "top-level";
+    baseDir?: string;
+  };
+};
+
+type ToolsState = {
+  builtin: ToolStateInfo[];
+  extension: ToolStateInfo[];
+  bySource: Record<string, { source: string; origin: string; tools: ToolStateInfo[]; mcpServers?: Record<string, { toolCount: number; activeCount: number }> }>;
+  builtinCount: number;
+  extensionCount: number;
+  activeCount: number;
+};
+
 type AgentStateResponse = {
   contextUsage?: { percent: number | null; contextWindow: number; tokens: number | null } | null;
   systemPrompt?: string;
@@ -77,6 +99,7 @@ type AgentStateResponse = {
   extensionStatuses?: ExtensionStatusItem[];
   extensionWidgets?: ExtensionWidgetItem[];
   queuedMessages?: { steering?: string[]; followUp?: string[] } | null;
+  tools?: ToolsState;
 };
 
 export interface QueuedMessages {
@@ -419,6 +442,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     steering: [],
     followUp: [],
   });
+  const [toolsState, setToolsState] = useState<ToolsState | null>(null);
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const sessionIdRef = useRef<string | null>(session?.id ?? null);
@@ -543,6 +567,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
               setExtensionWidgets(liveState.extensionWidgets ?? []);
             if (liveState.queuedMessages !== undefined)
               setQueuedMessages(normalizeQueuedMessages(liveState.queuedMessages));
+            if (liveState.tools !== undefined) setToolsState(liveState.tools ?? null);
           } else if (!agentState.running) {
             setQueuedMessages({ steering: [], followUp: [] });
           }
@@ -579,10 +604,14 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
   const loadTools = useCallback(
     async (sid: string) => {
       try {
-        const tools = await sendAgentCommand<ToolEntry[]>(sid, { type: "get_tools" });
-        if (tools) {
+        const response = await sendAgentCommand<{
+          tools: ToolEntry[];
+          builtin: string[];
+          extensionCount: number;
+        }>(sid, { type: "get_tools" });
+        if (response?.tools) {
           const { getPresetFromTools } = await import("@/lib/tool-presets");
-          setToolPresetState(getPresetFromTools(tools));
+          setToolPresetState(getPresetFromTools(response.tools));
         }
       } catch (e) {
         console.error("Failed to load tools:", e);
@@ -948,6 +977,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
             setExtensionStatuses(state.extensionStatuses ?? []);
           if (state.extensionWidgets !== undefined)
             setExtensionWidgets(state.extensionWidgets ?? []);
+          if (state.tools !== undefined) setToolsState(state.tools ?? null);
         }
         await finishPromptWithoutStream(sid, runId);
       } catch {
@@ -1016,6 +1046,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
                   setExtensionStatuses(d.state.extensionStatuses ?? []);
                 if (d.state?.extensionWidgets !== undefined)
                   setExtensionWidgets(d.state.extensionWidgets ?? []);
+                if (d.state?.tools !== undefined) setToolsState(d.state.tools ?? null);
                 // Aborted turns can leave messages queued in pi (delivered with the
                 // next turn); dead wrapper (no state) means the queue is gone.
                 setQueuedMessages(normalizeQueuedMessages(d.state?.queuedMessages));
@@ -1748,6 +1779,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
             setExtensionWidgets(agentState.state.extensionWidgets ?? []);
           if (agentState.state.queuedMessages !== undefined)
             setQueuedMessages(normalizeQueuedMessages(agentState.state.queuedMessages));
+          if (agentState.state.tools !== undefined) setToolsState(agentState.state.tools ?? null);
         }
       });
     }
@@ -1883,6 +1915,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     extensionCustomUi,
     extensionStatuses,
     extensionWidgets,
+    tools: toolsState,
     respondToExtensionUi,
     sendExtensionCustomInput,
     isAutoModelSelection: isNew && newSessionModel === null,

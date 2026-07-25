@@ -67,6 +67,20 @@ interface Props {
   compactResult?: CompactResultInfo | null;
   toolPreset?: "none" | "default" | "full";
   onToolPresetChange?: (preset: "none" | "default" | "full") => void;
+  tools?: {
+    builtinCount: number;
+    extensionCount: number;
+    activeCount: number;
+    bySource?: Record<
+      string,
+      {
+        source: string;
+        origin: string;
+        tools: Array<{ name: string; active: boolean }>;
+        mcpServers?: Record<string, { toolCount: number; activeCount: number }>;
+      }
+    >;
+  } | null;
   thinkingLevel?: "auto" | "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
   onThinkingLevelChange?: (
     level: "auto" | "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max",
@@ -274,6 +288,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
     compactResult,
     toolPreset,
     onToolPresetChange,
+    tools,
     thinkingLevel,
     onThinkingLevelChange,
     availableThinkingLevels,
@@ -2343,7 +2358,24 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
                       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
                     </svg>
                     {(!isMobile || controlsMenuOpen) && (
-                      <span style={{ whiteSpace: "nowrap" }}>{toolPresetLabel}</span>
+                      <>
+                        <span style={{ whiteSpace: "nowrap" }}>{toolPresetLabel}</span>
+                        {tools && tools.extensionCount > 0 && toolPreset !== "none" && (
+                          <span
+                            style={{
+                              padding: "1px 5px",
+                              borderRadius: 4,
+                              background: "rgba(99,102,241,0.12)",
+                              color: "var(--accent)",
+                              fontSize: 10,
+                              fontWeight: 600,
+                              lineHeight: "16px",
+                            }}
+                          >
+                            +{tools.extensionCount}
+                          </span>
+                        )}
+                      </>
                     )}
                   </button>
                   {toolDropdownOpen && (
@@ -2358,7 +2390,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
                         borderRadius: 8,
                         boxShadow: "0 -4px 16px rgba(0,0,0,0.10)",
                         overflow: "hidden",
-                        minWidth: 120,
+                        minWidth: 200,
                       }}
                     >
                       {TOOL_PRESETS.map((lvl) => {
@@ -2423,6 +2455,94 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
                           </button>
                         );
                       })}
+                      {tools && tools.bySource && Object.keys(tools.bySource).length > 0 && (
+                        <>
+                          <div
+                            style={{
+                              padding: "5px 12px",
+                              borderTop: "1px solid var(--border)",
+                              color: "var(--text-dim)",
+                              fontSize: 10,
+                              fontFamily: "var(--font-mono)",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.04em",
+                            }}
+                          >
+                            Extension tools ({tools.extensionCount})
+                          </div>
+                          {Object.entries(tools.bySource).map(([source, group]) => (
+                            <React.Fragment key={source}>
+                              <div
+                                style={{
+                                  padding: "4px 12px",
+                                  color: "var(--text-dim)",
+                                  fontSize: 11,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                              <span
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  background:
+                                    group.origin === "package"
+                                      ? "var(--accent)"
+                                      : "var(--text-dim)",
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <span
+                                style={{
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {source}
+                              </span>
+                              <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>
+                                {group.tools.length}
+                              </span>
+                            </div>
+                            {/* MCP server details */}
+                            {group.mcpServers && Object.keys(group.mcpServers).length > 0 && (
+                              <div style={{ paddingLeft: 22, paddingBottom: 2 }}>
+                                {Object.entries(group.mcpServers).map(([server, info]) => (
+                                  <div
+                                    key={server}
+                                    style={{
+                                      padding: "2px 8px",
+                                      color: "var(--text-dim)",
+                                      fontSize: 10,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 4,
+                                    }}
+                                    title={`${info.activeCount}/${info.toolCount} tools active`}
+                                  >
+                                    <span style={{
+                                      width: 5, height: 5, borderRadius: "50%",
+                                      background: info.activeCount > 0 ? "#22c55e" : "var(--text-dim)",
+                                      flexShrink: 0,
+                                      opacity: 0.7,
+                                    }} />
+                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                      {server}
+                                    </span>
+                                    <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>
+                                      {info.toolCount}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            </React.Fragment>
+                          ))}
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

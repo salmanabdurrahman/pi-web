@@ -74,6 +74,28 @@ type ExtensionBindingOptions = {
 
 const CODING_TOOL_NAMES = ["read", "bash", "edit", "write", "grep", "find", "ls"];
 
+/** Infer MCP server name from a prefixed tool name.
+ *  Patterns: "serverName_toolName", "mcp__serverName__toolName". */
+function inferMcpServerName(toolName: string): string | null {
+  // mcp__serverName__toolName pattern
+  const mcpMatch = toolName.match(/^mcp__([a-zA-Z0-9_-]+)__/);
+  if (mcpMatch) return mcpMatch[1].replace(/_/g, "-");
+
+  // serverName_toolName pattern: the first underscore-separated segment(s)
+  // before the final tool name. E.g., "cloudflare_docs_list" → "cloudflare_docs"
+  const parts = toolName.split("_");
+  if (parts.length < 2) return null;
+
+  // Try progressively shorter prefixes
+  for (let i = parts.length - 1; i >= 1; i--) {
+    const candidate = parts.slice(0, i).join("_");
+    if (candidate.length <= 1) continue;
+    if (/^(mcp|http|api|ws|tcp)$/i.test(candidate)) continue;
+    return candidate;
+  }
+  return null;
+}
+
 // Extensions require a complete Theme, while the web UI applies its own styling.
 class PlainTextTheme extends Theme {
   constructor() {
@@ -402,6 +424,10 @@ export class AgentSessionWrapper {
       case "get_state": {
         const model = this.inner.model;
         const contextUsage = this.inner.getContextUsage();
+        const allTools = this.inner.getAllTools();
+        const activeNames = new Set<string>(this.inner.getActiveToolNames());
+        const builtinTools = allTools.filter((t) => CODING_TOOL_NAMES.includes(t.name));
+        const extensionTools = allTools.filter((t) => !CODING_TOOL_NAMES.includes(t.name));
         return {
           sessionId: this.inner.sessionId,
           sessionFile: this.inner.sessionFile ?? "",
@@ -429,6 +455,23 @@ export class AgentSessionWrapper {
           thinkingLevel: this.inner.agent.state?.thinkingLevel ?? "off",
           extensionStatuses: this.getExtensionStatuses(),
           extensionWidgets: this.getExtensionWidgets(),
+          tools: {
+            builtin: builtinTools.map((t) => ({
+              name: t.name,
+              description: t.description,
+              active: activeNames.has(t.name),
+            })),
+            extension: extensionTools.map((t) => ({
+              name: t.name,
+              description: t.description,
+              active: activeNames.has(t.name),
+              sourceInfo: t.sourceInfo,
+            })),
+            bySource: this.groupToolsBySource(extensionTools, activeNames),
+            builtinCount: builtinTools.length,
+            extensionCount: extensionTools.length,
+            activeCount: activeNames.size,
+          },
         };
       }
 
@@ -572,11 +615,18 @@ export class AgentSessionWrapper {
       case "get_tools": {
         const all: ToolInfo[] = this.inner.getAllTools();
         const active = new Set<string>(this.inner.getActiveToolNames());
-        return all.map((t) => ({
-          name: t.name,
-          description: t.description,
-          active: active.has(t.name),
-        }));
+        const extensionTools = all.filter((t) => !CODING_TOOL_NAMES.includes(t.name));
+        return {
+          tools: all.map((t) => ({
+            name: t.name,
+            description: t.description,
+            active: active.has(t.name),
+            sourceInfo: t.sourceInfo,
+          })),
+          builtin: all.filter((t) => CODING_TOOL_NAMES.includes(t.name)).map((t) => t.name),
+          bySource: this.groupToolsBySource(extensionTools, active),
+          extensionCount: extensionTools.length,
+        };
       }
 
       case "get_commands": {
@@ -717,7 +767,7 @@ export class AgentSessionWrapper {
     const width = (resolved as { width?: unknown }).width;
     return typeof width === "number" && Number.isFinite(width)
       ? Math.max(40, Math.min(140, Math.round(width)))
-      : 92;
+      : DEFAULT_CUSTOM_UI_COLUMNS;
   }
 
   private emitCustomUiRender(id: string, custom: ActiveCustomUi): void {
@@ -1024,6 +1074,64 @@ export class AgentSessionWrapper {
       getToolsExpanded: () => false,
       setToolsExpanded: () => {},
     };
+  }
+
+  /** Group extension tools by their source package for MCP/CBM/subagent/web-tool visibility.
+   *  For pi-mcp-adapter tools, also extract MCP server names from tool name prefixes. */
+  private groupToolsBySource(
+    tools: ToolInfo[],
+    activeNames: Set<string>,
+  ): Record<
+    string,
+    {
+      source: string;
+      origin: string;
+      tools: Array<{ name: string; description: string; active: boolean }>;
+      mcpServers?: Record<string, { toolCount: number; activeCount: number }>;
+    }
+  > {
+    const groups: Record<
+      string,
+      {
+        source: string;
+        origin: string;
+        tools: Array<{ name: string; description: string; active: boolean }>;
+        mcpServers?: Record<string, { toolCount: number; activeCount: number }>;
+      }
+    > = {};
+    for (const t of tools) {
+      const sourceKey = t.sourceInfo?.source ?? "unknown";
+      if (!groups[sourceKey]) {
+        groups[sourceKey] = {
+          source: sourceKey,
+          origin: t.sourceInfo?.origin ?? "top-level",
+          tools: [],
+        };
+      }
+      groups[sourceKey].tools.push({
+        name: t.name,
+        description: t.description,
+        active: activeNames.has(t.name),
+      });
+    }
+
+    // Detect MCP servers within pi-mcp-adapter tools by parsing tool name prefixes.
+    for (const [sourceKey, group] of Object.entries(groups)) {
+      if (!sourceKey.includes("mcp")) continue;
+      const serverMap: Record<string, { toolCount: number; activeCount: number }> = {};
+      for (const tool of group.tools) {
+        const serverName = inferMcpServerName(tool.name);
+        if (!serverName) continue;
+        if (!serverMap[serverName]) serverMap[serverName] = { toolCount: 0, activeCount: 0 };
+        serverMap[serverName].toolCount++;
+        if (tool.active) serverMap[serverName].activeCount++;
+      }
+      if (Object.keys(serverMap).length > 0) {
+        group.mcpServers = serverMap;
+      }
+    }
+
+    return groups;
   }
 
   private createExtensionCommandContextActions(): ExtensionCommandContextActionsLike {

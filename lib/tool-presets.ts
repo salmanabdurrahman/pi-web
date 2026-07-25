@@ -2,6 +2,19 @@ export interface ToolEntry {
   name: string;
   description: string;
   active: boolean;
+  sourceInfo?: {
+    path: string;
+    source: string;
+    scope: "user" | "project" | "temporary";
+    origin: "package" | "top-level";
+    baseDir?: string;
+  };
+}
+
+export interface GetToolsResponse {
+  tools: ToolEntry[];
+  builtin: string[];
+  extensionCount: number;
 }
 
 export type ToolPreset = "none" | "default" | "full";

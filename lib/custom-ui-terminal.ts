@@ -1,4 +1,7 @@
-export const DEFAULT_CUSTOM_UI_COLUMNS = 92;
+// Default custom UI terminal columns. The ExtensionCustomPanel in ChatWindow
+// renders at min(920px, 100%). With ~9px per monospace char at 12px font,
+// 100 columns fills ~900px. Future: pass viewport width from client.
+export const DEFAULT_CUSTOM_UI_COLUMNS = 100;
 export const DEFAULT_CUSTOM_UI_ROWS = 40;
 
 export interface HeadlessCustomUiTerminal {

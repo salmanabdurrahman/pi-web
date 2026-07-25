@@ -1003,6 +1003,28 @@ function ThinkingBlock({
   );
 }
 
+const SUBAGENT_TOOL_NAMES = new Set(["Agent", "get_subagent_result", "steer_subagent"]);
+
+function extractChildSessionId(result: ToolResultMessage | undefined): string | null {
+  if (!result) return null;
+  // Subagent tool results contain child session/agent IDs in details
+  const details = (result as ToolResultMessage & { details?: Record<string, unknown> }).details;
+  if (details?.agentId && typeof details.agentId === "string") return details.agentId;
+  if (details?.sessionId && typeof details.sessionId === "string") return details.sessionId;
+  // Guard against broad regex matching: only scan first 200 chars of result text
+  const text = result.content
+    .filter((b): b is { type: "text"; text: string } => b.type === "text")
+    .map((b) => b.text)
+    .join("\n")
+    .slice(0, 200);
+  // Match "agent_id:" or "session:" prefix patterns to avoid false positives
+  const prefixMatch = text.match(
+    /(?:agent[_-]?id|session[_-]?id|child)[:\s]+([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i,
+  );
+  if (prefixMatch) return prefixMatch[1];
+  return null;
+}
+
 function ToolCallBlock({
   block,
   result,
@@ -1015,7 +1037,15 @@ function ToolCallBlock({
   const [expanded, setExpanded] = useState(false);
   const inputStr = JSON.stringify(block.input, null, 2);
   const isEditTool = isEditToolName(block.toolName);
+  const isSubagent = SUBAGENT_TOOL_NAMES.has(block.toolName);
+  const childSessionId = isSubagent ? extractChildSessionId(result) : null;
   const resultDiff = result && !result.isError ? getResultDiff(result) : null;
+
+  // Subagent description extraction
+  const subagentDesc =
+    isSubagent && block.input && typeof block.input === "object"
+      ? ((block.input as Record<string, unknown>).description as string | undefined)
+      : undefined;
 
   // Result display
   const resultText = result
@@ -1034,8 +1064,16 @@ function ToolCallBlock({
         borderRadius: 7,
         overflow: "hidden",
         fontSize: 12,
-        border: isError ? "1px solid rgba(248,113,113,0.45)" : "1px solid rgba(34,197,94,0.25)",
-        background: isError ? "rgba(248,113,113,0.05)" : "rgba(34,197,94,0.04)",
+        border: isError
+          ? "1px solid rgba(248,113,113,0.45)"
+          : isSubagent
+            ? "1px solid rgba(139,92,246,0.35)"
+            : "1px solid rgba(34,197,94,0.25)",
+        background: isError
+          ? "rgba(248,113,113,0.05)"
+          : isSubagent
+            ? "rgba(139,92,246,0.06)"
+            : "rgba(34,197,94,0.04)",
       }}
     >
       {/* ── Tool call header ── */}
@@ -1058,7 +1096,7 @@ function ToolCallBlock({
       >
         <span
           style={{
-            color: isError ? "#f87171" : "#16a34a",
+            color: isError ? "#f87171" : isSubagent ? "#a78bfa" : "#16a34a",
             fontFamily: "var(--font-mono)",
             fontWeight: 600,
             fontSize: 11,
@@ -1066,6 +1104,11 @@ function ToolCallBlock({
           }}
         >
           {block.toolName}
+          {isSubagent && !result && (
+            <span style={{ color: "var(--text-dim)", fontWeight: 400, marginLeft: 4 }}>
+              …running
+            </span>
+          )}
         </span>
         <span
           style={{
@@ -1112,6 +1155,49 @@ function ToolCallBlock({
         </svg>
       </button>
 
+      {/* ── Expanded: subagent description ── */}
+      {expanded && isSubagent && subagentDesc && (
+        <div
+          style={{
+            padding: "7px 10px",
+            color: "var(--text-muted)",
+            fontSize: 12,
+            lineHeight: 1.5,
+            background: "var(--bg-subtle)",
+            borderTop: "1px solid rgba(139,92,246,0.25)",
+            fontStyle: "italic",
+          }}
+        >
+          {subagentDesc}
+        </div>
+      )}
+      {/* ── Expanded: child session badge ── */}
+      {expanded && childSessionId && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "5px 10px",
+            background: "rgba(139,92,246,0.08)",
+            borderTop: "1px solid rgba(139,92,246,0.2)",
+            color: "var(--text-dim)",
+            fontSize: 11,
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          <span
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: "#a78bfa",
+              flexShrink: 0,
+            }}
+          />
+          Child session: {childSessionId.slice(0, 8)}
+        </div>
+      )}
       {/* ── Expanded: input args ── */}
       {expanded && !isEditTool && (
         <pre
@@ -1125,7 +1211,9 @@ function ToolCallBlock({
             background: "var(--bg-subtle)",
             borderTop: isError
               ? "1px solid rgba(248,113,113,0.25)"
-              : "1px solid rgba(34,197,94,0.2)",
+              : isSubagent
+                ? "1px solid rgba(139,92,246,0.2)"
+                : "1px solid rgba(34,197,94,0.2)",
             whiteSpace: "pre-wrap",
             wordBreak: "break-all",
           }}

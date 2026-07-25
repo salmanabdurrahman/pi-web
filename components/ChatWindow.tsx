@@ -279,6 +279,7 @@ export function ChatWindow({
     extensionCustomUi,
     extensionStatuses,
     extensionWidgets,
+    tools,
     respondToExtensionUi,
     sendExtensionCustomInput,
     isAutoModelSelection,
@@ -455,6 +456,7 @@ export function ChatWindow({
       compactResult={compactResult}
       toolPreset={toolPreset}
       onToolPresetChange={session || isNew ? handleToolPresetChange : undefined}
+      tools={tools}
       thinkingLevel={thinkingLevel}
       onThinkingLevelChange={session || isNew ? handleThinkingLevelChange : undefined}
       availableThinkingLevels={availableThinkingLevels}
@@ -1199,10 +1201,26 @@ function ExtensionDialog({
   ) => void;
 }) {
   const [value, setValue] = useState(request.method === "editor" ? (request.prefill ?? "") : "");
+  const [now, setNow] = useState(Date.now());
+  const expired = typeof request.expiresAt === "number" && Date.now() >= request.expiresAt;
 
   useEffect(() => {
     setValue(request.method === "editor" ? (request.prefill ?? "") : "");
   }, [request]);
+
+  // Tick every second for timeout countdown display
+  useEffect(() => {
+    if (typeof request.expiresAt !== "number") return;
+    const interval = setInterval(() => setNow(Date.now()), 500);
+    return () => clearInterval(interval);
+  }, [request.expiresAt]);
+
+  // Auto-dismiss when expired
+  useEffect(() => {
+    if (!expired) return;
+    const t = setTimeout(() => onRespond(request, { cancelled: true }), 800);
+    return () => clearTimeout(t);
+  }, [expired, request, onRespond]);
 
   const submitValue = () => {
     if (request.method === "confirm") {
@@ -1211,6 +1229,11 @@ function ExtensionDialog({
       onRespond(request, { value });
     }
   };
+
+  const secondsLeft =
+    typeof request.expiresAt === "number"
+      ? Math.max(0, Math.ceil((request.expiresAt - now) / 1000))
+      : null;
 
   return (
     <div
@@ -1238,16 +1261,42 @@ function ExtensionDialog({
         }}
       >
         <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
-          <div style={{ color: "var(--text)", fontSize: 14, fontWeight: 650 }}>{request.title}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ color: "var(--text)", fontSize: 14, fontWeight: 650 }}>
+              {request.title}
+            </div>
+            {expired && (
+              <span
+                style={{
+                  padding: "1px 7px",
+                  borderRadius: 4,
+                  background: "rgba(248,113,113,0.15)",
+                  color: "#f87171",
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                Expired
+              </span>
+            )}
+          </div>
           <div
             style={{
               marginTop: 3,
               color: "var(--text-dim)",
               fontSize: 11,
               fontFamily: "var(--font-mono)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            extension request
+            <span>extension request</span>
+            {secondsLeft !== null && !expired && (
+              <span style={{ color: secondsLeft <= 5 ? "#f9c22e" : "var(--text-dim)" }}>
+                {secondsLeft}s remaining
+              </span>
+            )}
           </div>
         </div>
 
