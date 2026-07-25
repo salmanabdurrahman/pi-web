@@ -693,6 +693,10 @@ export function SessionSidebar({
 
   const handleCreateWorktree = useCallback(async () => {
     const branch = wtNewBranch.trim();
+    if (!/^[a-zA-Z0-9_.-]+$/.test(branch)) {
+      setWtError("Invalid branch name (use letters, numbers, _, -, .)");
+      return;
+    }
     if (!branch || wtBusy || !worktreeState) return;
     setWtBusy(true);
     setWtError(null);

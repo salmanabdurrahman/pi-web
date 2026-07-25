@@ -873,7 +873,7 @@ function BlockView({
     const tc = block as ToolCallContent;
     const result = toolResults?.get(tc.toolCallId);
     const duration = toolCallDurations?.get(tc.toolCallId);
-    return <ToolCallBlock block={tc} result={result} duration={duration} />;
+    return <ToolCallBlock block={tc} result={result} duration={duration} onOpenFile={onOpenFile} />;
   }
   return null;
 }
@@ -1015,11 +1015,13 @@ function extractChildSessionId(result: ToolResultMessage | undefined): string | 
 }
 
 function ToolCallBlock({
+  onOpenFile,
   block,
   result,
   duration,
 }: {
   block: ToolCallContent;
+  onOpenFile?: (path: string) => void;
   result?: ToolResultMessage;
   duration?: number;
 }) {
@@ -1215,7 +1217,7 @@ function ToolCallBlock({
       {expanded &&
         result &&
         (resultDiff ? (
-          <PairedDiffResult diff={resultDiff} />
+          <PairedDiffResult diff={resultDiff} onOpenFile={onOpenFile} />
         ) : (
           <PairedResult text={resultText ?? ""} isEmpty={resultIsEmpty} isError={isError} />
         ))}
@@ -1227,7 +1229,13 @@ interface ResultDiff {
   text: string;
 }
 
-function PairedDiffResult({ diff }: { diff: ResultDiff }) {
+function PairedDiffResult({
+  diff,
+  onOpenFile,
+}: {
+  diff: ResultDiff;
+  onOpenFile?: (path: string) => void;
+}) {
   return (
     <div
       style={{
@@ -1235,12 +1243,18 @@ function PairedDiffResult({ diff }: { diff: ResultDiff }) {
         background: "var(--bg)",
       }}
     >
-      <SplitPatchView text={diff.text} />
+      <SplitPatchView text={diff.text} onOpenFile={onOpenFile} />
     </div>
   );
 }
 
-function SplitPatchView({ text }: { text: string }) {
+function SplitPatchView({
+  text,
+  onOpenFile,
+}: {
+  text: string;
+  onOpenFile?: (path: string) => void;
+}) {
   const files = useMemo(() => parseUnifiedPatch(text), [text]);
   if (!files) return <PatchTextView text={text} />;
   const showFileHeaders = files.length > 1;
@@ -1272,8 +1286,16 @@ function SplitPatchView({ text }: { text: string }) {
                 borderBottom: "1px solid var(--border)",
               }}
             >
-              <SplitDiffHeader title={file.oldPath || "Before"} side="left" />
-              <SplitDiffHeader title={file.newPath || "After"} side="right" />
+              <SplitDiffHeader
+                title={file.oldPath || "Before"}
+                side="left"
+                onOpenFile={onOpenFile}
+              />
+              <SplitDiffHeader
+                title={file.newPath || "After"}
+                side="right"
+                onOpenFile={onOpenFile}
+              />
             </div>
           )}
 
@@ -1297,20 +1319,48 @@ function SplitPatchView({ text }: { text: string }) {
   );
 }
 
-function SplitDiffHeader({ title, side }: { title: string; side: "left" | "right" }) {
+function SplitDiffHeader({
+  title,
+  side,
+  onOpenFile,
+}: {
+  title: string;
+  side: "left" | "right";
+  onOpenFile?: (path: string) => void;
+}) {
+  const filePath =
+    title && title !== "Before" && title !== "After" ? title.replace(/^[ab]\//, "") : null;
   return (
     <div
       title={title}
       style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
         padding: "5px 10px",
         color: "var(--text-dim)",
         borderRight: side === "left" ? "1px solid var(--border)" : "none",
         overflow: "hidden",
-        textOverflow: "ellipsis",
         whiteSpace: "nowrap",
       }}
     >
-      {title}
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
+      {filePath && onOpenFile && side === "right" && (
+        <button
+          onClick={() => onOpenFile(filePath)}
+          style={{
+            background: "none",
+            border: "none",
+            color: "var(--accent)",
+            cursor: "pointer",
+            fontSize: 11,
+            marginLeft: 8,
+            textDecoration: "underline",
+          }}
+        >
+          Open
+        </button>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { TitleBar } from "./TitleBar";
 import { SessionSidebar } from "./SessionSidebar";
 import { ChatWindow } from "./ChatWindow";
 import { FileViewer } from "./FileViewer";
+import { ReviewPanel } from "./ReviewPanel";
 import { TabBar, type Tab } from "./TabBar";
 import { ModelsConfig } from "./ModelsConfig";
 import { SkillsConfig } from "./SkillsConfig";
@@ -187,7 +188,9 @@ export function AppShell() {
   const [fileTabs, setFileTabs] = useState<Tab[]>([]);
   const [activeFileTabId, setActiveFileTabId] = useState<string | null>(null);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [rightPanelMode, setRightPanelMode] = useState<"files" | "context" | "tools">("files");
+  const [rightPanelMode, setRightPanelMode] = useState<"files" | "review" | "context" | "tools">(
+    "files",
+  );
 
   // Same @mention format as the chat input's @ autocomplete, so the agent's
   // read tool resolves it the same way (it strips the @ prefix).
@@ -1994,6 +1997,12 @@ export function AppShell() {
 
             {/* Right panel content */}
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]">
+              {rightPanelMode === "review" && (
+                <ReviewPanel
+                  cwd={activeCwd ?? ""}
+                  onMentionFile={(path) => handleAtMentions([path])}
+                />
+              )}
               {rightPanelMode === "files" && (
                 <>
                   <div className="flex h-[36px] shrink-0 items-center border-b border-[var(--border)] bg-[var(--bg-panel)]">
