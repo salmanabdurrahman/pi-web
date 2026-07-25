@@ -2,7 +2,7 @@
 
 [English](./README.md) | [日本語](./README.ja.md)
 
-[pi 编程智能体](https://github.com/badlogic/pi-mono) 的本地网页界面。它会读取本机的 pi 会话文件，在浏览器里提供会话管理、实时对话、模型配置、技能管理和项目文件预览。
+[pi 编程智能体](https://github.com/badlogic/pi-mono) 的本地网页界面和 macOS 桌面应用。它会读取本机的 pi 会话文件，在浏览器里提供会话管理、实时对话、模型配置、技能管理和项目文件预览。
 
 ## 快速开始
 
@@ -73,6 +73,35 @@ bunx @agegr/pi-web@latest
 - **Git worktree**：什么时候显示切换器、新建目录在哪里、删除会影响什么，见 [Pi Web 里的 Worktree](./docs/worktrees.zh-CN.md)。
 - **Fork 与会话内分支不同**：Fork 会创建新的 `.jsonl` 文件；“Edit from here” 是同一会话文件里的分支。
 
+## macOS 桌面应用
+
+Pi Web 提供基于 Electron 的原生 macOS 桌面应用，在原生窗口中运行相同的 Web UI，并支持：
+
+- 原生目录和文件选择器
+- macOS 应用菜单（文件、编辑、视图、跳转）
+- 窗口失焦时的原生通知
+- 剪贴板图片粘贴到提示词
+- 从文件标签中「在 Finder 中显示」和「用编辑器打开」
+- 每次启动生成独立的安全令牌
+
+**下载**：从 [GitHub Releases](https://github.com/agegr/pi-web/releases) 获取最新 `.dmg` 或 `.zip`。
+
+首次启动：右键点击 → 打开（未签名应用的 Gatekeeper 提示）。详见[桌面应用文档](./docs/desktop.md)。
+
+## Pi 配置兼容性
+
+Pi Web 从 `~/.pi/agent/settings.json` 和 `~/.pi/agent/models.json` 读取配置。支持的配置项：`defaultProvider`、`defaultModel`、`defaultThinkingLevel`、`compaction`、`retry`、`branchSummary`、`packages`、`prompts`、`enabledModels`。仅 CLI 使用的配置（`piStatus`、`transport`、`theme`、遥测）将被忽略。
+
+完整兼容性列表见 [Pi 运行时兼容性](./docs/pi-runtime-compat.md)。
+
+## 安全模型
+
+- **Web 模式**：通过 `proxy.ts` 进行来源检查 — 拒绝跨域 API 请求。
+- **桌面模式**：来源检查加上每次启动生成的 64 位十六进制令牌。所有 `/api/*` 请求都需要 `X-Pi-Desktop-Auth` 头。
+- **文件访问**：限定在会话工作目录和明确允许的根目录内。阻止符号链接逃逸。
+- **密钥**：API 密钥、令牌和提供商凭据绝不会通过 API 返回。配置面板仅显示状态和占位符。
+- **禁止远程访问**：服务器默认绑定 `127.0.0.1`，不面向网络暴露。
+
 ## 开发
 
 ```bash
@@ -133,4 +162,7 @@ hooks/
 bin/
   pi-web.js           # CLI 入口
 instrumentation.ts    # 初始化服务端 HTTP dispatcher
+desktop/
+  src/main/           # Electron 主进程：窗口、sidecar、菜单、日志
+  src/preload/        # 渲染进程 contextBridge API
 ```

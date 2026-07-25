@@ -2,7 +2,7 @@
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-[pi コーディングエージェント](https://github.com/badlogic/pi-mono) のローカル Web UI です。Pi Web はローカルの pi セッションファイルを読み込み、セッションの閲覧、リアルタイムチャット、モデル設定、スキル管理、プロジェクトファイルのプレビューを行えるブラウザワークスペースを提供します。
+[pi コーディングエージェント](https://github.com/badlogic/pi-mono) のローカル Web UI および macOS デスクトップアプリです。Pi Web はローカルの pi セッションファイルを読み込み、セッションの閲覧、リアルタイムチャット、モデル設定、スキル管理、プロジェクトファイルのプレビューを行えるブラウザワークスペースを提供します。
 
 ![Pi Web では、CLI と同じ pi セッションを、構造化された Markdown、ツール呼び出し、プロジェクトナビゲーションとともに表示できます](https://raw.githubusercontent.com/agegr/pi-web/main/docs/screenshot2.png)
 
@@ -77,6 +77,35 @@ bunx @agegr/pi-web@latest
 - **Git worktree**：切り替え機能が表示される条件、新しい worktree の作成方法、削除時の動作については、[Pi Web の Worktree](./docs/worktrees.md) を参照してください。
 - **Fork とセッション内ブランチの違い**：Fork は新しい `.jsonl` ファイルを作成します。"Edit from here" は同じセッションファイル内に別のブランチを作成します。
 
+## macOS デスクトップアプリ
+
+Pi Web は Electron で構築されたネイティブ macOS デスクトップアプリとしても提供され、同じ Web UI をネイティブウィンドウでラップし、以下をサポートします：
+
+- ネイティブのディレクトリ・ファイル選択ダイアログ
+- macOS アプリメニュー（ファイル、編集、表示、移動）
+- ウィンドウがフォーカスされていないときのネイティブ通知
+- クリップボード画像のプロンプトへの貼り付け
+- ファイルタブから「Finder で表示」「エディタで開く」
+- 起動ごとの認証トークンによるローカルホストセキュリティ
+
+**ダウンロード**：[GitHub Releases](https://github.com/agegr/pi-web/releases) から最新の `.dmg` または `.zip` を入手。
+
+初回起動時：右クリック → 開く（未署名アプリの Gatekeeper 対応）。詳細は[デスクトップドキュメント](./docs/desktop.md)を参照。
+
+## Pi 設定の互換性
+
+Pi Web は `~/.pi/agent/settings.json` と `~/.pi/agent/models.json` から設定を読み取ります。サポートされている設定項目：`defaultProvider`、`defaultModel`、`defaultThinkingLevel`、`compaction`、`retry`、`branchSummary`、`packages`、`prompts`、`enabledModels`。CLI 専用項目（`piStatus`、`transport`、`theme`、テレメトリ）は無視されます。
+
+完全な互換性一覧は [Pi ランタイム互換性](./docs/pi-runtime-compat.md) を参照してください。
+
+## セキュリティモデル
+
+- **Web モード**：`proxy.ts` による Origin ベースのガード — クロスオリジンの API リクエストを拒否。
+- **デスクトップモード**：Origin ガードに加え、起動ごとに生成される 64 文字の 16 進数トークン。すべての `/api/*` リクエストに `X-Pi-Desktop-Auth` ヘッダーが必要。
+- **ファイルアクセス**：セッションの作業ディレクトリと明示的に許可されたルートに限定。シンボリックリンクのエスケープをブロック。
+- **シークレット**：API キー、トークン、プロバイダー資格情報は API エンドポイントから返されません。設定パネルには状態とプレースホルダーのみ表示。
+- **リモートアクセス不可**：サーバーはデフォルトで `127.0.0.1` にバインド。ネットワーク公開を意図していません。
+
 ## 開発
 
 ```bash
@@ -137,4 +166,7 @@ hooks/
 bin/
   pi-web.js           # CLI エントリポイント
 instrumentation.ts    # サーバー HTTP ディスパッチャーの初期化
+desktop/
+  src/main/           # Electron メインプロセス：ウィンドウ、サイドカー、メニュー、ログ
+  src/preload/        # レンダラー向け contextBridge API
 ```

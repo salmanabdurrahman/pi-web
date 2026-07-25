@@ -1,8 +1,9 @@
 # Release Checklist
 
-This repo publishes two artifacts for each release:
+This repo publishes these artifacts for each release:
 
 - npm package: `@agegr/pi-web`
+- macOS desktop app: `Pi Web.app` (unsigned `.dmg` and `.zip`)
 - GitHub Release: `agegr/pi-web`
 
 Use this checklist from a clean `main` checkout.
@@ -160,7 +161,31 @@ gh release edit v<version> --repo agegr/pi-web --notes-file - <<'EOF'
 EOF
 ```
 
-## 7. Final Verification
+## 7. Build and Attach Desktop Artifacts
+
+Desktop packaging must run on macOS. The build creates unsigned artifacts —
+configure code signing and notarization in `desktop/electron-builder.config.ts`
+before publishing a signed release.
+
+```bash
+# From project root
+bun run desktop:package:mac
+```
+
+Artifacts land in `desktop/dist/`:
+- `Pi Web-<version>-mac.zip`
+- `Pi Web-<version>-mac.dmg`
+
+Attach both to the GitHub Release:
+
+```bash
+gh release upload v<version> \
+  --repo agegr/pi-web \
+  desktop/dist/Pi\ Web-<version>-mac.dmg \
+  desktop/dist/Pi\ Web-<version>-mac.zip
+```
+
+## 8. Final Verification
 
 ```bash
 gh release view v<version> --repo agegr/pi-web
@@ -173,5 +198,6 @@ Expected:
 
 - GitHub Release exists and is not a draft unless intentionally published as one.
 - npm exact version resolves.
+- macOS `.dmg` and `.zip` are attached to the release.
 - `main` is aligned with `origin/main`.
 - `HEAD` points at the release commit and `v<version>` tag.

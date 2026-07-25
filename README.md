@@ -2,7 +2,7 @@
 
 [中文文档](./README.zh-CN.md) | [日本語](./README.ja.md)
 
-Local web UI for the [pi coding agent](https://github.com/badlogic/pi-mono). Pi Web reads your local pi session files and gives you a browser workspace for session browsing, real-time chat, model configuration, skill management, and project file preview.
+Local web UI and macOS desktop app for the [pi coding agent](https://github.com/badlogic/pi-mono). Pi Web reads your local pi session files and gives you a browser workspace for session browsing, real-time chat, model configuration, skill management, and project file preview.
 
 ![Pi Web shows the same pi session with structured Markdown, tool calls, and project navigation beside the CLI](https://raw.githubusercontent.com/agegr/pi-web/main/docs/screenshot2.png)
 
@@ -77,6 +77,35 @@ bunx @agegr/pi-web@latest
 - **Git worktrees**: see [Worktrees in Pi Web](./docs/worktrees.md) for when the switcher appears, how new worktrees are created, and what removal does.
 - **Forks vs in-session branches**: Fork creates a new `.jsonl` file. "Edit from here" creates another branch inside the same session file.
 
+## macOS Desktop App
+
+Pi Web ships as a native macOS desktop app built with Electron. It wraps the same web UI in a native window with:
+
+- Native directory and file pickers
+- macOS app menu (File, Edit, View, Go)
+- Native notifications when the window is unfocused
+- Clipboard image paste into prompts
+- Reveal in Finder and Open in Editor from file tabs
+- Per-launch auth token for localhost security
+
+**Download**: Get the latest `.dmg` or `.zip` from [GitHub Releases](https://github.com/agegr/pi-web/releases).
+
+First launch: right-click → Open (Gatekeeper for unsigned apps). See [desktop docs](./docs/desktop.md) for details.
+
+## Pi Config Compatibility
+
+Pi Web reads from `~/.pi/agent/settings.json` and `~/.pi/agent/models.json`. Supported config fields: `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `compaction`, `retry`, `branchSummary`, `packages`, `prompts`, `enabledModels`. CLI-only fields (`piStatus`, `transport`, `theme`, `telemetry`) are ignored.
+
+See the full compatibility matrix in [Pi Runtime Compatibility](./docs/pi-runtime-compat.md).
+
+## Security Model
+
+- **Web mode**: Origin-based guard via `proxy.ts` — rejects cross-origin API requests.
+- **Desktop mode**: Origin guard plus per-launch 64-character hex auth token. All `/api/*` requests require `X-Pi-Desktop-Auth` header.
+- **File access**: Scoped to session working directories and explicitly allowed roots. Symlink escapes blocked.
+- **Secrets**: API keys, tokens, and provider credentials are never returned by API endpoints. Config panels show status/placeholders only.
+- **No remote access**: Server binds `127.0.0.1` by default. Not intended for network exposure.
+
 ## Development
 
 ```bash
@@ -137,4 +166,7 @@ hooks/
 bin/
   pi-web.js           # CLI entrypoint
 instrumentation.ts    # initializes the server HTTP dispatcher
+desktop/
+  src/main/           # Electron main process: window, sidecar, menu, logging
+  src/preload/        # contextBridge API for renderer
 ```
