@@ -451,6 +451,10 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     followUp: [],
   });
   const [toolsState, setToolsState] = useState<ToolsState | null>(null);
+  const [sseStatus, setSseStatus] = useState<"connected" | "reconnecting" | "stale" | "disconnected" | "connecting">("disconnected");
+  const [lastEventTimestamp, setLastEventTimestamp] = useState<Date | null>(null);
+  const [sseReconnectReason, setSseReconnectReason] = useState<string | null>(null);
+  const reconciliationCountRef = useRef(0);
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const sessionIdRef = useRef<string | null>(session?.id ?? null);
@@ -710,6 +714,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
+    setSseStatus("connecting");
     const es = new EventSource(`/api/agent/${encodeURIComponent(sid)}/events`);
     eventSourceRef.current = es;
 
@@ -719,6 +724,16 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
         if (settled) return;
         settled = true;
         clearTimeout(timeout);
+        if (status === "connected") {
+          setSseStatus("connected");
+          setSseReconnectReason(null);
+        } else if (status === "closed") {
+          setSseStatus("disconnected");
+          setSseReconnectReason("stream closed by server");
+        } else {
+          setSseStatus("stale");
+          setSseReconnectReason("connection timeout");
+        }
         resolve({ status, source: es });
       };
       const timeout = setTimeout(() => settle("timeout"), EVENT_STREAM_CONNECT_TIMEOUT_MS);
@@ -726,6 +741,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
       es.onmessage = (e) => {
         try {
           const event = JSON.parse(e.data) as AgentEvent;
+          setLastEventTimestamp(new Date());
           if (event.type === "connected") settle("connected");
           handleAgentEventRef.current?.(event);
         } catch {
@@ -740,12 +756,16 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
           settle("closed");
           if (eventSourceRef.current === es && agentRunningRef.current) {
             eventSourceRef.current = null;
+            setSseReconnectReason("fatal close, retrying");
             setTimeout(() => {
               if (agentRunningRef.current) void connectEvents(sid);
             }, 1000);
           }
+        } else {
+          // Recoverable errors (CONNECTING): let EventSource auto-reconnect.
+          setSseStatus("reconnecting");
+          setSseReconnectReason("network interruption");
         }
-        // Recoverable errors (CONNECTING): let EventSource auto-reconnect.
         // The timeout above resolves only to let callers decide whether this
         // connection must be ready before they continue.
       };
@@ -956,9 +976,11 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
   // If the server reports idle while we still think it's running, finish
   // through the same path as prompt_done.
   const reconcileAgentState = useCallback(
-    async (sid: string) => {
+    async (sid: string, reason?: string) => {
       if (!agentRunningRef.current) return;
       const runId = promptRunIdRef.current;
+      reconciliationCountRef.current += 1;
+      if (reason) setSseReconnectReason(reason);
       try {
         const res = await fetch(`/api/agent/${encodeURIComponent(sid)}`);
         if (!res.ok) return;
@@ -1000,22 +1022,22 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
   // foreground or the network comes back.
   useEffect(() => {
     if (!agentRunning) return;
-    const reconcile = () => {
+    const reconcile = (reason?: string) => {
       // Read the ref on every tick: for brand-new sessions the id is
       // assigned only after ensure_session returns.
       const sid = sessionIdRef.current;
-      if (sid) void reconcileAgentState(sid);
+      if (sid) void reconcileAgentState(sid, reason);
     };
     const onVisible = () => {
-      if (document.visibilityState === "visible") reconcile();
+      if (document.visibilityState === "visible") reconcile("tab visible");
     };
-    const interval = setInterval(reconcile, AGENT_STATE_RECONCILE_MS);
+    const interval = setInterval(() => reconcile("periodic check"), AGENT_STATE_RECONCILE_MS);
     document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("online", reconcile);
+    window.addEventListener("online", () => reconcile("online restored"));
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("online", reconcile);
+      window.removeEventListener("online", () => reconcile("online restored"));
     };
   }, [agentRunning, reconcileAgentState]);
 
@@ -1924,6 +1946,9 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     extensionStatuses,
     extensionWidgets,
     tools: toolsState,
+    sseStatus,
+    lastEventTimestamp,
+    sseReconnectReason,
     respondToExtensionUi,
     sendExtensionCustomInput,
     isAutoModelSelection: isNew && newSessionModel === null,

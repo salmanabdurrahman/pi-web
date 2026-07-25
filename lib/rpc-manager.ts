@@ -1200,6 +1200,14 @@ export function getRunningRpcSessionIds(): string[] {
   return [...ids];
 }
 
+export function getRpcSessionCount(): number {
+  let count = 0;
+  for (const session of getRegistry().values()) {
+    if (session.isAlive()) count++;
+  }
+  return count;
+}
+
 // ----------------------------------------------------------------------------
 // Running-status broadcaster
 //
