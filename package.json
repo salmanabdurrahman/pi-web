@@ -29,6 +29,8 @@
     "build": "next build --webpack",
     "start": "next start -p 30141",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "release": "npm version patch --no-git-tag-version && npm run build && npm publish --access public"
   },
   "dependencies": {
@@ -55,6 +57,8 @@
     "mammoth": "^1.12.0",
     "mermaid": "^11.14.0",
     "postcss": "^8",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "react-markdown": "^10.1.0",
     "react-syntax-highlighter": "^16.1.1",
     "rehype-katex": "^7.0.1",

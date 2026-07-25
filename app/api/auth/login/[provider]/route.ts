@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 
 // In-memory registry: loginToken -> resolve/reject for the manualCodeInput promise
 declare global {
-  var __piLoginCallbacks: Map<string, { resolve: (v: string) => void; reject: (e: Error) => void }> | undefined;
+  var __piLoginCallbacks:
+    Map<string, { resolve: (v: string) => void; reject: (e: Error) => void }> | undefined;
 }
 
 function getCallbackRegistry() {
@@ -15,10 +16,7 @@ function getCallbackRegistry() {
 }
 
 // POST /api/auth/login/[provider] — frontend sends redirect URL or auth code
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ provider: string }> }
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
   const { token, code } = (await req.json()) as { token?: string; code?: string };
 
@@ -42,10 +40,7 @@ export async function POST(
 }
 
 // GET /api/auth/login/[provider] — SSE stream for OAuth flow
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ provider: string }> }
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
 
   const encoder = new TextEncoder();
@@ -119,9 +114,8 @@ export async function GET(
       try {
         await modelRuntime.login(provider, "oauth", {
           prompt: async (prompt: AuthPrompt) => {
-            const request = prompt.type === "manual_code"
-              ? getManualInputRequest()
-              : createClientInputRequest();
+            const request =
+              prompt.type === "manual_code" ? getManualInputRequest() : createClientInputRequest();
             if (prompt.type === "select") {
               send(controller, {
                 type: "select_request",

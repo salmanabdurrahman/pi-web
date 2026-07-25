@@ -1,11 +1,24 @@
-import type { AssistantContentBlock, AssistantMessage, ThinkingContent, ToolCallContent } from "./types";
+import type {
+  AssistantContentBlock,
+  AssistantMessage,
+  ThinkingContent,
+  ToolCallContent,
+} from "./types";
 
 interface DisplayOptions {
   isStreaming?: boolean;
 }
 
-export function isEmptyThinkingBlock(block: AssistantContentBlock, options: DisplayOptions = {}): block is ThinkingContent {
-  return block.type === "thinking" && !block.deferred && !options.isStreaming && block.thinking.trim() === "";
+export function isEmptyThinkingBlock(
+  block: AssistantContentBlock,
+  options: DisplayOptions = {},
+): block is ThinkingContent {
+  return (
+    block.type === "thinking" &&
+    !block.deferred &&
+    !options.isStreaming &&
+    block.thinking.trim() === ""
+  );
 }
 
 export function getDisplayableAssistantBlocks(

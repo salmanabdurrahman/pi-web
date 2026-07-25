@@ -1,6 +1,11 @@
 import fs from "fs";
 import { NextRequest, NextResponse } from "next/server";
-import { getAllowedFileRoots, isExistingFilePathAllowed, isFilePathAllowed, isWindowsAbsolutePath } from "@/lib/file-access";
+import {
+  getAllowedFileRoots,
+  isExistingFilePathAllowed,
+  isFilePathAllowed,
+  isWindowsAbsolutePath,
+} from "@/lib/file-access";
 import { getGitStatus } from "@/lib/git-changes";
 
 export async function GET(request: NextRequest) {
@@ -30,6 +35,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(await getGitStatus(cwd));
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 500 },
+    );
   }
 }

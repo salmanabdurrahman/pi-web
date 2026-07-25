@@ -44,7 +44,10 @@ export function normalizeDisplayMath(markdown: string): string {
 }
 
 export const markdownRemarkPlugins: ReactMarkdownOptions["remarkPlugins"] = [remarkGfm, remarkMath];
-export const markdownPreviewRemarkPlugins: ReactMarkdownOptions["remarkPlugins"] = [remarkGfm, remarkMath];
+export const markdownPreviewRemarkPlugins: ReactMarkdownOptions["remarkPlugins"] = [
+  remarkGfm,
+  remarkMath,
+];
 
 export const markdownRehypePlugins: ReactMarkdownOptions["rehypePlugins"] = [
   rehypeRaw,

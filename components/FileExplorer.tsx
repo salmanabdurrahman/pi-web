@@ -1,6 +1,14 @@
 "use client";
 
-import { forwardRef, useState, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import {
+  forwardRef,
+  useState,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
 import { getFileIcon, FolderIcon } from "./FileIcons";
 import {
   encodeFilePathForApi,
@@ -75,14 +83,14 @@ async function fetchEntries(dirPath: string): Promise<FileNode[]> {
   if (!res.ok) {
     let message = `Failed to load files (HTTP ${res.status})`;
     try {
-      const data = await res.json() as { error?: string };
+      const data = (await res.json()) as { error?: string };
       if (data.error) message = data.error;
     } catch {
       // ignore non-JSON error bodies
     }
     throw new Error(message);
   }
-  const data = await res.json() as { entries?: FileEntry[] };
+  const data = (await res.json()) as { entries?: FileEntry[] };
   return (data.entries ?? []).map((e) => ({
     name: e.name,
     fullPath: joinFilePath(dirPath, e.name),
@@ -155,7 +163,17 @@ function uploadFiles(
 
 function MentionIcon({ size = 11 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="4" />
       <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8" />
     </svg>
@@ -169,11 +187,39 @@ function DismissButton({ onClick, title }: { onClick: () => void; title: string 
       onClick={onClick}
       title={title}
       aria-label={title}
-      style={{ width: 24, height: 24, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "none", borderRadius: 4, background: "none", color: "var(--text-dim)", cursor: "pointer" }}
-      onMouseEnter={(event) => { event.currentTarget.style.color = "var(--text-muted)"; event.currentTarget.style.background = "var(--bg-hover)"; }}
-      onMouseLeave={(event) => { event.currentTarget.style.color = "var(--text-dim)"; event.currentTarget.style.background = "none"; }}
+      style={{
+        width: 24,
+        height: 24,
+        padding: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        border: "none",
+        borderRadius: 4,
+        background: "none",
+        color: "var(--text-dim)",
+        cursor: "pointer",
+      }}
+      onMouseEnter={(event) => {
+        event.currentTarget.style.color = "var(--text-muted)";
+        event.currentTarget.style.background = "var(--bg-hover)";
+      }}
+      onMouseLeave={(event) => {
+        event.currentTarget.style.color = "var(--text-dim)";
+        event.currentTarget.style.background = "none";
+      }}
     >
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        aria-hidden="true"
+      >
         <path d="m6 6 12 12" />
         <path d="m18 6-12 12" />
       </svg>
@@ -210,27 +256,29 @@ function TreeNode({
   const highlighted = highlightedPaths.has(node.fullPath);
   const normalizedPath = normalizeFilePathSlashes(node.fullPath);
   const gitStatus = gitStatusByPath.get(normalizedPath);
-  const containsGitChanges = node.isDir && (
-    gitStatus !== undefined || changedDirectoryPaths.has(normalizedPath)
-  );
+  const containsGitChanges =
+    node.isDir && (gitStatus !== undefined || changedDirectoryPaths.has(normalizedPath));
   const [children, setChildren] = useState<FileNode[]>(node.children ?? []);
   const [loaded, setLoaded] = useState(node.loaded ?? false);
   const [loading, setLoading] = useState(false);
   const [hovered, setHovered] = useState(false);
 
-  const loadChildren = useCallback(async (force = false) => {
-    if (loaded && !force) return;
-    setLoading(true);
-    try {
-      const entries = await fetchEntries(node.fullPath);
-      setChildren(entries);
-      setLoaded(true);
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  }, [loaded, node.fullPath]);
+  const loadChildren = useCallback(
+    async (force = false) => {
+      if (loaded && !force) return;
+      setLoading(true);
+      try {
+        const entries = await fetchEntries(node.fullPath);
+        setChildren(entries);
+        setLoaded(true);
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loaded, node.fullPath],
+  );
 
   // Re-fetch children when the tree refreshes and the directory is open.
   useEffect(() => {
@@ -248,7 +296,16 @@ function TreeNode({
     } else {
       onOpenFile(node.fullPath, node.name);
     }
-  }, [node.isDir, node.fullPath, node.name, loaded, open, loadChildren, onOpenFile, onToggleExpanded]);
+  }, [
+    node.isDir,
+    node.fullPath,
+    node.name,
+    loaded,
+    open,
+    loadChildren,
+    onOpenFile,
+    onToggleExpanded,
+  ]);
 
   return (
     <div>
@@ -272,9 +329,19 @@ function TreeNode({
       >
         {node.isDir && (
           <svg
-            width="10" height="10" viewBox="0 0 10 10" fill="none"
-            stroke="var(--text-dim)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
-            style={{ flexShrink: 0, transform: open ? "rotate(90deg)" : "none", transition: "transform 0.1s" }}
+            width="10"
+            height="10"
+            viewBox="0 0 10 10"
+            fill="none"
+            stroke="var(--text-dim)"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              flexShrink: 0,
+              transform: open ? "rotate(90deg)" : "none",
+              transition: "transform 0.1s",
+            }}
           >
             <polyline points="3 2 7 5 3 8" />
           </svg>
@@ -300,7 +367,13 @@ function TreeNode({
           <span
             title="Newly uploaded"
             aria-label="Newly uploaded"
-            style={{ width: 6, height: 6, flexShrink: 0, borderRadius: "50%", background: "#3b82f6" }}
+            style={{
+              width: 6,
+              height: 6,
+              flexShrink: 0,
+              borderRadius: "50%",
+              background: "#3b82f6",
+            }}
           />
         )}
         {!hovered && !node.isDir && gitStatus && (
@@ -334,7 +407,15 @@ function TreeNode({
           />
         )}
         {loading && (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round">
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--text-dim)"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" />
           </svg>
         )}
@@ -398,7 +479,16 @@ function TreeNode({
               textDecoration: "none",
             }}
           >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
@@ -425,7 +515,16 @@ function TreeNode({
             />
           ))}
           {children.length === 0 && loaded && (
-            <div style={{ paddingLeft: 8 + (depth + 1) * 14, fontSize: 11, color: "var(--text-dim)", height: 22, display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                paddingLeft: 8 + (depth + 1) * 14,
+                fontSize: 11,
+                color: "var(--text-dim)",
+                height: 22,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               empty
             </div>
           )}
@@ -435,14 +534,10 @@ function TreeNode({
   );
 }
 
-export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileExplorer({
-  cwd,
-  onOpenFile,
-  refreshKey,
-  onAtMention,
-  onAtMentions,
-  onUploadBusyChange,
-}, ref) {
+export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileExplorer(
+  { cwd, onOpenFile, refreshKey, onAtMention, onAtMentions, onUploadBusyChange },
+  ref,
+) {
   const [roots, setRoots] = useState<FileNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -460,9 +555,10 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
   const refreshToken = `${refreshKey ?? 0}:${treeRefreshKey}`;
   const uploadBusy = uploadPhase !== "idle";
 
-  const gitStatusByPath = useMemo(() => new Map(
-    gitFiles.map((status) => [normalizeFilePathSlashes(status.filePath), status]),
-  ), [gitFiles]);
+  const gitStatusByPath = useMemo(
+    () => new Map(gitFiles.map((status) => [normalizeFilePathSlashes(status.filePath), status])),
+    [gitFiles],
+  );
 
   const changedDirectoryPaths = useMemo(() => {
     const directories = new Set<string>();
@@ -483,103 +579,118 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
   const handleToggleExpanded = useCallback((fullPath: string, open: boolean) => {
     setExpandedPaths((prev) => {
       const next = new Set(prev);
-      if (open) next.add(fullPath); else next.delete(fullPath);
+      if (open) next.add(fullPath);
+      else next.delete(fullPath);
       return next;
     });
   }, []);
 
-  const applyUploadResult = useCallback((data: UploadResponse) => {
-    const uploaded = data.uploaded ?? [];
-    const skipped = data.skipped ?? [];
-    const errors = data.errors ?? [];
-    setUploadSummary({ uploaded, skipped, errors });
+  const applyUploadResult = useCallback(
+    (data: UploadResponse) => {
+      const uploaded = data.uploaded ?? [];
+      const skipped = data.skipped ?? [];
+      const errors = data.errors ?? [];
+      setUploadSummary({ uploaded, skipped, errors });
 
-    if (uploaded.length > 0) {
-      setHighlightedPaths(new Set(uploaded.map((name) => joinFilePath(cwd, name))));
-      setTreeRefreshKey((key) => key + 1);
-    }
-  }, [cwd]);
-
-  const performUpload = useCallback(async (
-    files: File[],
-    strategy: UploadConflictStrategy,
-  ) => {
-    setPendingConflict(null);
-    setUploadError(null);
-    setUploadProgress(0);
-    setUploadPhase("uploading");
-
-    try {
-      const { status, data } = await uploadFiles(cwd, files, strategy, setUploadProgress);
-      if (status === 409 && data.conflicts?.length) {
-        setPendingConflict({
-          files,
-          conflicts: data.conflicts,
-          nonReplaceable: data.nonReplaceable ?? [],
-        });
-        return;
+      if (uploaded.length > 0) {
+        setHighlightedPaths(new Set(uploaded.map((name) => joinFilePath(cwd, name))));
+        setTreeRefreshKey((key) => key + 1);
       }
-      if (status < 200 || status >= 300) {
-        throw new Error(data.error ?? `Upload failed (HTTP ${status})`);
+    },
+    [cwd],
+  );
+
+  const performUpload = useCallback(
+    async (files: File[], strategy: UploadConflictStrategy) => {
+      setPendingConflict(null);
+      setUploadError(null);
+      setUploadProgress(0);
+      setUploadPhase("uploading");
+
+      try {
+        const { status, data } = await uploadFiles(cwd, files, strategy, setUploadProgress);
+        if (status === 409 && data.conflicts?.length) {
+          setPendingConflict({
+            files,
+            conflicts: data.conflicts,
+            nonReplaceable: data.nonReplaceable ?? [],
+          });
+          return;
+        }
+        if (status < 200 || status >= 300) {
+          throw new Error(data.error ?? `Upload failed (HTTP ${status})`);
+        }
+        setUploadProgress(100);
+        applyUploadResult(data);
+      } catch (uploadFailure) {
+        setUploadError(
+          uploadFailure instanceof Error ? uploadFailure.message : String(uploadFailure),
+        );
+      } finally {
+        setUploadPhase("idle");
       }
-      setUploadProgress(100);
-      applyUploadResult(data);
-    } catch (uploadFailure) {
-      setUploadError(uploadFailure instanceof Error ? uploadFailure.message : String(uploadFailure));
-    } finally {
-      setUploadPhase("idle");
-    }
-  }, [applyUploadResult, cwd]);
+    },
+    [applyUploadResult, cwd],
+  );
 
-  const prepareUpload = useCallback(async (files: File[]) => {
-    if (files.length === 0 || uploadBusy) return;
-    setUploadSummary(null);
-    setHighlightedPaths(new Set());
-    setPendingConflict(null);
-    setUploadError(null);
-    setUploadProgress(0);
-    setUploadPhase("checking");
+  const prepareUpload = useCallback(
+    async (files: File[]) => {
+      if (files.length === 0 || uploadBusy) return;
+      setUploadSummary(null);
+      setHighlightedPaths(new Set());
+      setPendingConflict(null);
+      setUploadError(null);
+      setUploadProgress(0);
+      setUploadPhase("checking");
 
-    try {
-      const res = await fetch(
-        `/api/files/${encodeFilePathForApi(cwd)}?type=upload-check`,
-        {
+      try {
+        const res = await fetch(`/api/files/${encodeFilePathForApi(cwd)}?type=upload-check`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ fileNames: files.map((file) => file.name) }),
-        },
-      );
-      const data = await res.json().catch(() => ({})) as UploadResponse;
-      if (!res.ok) throw new Error(data.error ?? `Upload check failed (HTTP ${res.status})`);
-
-      if (data.conflicts?.length) {
-        setPendingConflict({
-          files,
-          conflicts: data.conflicts,
-          nonReplaceable: data.nonReplaceable ?? [],
         });
-        return;
+        const data = (await res.json().catch(() => ({}))) as UploadResponse;
+        if (!res.ok) throw new Error(data.error ?? `Upload check failed (HTTP ${res.status})`);
+
+        if (data.conflicts?.length) {
+          setPendingConflict({
+            files,
+            conflicts: data.conflicts,
+            nonReplaceable: data.nonReplaceable ?? [],
+          });
+          return;
+        }
+
+        await performUpload(files, "error");
+      } catch (uploadFailure) {
+        setUploadError(
+          uploadFailure instanceof Error ? uploadFailure.message : String(uploadFailure),
+        );
+      } finally {
+        setUploadPhase("idle");
       }
-
-      await performUpload(files, "error");
-    } catch (uploadFailure) {
-      setUploadError(uploadFailure instanceof Error ? uploadFailure.message : String(uploadFailure));
-    } finally {
-      setUploadPhase("idle");
-    }
-  }, [cwd, performUpload, uploadBusy]);
-
-  const handleUploadInput = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = "";
-    void prepareUpload(files);
-  }, [prepareUpload]);
-
-  useImperativeHandle(ref, () => ({
-    openUploadPicker() {
-      if (!uploadBusy) uploadInputRef.current?.click();
     },
-  }), [uploadBusy]);
+    [cwd, performUpload, uploadBusy],
+  );
+
+  const handleUploadInput = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files ?? []);
+      event.target.value = "";
+      void prepareUpload(files);
+    },
+    [prepareUpload],
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      openUploadPicker() {
+        if (!uploadBusy) uploadInputRef.current?.click();
+      },
+    }),
+    [uploadBusy],
+  );
 
   useEffect(() => {
     onUploadBusyChange?.(uploadBusy);
@@ -604,10 +715,18 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
     setError(null);
     let cancelled = false;
     fetchEntries(cwd)
-      .then((entries) => { if (!cancelled) setRoots(entries); })
-      .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : String(e)); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .then((entries) => {
+        if (!cancelled) setRoots(entries);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [cwd, refreshKey, treeRefreshKey]);
 
   useEffect(() => {
@@ -619,10 +738,13 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
       .catch(() => {
         if (!cancelled) setGitFiles([]);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [cwd, refreshKey, treeRefreshKey]);
 
-  const showUploadFeedback = uploadBusy || pendingConflict !== null || uploadError !== null || uploadSummary !== null;
+  const showUploadFeedback =
+    uploadBusy || pendingConflict !== null || uploadError !== null || uploadSummary !== null;
 
   const addUploadedFilesToChat = useCallback(() => {
     if (!uploadSummary || uploadSummary.uploaded.length === 0) return;
@@ -636,125 +758,368 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
       <input ref={uploadInputRef} type="file" multiple hidden onChange={handleUploadInput} />
       {showUploadFeedback && (
         <div style={{ padding: "6px 8px", borderBottom: "1px solid var(--border)" }}>
-        {uploadBusy && (
-          <div role="status" aria-live="polite" aria-label={uploadPhase === "checking" ? "Checking files" : `Uploading, ${uploadProgress}%`}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, minHeight: 14, color: "var(--text-muted)" }}>
-              {uploadPhase === "checking" ? (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" style={{ animation: "spin 0.8s linear infinite" }} aria-hidden="true">
-                  <path d="M21 12a9 9 0 1 1-5.7-8.4" />
-                </svg>
-              ) : (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 16V4" />
-                  <path d="m7 9 5-5 5 5" />
-                  <path d="M5 20h14" />
-                </svg>
+          {uploadBusy && (
+            <div
+              role="status"
+              aria-live="polite"
+              aria-label={
+                uploadPhase === "checking" ? "Checking files" : `Uploading, ${uploadProgress}%`
+              }
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  minHeight: 14,
+                  color: "var(--text-muted)",
+                }}
+              >
+                {uploadPhase === "checking" ? (
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    style={{ animation: "spin 0.8s linear infinite" }}
+                    aria-hidden="true"
+                  >
+                    <path d="M21 12a9 9 0 1 1-5.7-8.4" />
+                  </svg>
+                ) : (
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 16V4" />
+                    <path d="m7 9 5-5 5 5" />
+                    <path d="M5 20h14" />
+                  </svg>
+                )}
+                {uploadPhase === "uploading" && (
+                  <span style={{ fontSize: 10 }}>{uploadProgress}%</span>
+                )}
+              </div>
+              {uploadPhase === "uploading" && (
+                <div
+                  style={{
+                    height: 3,
+                    marginTop: 4,
+                    overflow: "hidden",
+                    borderRadius: 2,
+                    background: "var(--border)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${uploadProgress}%`,
+                      height: "100%",
+                      background: "var(--text-muted)",
+                      transition: "width 120ms ease",
+                    }}
+                  />
+                </div>
               )}
-              {uploadPhase === "uploading" && <span style={{ fontSize: 10 }}>{uploadProgress}%</span>}
             </div>
-            {uploadPhase === "uploading" && (
-              <div style={{ height: 3, marginTop: 4, overflow: "hidden", borderRadius: 2, background: "var(--border)" }}>
-                <div style={{ width: `${uploadProgress}%`, height: "100%", background: "var(--text-muted)", transition: "width 120ms ease" }} />
-              </div>
-            )}
-          </div>
-        )}
+          )}
 
-        {pendingConflict && (
-          <div role="alert" style={{ padding: 7, border: "1px solid color-mix(in srgb, #f59e0b 55%, var(--border))", borderRadius: 4, background: "color-mix(in srgb, #f59e0b 9%, var(--bg-panel))" }}>
-            <div style={{ fontSize: 11, color: "var(--text)", lineHeight: 1.35, overflowWrap: "anywhere" }}>
-              {pendingConflict.conflicts.length} file{pendingConflict.conflicts.length === 1 ? "" : "s"} already exist: {pendingConflict.conflicts.join(", ")}
-            </div>
-            {pendingConflict.nonReplaceable.length > 0 && (
-              <div style={{ marginTop: 3, fontSize: 10, color: "#f59e0b", lineHeight: 1.35, overflowWrap: "anywhere" }}>
-                Cannot replace: {pendingConflict.nonReplaceable.join(", ")}
+          {pendingConflict && (
+            <div
+              role="alert"
+              style={{
+                padding: 7,
+                border: "1px solid color-mix(in srgb, #f59e0b 55%, var(--border))",
+                borderRadius: 4,
+                background: "color-mix(in srgb, #f59e0b 9%, var(--bg-panel))",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "var(--text)",
+                  lineHeight: 1.35,
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {pendingConflict.conflicts.length} file
+                {pendingConflict.conflicts.length === 1 ? "" : "s"} already exist:{" "}
+                {pendingConflict.conflicts.join(", ")}
               </div>
-            )}
-            <div style={{ display: "flex", gap: 5, marginTop: 7 }}>
-              <button type="button" onClick={() => void performUpload(pendingConflict.files, "overwrite")} style={{ height: 22, padding: "0 7px", border: "1px solid #ef4444", borderRadius: 4, background: "transparent", color: "#ef4444", cursor: "pointer", fontSize: 10 }}>
-                Replace
-              </button>
-              <button type="button" onClick={() => void performUpload(pendingConflict.files, "skip")} style={{ height: 22, padding: "0 7px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--bg-panel)", color: "var(--text)", cursor: "pointer", fontSize: 10 }}>
-                Skip existing
-              </button>
-              <button type="button" onClick={() => setPendingConflict(null)} style={{ height: 22, padding: "0 7px", border: "none", borderRadius: 4, background: "transparent", color: "var(--text-muted)", cursor: "pointer", fontSize: 10 }}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-
-        {uploadError && (
-          <div role="alert" style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 11, lineHeight: 1.35, color: "#f87171" }}>
-            <span style={{ minWidth: 0, flex: 1, overflowWrap: "anywhere" }}>{uploadError}</span>
-            <DismissButton onClick={() => setUploadError(null)} title="Dismiss error" />
-          </div>
-        )}
-
-        {uploadSummary && (
-          <div aria-live="polite">
-            <div style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 22, fontSize: 11 }}>
-              <div style={{ minWidth: 0, flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
-                {uploadSummary.uploaded.length > 0 && (
-                  <span title={`${uploadSummary.uploaded.length} uploaded`} aria-label={`${uploadSummary.uploaded.length} uploaded`} style={{ display: "flex", alignItems: "center", gap: 3, color: "#22c55e" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="m5 12 4 4L19 6" />
-                    </svg>
-                    <span>{uploadSummary.uploaded.length}</span>
-                  </span>
-                )}
-                {uploadSummary.skipped.length > 0 && (
-                  <span title={`${uploadSummary.skipped.length} skipped`} aria-label={`${uploadSummary.skipped.length} skipped`} style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--text-dim)" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="9" />
-                      <path d="M8 12h8" />
-                    </svg>
-                    <span>{uploadSummary.skipped.length}</span>
-                  </span>
-                )}
-                {uploadSummary.errors.length > 0 && (
-                  <span title={`${uploadSummary.errors.length} failed`} aria-label={`${uploadSummary.errors.length} failed`} style={{ display: "flex", alignItems: "center", gap: 3, color: "#f87171" }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M12 3 2.5 20h19L12 3Z" />
-                      <path d="M12 9v4" />
-                      <path d="M12 17h.01" />
-                    </svg>
-                    <span>{uploadSummary.errors.length}</span>
-                  </span>
-                )}
-              </div>
-              {uploadSummary.uploaded.length > 0 && onAtMentions && (
+              {pendingConflict.nonReplaceable.length > 0 && (
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 10,
+                    color: "#f59e0b",
+                    lineHeight: 1.35,
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  Cannot replace: {pendingConflict.nonReplaceable.join(", ")}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 5, marginTop: 7 }}>
                 <button
                   type="button"
-                  onClick={addUploadedFilesToChat}
-                  title={uploadSummary.uploaded.length === 1 ? "Add uploaded file to chat" : "Add all uploaded files to chat"}
-                  aria-label={uploadSummary.uploaded.length === 1 ? "Add uploaded file to chat" : "Add all uploaded files to chat"}
-                  style={{ height: 22, padding: "0 7px", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0, border: "1px solid var(--border)", borderRadius: 4, background: "var(--bg-panel)", color: "var(--accent)", cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}
+                  onClick={() => void performUpload(pendingConflict.files, "overwrite")}
+                  style={{
+                    height: 22,
+                    padding: "0 7px",
+                    border: "1px solid #ef4444",
+                    borderRadius: 4,
+                    background: "transparent",
+                    color: "#ef4444",
+                    cursor: "pointer",
+                    fontSize: 10,
+                  }}
                 >
-                  <MentionIcon />
-                  mention
+                  Replace
                 </button>
-              )}
-              <DismissButton onClick={() => setUploadSummary(null)} title="Dismiss upload results" />
-            </div>
-            {uploadSummary.errors.map((item) => (
-              <div key={item.name} title={item.error} style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3, minWidth: 0, fontSize: 10, color: "#f87171" }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 8v5" />
-                  <path d="M12 17h.01" />
-                </svg>
-                <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
+                <button
+                  type="button"
+                  onClick={() => void performUpload(pendingConflict.files, "skip")}
+                  style={{
+                    height: 22,
+                    padding: "0 7px",
+                    border: "1px solid var(--border)",
+                    borderRadius: 4,
+                    background: "var(--bg-panel)",
+                    color: "var(--text)",
+                    cursor: "pointer",
+                    fontSize: 10,
+                  }}
+                >
+                  Skip existing
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPendingConflict(null)}
+                  style={{
+                    height: 22,
+                    padding: "0 7px",
+                    border: "none",
+                    borderRadius: 4,
+                    background: "transparent",
+                    color: "var(--text-muted)",
+                    cursor: "pointer",
+                    fontSize: 10,
+                  }}
+                >
+                  Cancel
+                </button>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
+
+          {uploadError && (
+            <div
+              role="alert"
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 6,
+                fontSize: 11,
+                lineHeight: 1.35,
+                color: "#f87171",
+              }}
+            >
+              <span style={{ minWidth: 0, flex: 1, overflowWrap: "anywhere" }}>{uploadError}</span>
+              <DismissButton onClick={() => setUploadError(null)} title="Dismiss error" />
+            </div>
+          )}
+
+          {uploadSummary && (
+            <div aria-live="polite">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  minHeight: 22,
+                  fontSize: 11,
+                }}
+              >
+                <div
+                  style={{ minWidth: 0, flex: 1, display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  {uploadSummary.uploaded.length > 0 && (
+                    <span
+                      title={`${uploadSummary.uploaded.length} uploaded`}
+                      aria-label={`${uploadSummary.uploaded.length} uploaded`}
+                      style={{ display: "flex", alignItems: "center", gap: 3, color: "#22c55e" }}
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m5 12 4 4L19 6" />
+                      </svg>
+                      <span>{uploadSummary.uploaded.length}</span>
+                    </span>
+                  )}
+                  {uploadSummary.skipped.length > 0 && (
+                    <span
+                      title={`${uploadSummary.skipped.length} skipped`}
+                      aria-label={`${uploadSummary.skipped.length} skipped`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 3,
+                        color: "var(--text-dim)",
+                      }}
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M8 12h8" />
+                      </svg>
+                      <span>{uploadSummary.skipped.length}</span>
+                    </span>
+                  )}
+                  {uploadSummary.errors.length > 0 && (
+                    <span
+                      title={`${uploadSummary.errors.length} failed`}
+                      aria-label={`${uploadSummary.errors.length} failed`}
+                      style={{ display: "flex", alignItems: "center", gap: 3, color: "#f87171" }}
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 3 2.5 20h19L12 3Z" />
+                        <path d="M12 9v4" />
+                        <path d="M12 17h.01" />
+                      </svg>
+                      <span>{uploadSummary.errors.length}</span>
+                    </span>
+                  )}
+                </div>
+                {uploadSummary.uploaded.length > 0 && onAtMentions && (
+                  <button
+                    type="button"
+                    onClick={addUploadedFilesToChat}
+                    title={
+                      uploadSummary.uploaded.length === 1
+                        ? "Add uploaded file to chat"
+                        : "Add all uploaded files to chat"
+                    }
+                    aria-label={
+                      uploadSummary.uploaded.length === 1
+                        ? "Add uploaded file to chat"
+                        : "Add all uploaded files to chat"
+                    }
+                    style={{
+                      height: 22,
+                      padding: "0 7px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 4,
+                      flexShrink: 0,
+                      border: "1px solid var(--border)",
+                      borderRadius: 4,
+                      background: "var(--bg-panel)",
+                      color: "var(--accent)",
+                      cursor: "pointer",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <MentionIcon />
+                    mention
+                  </button>
+                )}
+                <DismissButton
+                  onClick={() => setUploadSummary(null)}
+                  title="Dismiss upload results"
+                />
+              </div>
+              {uploadSummary.errors.map((item) => (
+                <div
+                  key={item.name}
+                  title={item.error}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    marginTop: 3,
+                    minWidth: 0,
+                    fontSize: 10,
+                    color: "#f87171",
+                  }}
+                >
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ flexShrink: 0 }}
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 8v5" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                  <span
+                    style={{
+                      minWidth: 0,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {item.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       <div style={{ padding: "2px 4px" }}>
         {loading ? (
-          <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--text-dim)" }}>Loading files...</div>
+          <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--text-dim)" }}>
+            Loading files...
+          </div>
         ) : error ? (
           <div style={{ padding: "8px 12px", fontSize: 11, color: "#f87171" }}>{error}</div>
         ) : (

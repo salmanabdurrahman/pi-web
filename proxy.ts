@@ -3,7 +3,10 @@ import { isApiRequestOriginAllowed, shouldCheckApiRequestOrigin } from "@/lib/re
 
 export function proxy(request: NextRequest) {
   if (shouldCheckApiRequestOrigin(request) && !isApiRequestOriginAllowed(request)) {
-    return NextResponse.json({ error: "Cross-origin API requests are not allowed" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Cross-origin API requests are not allowed" },
+      { status: 403 },
+    );
   }
   return NextResponse.next();
 }

@@ -13,14 +13,20 @@ export async function GET(_req: Request, { params }: Params) {
   const status = modelRuntime.getProviderAuthStatus(provider);
   const displayName = modelRuntime.getProvider(provider)?.name ?? provider;
   const models = modelRuntime.getModels(provider).length;
-  return NextResponse.json({ provider, displayName, configured: status.configured, source: status.source, models });
+  return NextResponse.json({
+    provider,
+    displayName,
+    configured: status.configured,
+    source: status.source,
+    models,
+  });
 }
 
 // POST /api/auth/api-key/[provider]  body: { apiKey: string }
 export async function POST(req: Request, { params }: Params) {
   const { provider } = await params;
   try {
-    const { apiKey } = await req.json() as { apiKey?: string };
+    const { apiKey } = (await req.json()) as { apiKey?: string };
     if (!apiKey || typeof apiKey !== "string" || !apiKey.trim()) {
       return NextResponse.json({ error: "apiKey is required" }, { status: 400 });
     }
@@ -30,7 +36,9 @@ export async function POST(req: Request, { params }: Params) {
       notify: () => {},
       prompt: async (prompt) => {
         if (prompt.type === "select") {
-          const keyOption = prompt.options.find((option) => option.id === "api-key" || option.id === "bearer-token");
+          const keyOption = prompt.options.find(
+            (option) => option.id === "api-key" || option.id === "bearer-token",
+          );
           if (keyOption) return keyOption.id;
           throw new Error(`${provider} requires interactive authentication setup`);
         }

@@ -15,7 +15,13 @@ interface MarkdownBodyProps {
   onOpenFile?: (filePath: string) => void;
 }
 
-export function MarkdownBody({ children, className, isStreaming, cwd, onOpenFile }: MarkdownBodyProps) {
+export function MarkdownBody({
+  children,
+  className,
+  isStreaming,
+  cwd,
+  onOpenFile,
+}: MarkdownBodyProps) {
   const normalizedMarkdown = useMemo(() => normalizeDisplayMath(children), [children]);
 
   return (
@@ -35,10 +41,7 @@ export function MarkdownBody({ children, className, isStreaming, cwd, onOpenFile
               return <CodeBlock code={raw.replace(/\n$/, "")} lang={lang} />;
             }
             return (
-              <code
-                className="markdown-inline-code"
-                {...props}
-              >
+              <code className="markdown-inline-code" {...props}>
                 {children}
               </code>
             );

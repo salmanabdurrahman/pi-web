@@ -37,7 +37,10 @@ export function invalidateModelsCache(): void {
   state.inFlight.clear();
 }
 
-export function loadModelsWithCache(cwd: string, loader: () => Promise<ModelsData>): Promise<ModelsData> {
+export function loadModelsWithCache(
+  cwd: string,
+  loader: () => Promise<ModelsData>,
+): Promise<ModelsData> {
   const state = getModelsCacheState();
   const cached = state.entries.get(cwd);
   if (cached) {

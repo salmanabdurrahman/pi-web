@@ -28,22 +28,15 @@ import type { SessionStatsInfo } from "@/lib/pi-types";
 
 type SessionCopyField = "file" | "id";
 type AutoNameStatus =
-  | { kind: "idle" }
-  | { kind: "naming" }
-  | { kind: "success" }
-  | { kind: "error"; message: string };
+  { kind: "idle" } | { kind: "naming" } | { kind: "success" } | { kind: "error"; message: string };
 
 export function AppShell() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [initialNavigation] = useState(() =>
-    getInitialNavigation(searchParams),
-  );
+  const [initialNavigation] = useState(() => getInitialNavigation(searchParams));
   const { isDark, toggleTheme } = useTheme();
   const isMobile = useIsMobile();
-  const [selectedSession, setSelectedSession] = useState<SessionInfo | null>(
-    null,
-  );
+  const [selectedSession, setSelectedSession] = useState<SessionInfo | null>(null);
   // When user clicks +, we only store the cwd — no fake session id
   const [newSessionCwd, setNewSessionCwd] = useState<string | null>(null);
   const [initialCwdStatus, setInitialCwdStatus] = useState<
@@ -73,12 +66,8 @@ export function AppShell() {
 
   // Branch navigator state — populated by ChatWindow via onBranchDataChange
   const [branchTree, setBranchTree] = useState<SessionTreeNode[]>([]);
-  const [branchActiveLeafId, setBranchActiveLeafId] = useState<string | null>(
-    null,
-  );
-  const branchLeafChangeFnRef = useRef<
-    ((leafId: string | null) => void) | null
-  >(null);
+  const [branchActiveLeafId, setBranchActiveLeafId] = useState<string | null>(null);
+  const branchLeafChangeFnRef = useRef<((leafId: string | null) => void) | null>(null);
 
   const handleBranchDataChange = useCallback(
     (
@@ -105,45 +94,29 @@ export function AppShell() {
   }, []);
 
   // Session stats (tokens + cost) — populated by ChatWindow, displayed in top bar
-  const [sessionStats, setSessionStats] = useState<SessionStatsInfo | null>(
-    null,
-  );
+  const [sessionStats, setSessionStats] = useState<SessionStatsInfo | null>(null);
   const [autoNameStatus, setAutoNameStatus] = useState<AutoNameStatus>({
     kind: "idle",
   });
   const autoNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeSessionIdRef = useRef<string | null>(selectedSession?.id ?? null);
   activeSessionIdRef.current = selectedSession?.id ?? null;
-  const handleSessionStatsChange = useCallback(
-    (stats: SessionStatsInfo | null) => {
-      setSessionStats(stats);
-    },
-    [],
-  );
-  const [copiedSessionField, setCopiedSessionField] =
-    useState<SessionCopyField | null>(null);
-  const sessionCopyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-  const handleCopySessionField = useCallback(
-    (field: SessionCopyField, value: string) => {
-      void copyText(value).then(() => {
-        if (sessionCopyTimerRef.current)
-          clearTimeout(sessionCopyTimerRef.current);
-        setCopiedSessionField(field);
-        sessionCopyTimerRef.current = setTimeout(
-          () => setCopiedSessionField(null),
-          1400,
-        );
-      });
-    },
-    [],
-  );
+  const handleSessionStatsChange = useCallback((stats: SessionStatsInfo | null) => {
+    setSessionStats(stats);
+  }, []);
+  const [copiedSessionField, setCopiedSessionField] = useState<SessionCopyField | null>(null);
+  const sessionCopyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleCopySessionField = useCallback((field: SessionCopyField, value: string) => {
+    void copyText(value).then(() => {
+      if (sessionCopyTimerRef.current) clearTimeout(sessionCopyTimerRef.current);
+      setCopiedSessionField(field);
+      sessionCopyTimerRef.current = setTimeout(() => setCopiedSessionField(null), 1400);
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
-      if (sessionCopyTimerRef.current)
-        clearTimeout(sessionCopyTimerRef.current);
+      if (sessionCopyTimerRef.current) clearTimeout(sessionCopyTimerRef.current);
       if (autoNameTimerRef.current) clearTimeout(autoNameTimerRef.current);
     };
   }, []);
@@ -168,9 +141,9 @@ export function AppShell() {
   );
 
   // Single active panel — only one dropdown open at a time
-  const [activeTopPanel, setActiveTopPanel] = useState<
-    "branches" | "system" | "session" | null
-  >(null);
+  const [activeTopPanel, setActiveTopPanel] = useState<"branches" | "system" | "session" | null>(
+    null,
+  );
   const [topPanelPos, setTopPanelPos] = useState<{
     top: number;
     left: number;
@@ -214,12 +187,9 @@ export function AppShell() {
 
   // Same @mention format as the chat input's @ autocomplete, so the agent's
   // read tool resolves it the same way (it strips the @ prefix).
-  const handleAtMention = useCallback(
-    (relativePath: string, isDir: boolean) => {
-      chatInputRef.current?.insertText(buildAtMentionText(relativePath, isDir));
-    },
-    [],
-  );
+  const handleAtMention = useCallback((relativePath: string, isDir: boolean) => {
+    chatInputRef.current?.insertText(buildAtMentionText(relativePath, isDir));
+  }, []);
 
   const handleAtMentions = useCallback((relativePaths: string[]) => {
     const mentions = buildFileAtMentionsText(relativePaths);
@@ -228,9 +198,7 @@ export function AppShell() {
 
   const handleFileLineMention = useCallback(
     (relativePath: string, startLine: number, endLine: number) => {
-      chatInputRef.current?.insertText(
-        buildFileLineMentionText(relativePath, startLine, endLine),
-      );
+      chatInputRef.current?.insertText(buildFileLineMentionText(relativePath, startLine, endLine));
     },
     [],
   );
@@ -275,9 +243,7 @@ export function AppShell() {
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
-        setInitialCwdError(
-          error instanceof Error ? error.message : String(error),
-        );
+        setInitialCwdError(error instanceof Error ? error.message : String(error));
         setInitialCwdStatus("error");
       });
 
@@ -297,10 +263,7 @@ export function AppShell() {
       // within the same project (e.g. switching worktree, or clicking a session
       // that lives in another worktree) must not close the open session.
       const newProject = projectRoot ?? cwd;
-      if (
-        selectedSession &&
-        (selectedSession.projectRoot ?? selectedSession.cwd) === newProject
-      ) {
+      if (selectedSession && (selectedSession.projectRoot ?? selectedSession.cwd) === newProject) {
         return;
       }
       // Close any session that belongs to a different project — it no longer
@@ -372,9 +335,7 @@ export function AppShell() {
   // worktrees right after creating a session doesn't close the chat.
   const hydrateSelectedSession = useCallback((sessionId: string) => {
     void fetch("/api/sessions")
-      .then((r) =>
-        r.ok ? (r.json() as Promise<{ sessions: SessionInfo[] }>) : null,
-      )
+      .then((r) => (r.ok ? (r.json() as Promise<{ sessions: SessionInfo[] }>) : null))
       .then((d) => {
         const full = d?.sessions.find((s) => s.id === sessionId);
         if (!full) return;
@@ -412,12 +373,9 @@ export function AppShell() {
     setAutoNameStatus({ kind: "naming" });
 
     try {
-      const response = await fetch(
-        `/api/sessions/${encodeURIComponent(sessionId)}/auto-name`,
-        {
-          method: "POST",
-        },
-      );
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/auto-name`, {
+        method: "POST",
+      });
       const body = (await response.json().catch(() => ({}))) as {
         title?: string;
         error?: string;
@@ -433,23 +391,15 @@ export function AppShell() {
         current?.id === sessionId ? { ...current, name: title } : current,
       );
       setSessionStats((current) =>
-        current?.sessionId === sessionId
-          ? { ...current, sessionName: title }
-          : current,
+        current?.sessionId === sessionId ? { ...current, sessionName: title } : current,
       );
       setAutoNameStatus({ kind: "success" });
-      autoNameTimerRef.current = setTimeout(
-        () => setAutoNameStatus({ kind: "idle" }),
-        1800,
-      );
+      autoNameTimerRef.current = setTimeout(() => setAutoNameStatus({ kind: "idle" }), 1800);
     } catch (error) {
       if (activeSessionIdRef.current !== sessionId) return;
       const message = error instanceof Error ? error.message : String(error);
       setAutoNameStatus({ kind: "error", message });
-      autoNameTimerRef.current = setTimeout(
-        () => setAutoNameStatus({ kind: "idle" }),
-        5000,
-      );
+      autoNameTimerRef.current = setTimeout(() => setAutoNameStatus({ kind: "idle" }), 5000);
     }
   }, [autoNameStatus.kind, selectedSession?.id]);
 
@@ -513,16 +463,9 @@ export function AppShell() {
       const tabId = `file:${filePath}`;
       setFileTabs((prev) => {
         const existing = prev.find((t) => t.id === tabId);
-        if (!existing)
-          return [
-            ...prev,
-            { id: tabId, label: fileName, filePath, sourceSessionId },
-          ];
-        if (!sourceSessionId || existing.sourceSessionId === sourceSessionId)
-          return prev;
-        return prev.map((t) =>
-          t.id === tabId ? { ...t, sourceSessionId } : t,
-        );
+        if (!existing) return [...prev, { id: tabId, label: fileName, filePath, sourceSessionId }];
+        if (!sourceSessionId || existing.sourceSessionId === sourceSessionId) return prev;
+        return prev.map((t) => (t.id === tabId ? { ...t, sourceSessionId } : t));
       });
       setActiveFileTabId(tabId);
       setRightPanelOpen(true);
@@ -534,11 +477,7 @@ export function AppShell() {
 
   const handleOpenLinkedFile = useCallback(
     (filePath: string) => {
-      handleOpenFile(
-        filePath,
-        getFileName(filePath),
-        selectedSession?.id ?? null,
-      );
+      handleOpenFile(filePath, getFileName(filePath), selectedSession?.id ?? null);
     },
     [handleOpenFile, selectedSession?.id],
   );
@@ -853,7 +792,7 @@ export function AppShell() {
       >
         {/* Mobile overlay backdrop */}
         <div
-          className={`sidebar-overlay-backdrop${mobileSidebarReady ? "" : " sidebar-mobile-pending"}`}
+          className={`sidebar-overlay-backdrop${mobileSidebarReady ? "" : "sidebar-mobile-pending"}`}
           onClick={() => setSidebarOpen(false)}
           style={{
             position: "fixed",
@@ -868,7 +807,7 @@ export function AppShell() {
 
         {/* Left sidebar */}
         <div
-          className={`sidebar-container${sidebarOpen ? " sidebar-open" : " sidebar-closed"}${mobileSidebarReady ? "" : " sidebar-mobile-pending"}`}
+          className={`sidebar-container${sidebarOpen ? "sidebar-open" : "sidebar-closed"}${mobileSidebarReady ? "" : "sidebar-mobile-pending"}`}
           style={{
             background: "var(--bg-panel)",
             borderRight: "1px solid var(--border)",
@@ -968,9 +907,7 @@ export function AppShell() {
                 });
               }}
               title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-              aria-label={
-                isDark ? "Switch to light mode" : "Switch to dark mode"
-              }
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               aria-pressed={isDark}
               style={{
                 display: "flex",
@@ -1057,9 +994,7 @@ export function AppShell() {
                     border: "none",
                     borderTop: "2px solid transparent",
                     borderRight: "1px solid var(--border)",
-                    color: selectedSession
-                      ? "var(--text-muted)"
-                      : "var(--text-dim)",
+                    color: selectedSession ? "var(--text-muted)" : "var(--text-dim)",
                     cursor: selectedSession ? "pointer" : "not-allowed",
                     opacity: selectedSession ? 1 : 0.45,
                     flexShrink: 0,
@@ -1089,9 +1024,7 @@ export function AppShell() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     style={{
-                      color: selectedSession
-                        ? "var(--text-muted)"
-                        : "var(--text-dim)",
+                      color: selectedSession ? "var(--text-muted)" : "var(--text-dim)",
                       flexShrink: 0,
                     }}
                   >
@@ -1104,13 +1037,10 @@ export function AppShell() {
                 {(() => {
                   const hasMessages = Boolean(
                     selectedSession &&
-                    (sessionStats?.userMessages ??
-                      selectedSession.messageCount) > 0,
+                    (sessionStats?.userMessages ?? selectedSession.messageCount) > 0,
                   );
                   const disabled =
-                    !selectedSession ||
-                    !hasMessages ||
-                    autoNameStatus.kind === "naming";
+                    !selectedSession || !hasMessages || autoNameStatus.kind === "naming";
                   const isSuccess = autoNameStatus.kind === "success";
                   const isError = autoNameStatus.kind === "error";
                   const label =
@@ -1154,10 +1084,7 @@ export function AppShell() {
                               ? "var(--text-dim)"
                               : "var(--text-muted)",
                         cursor: disabled ? "not-allowed" : "pointer",
-                        opacity:
-                          disabled && autoNameStatus.kind !== "naming"
-                            ? 0.45
-                            : 1,
+                        opacity: disabled && autoNameStatus.kind !== "naming" ? 0.45 : 1,
                         flexShrink: 0,
                         fontSize: 11,
                         whiteSpace: "nowrap",
@@ -1165,9 +1092,7 @@ export function AppShell() {
                       }}
                       onMouseEnter={(e) => {
                         if (disabled) return;
-                        e.currentTarget.style.color = isError
-                          ? "#dc2626"
-                          : "var(--text)";
+                        e.currentTarget.style.color = isError ? "#dc2626" : "var(--text)";
                         e.currentTarget.style.background = "var(--bg-hover)";
                       }}
                       onMouseLeave={(e) => {
@@ -1263,10 +1188,7 @@ export function AppShell() {
                     gap: 6,
                     height: "100%",
                     padding: "0 12px",
-                    background:
-                      activeTopPanel === "system"
-                        ? "var(--bg-selected)"
-                        : "none",
+                    background: activeTopPanel === "system" ? "var(--bg-selected)" : "none",
                     border: "none",
                     borderTop:
                       activeTopPanel === "system"
@@ -1274,10 +1196,7 @@ export function AppShell() {
                         : "2px solid transparent",
                     borderRight: "1px solid var(--border)",
                     cursor: "pointer",
-                    color:
-                      activeTopPanel === "system"
-                        ? "var(--text)"
-                        : "var(--text-muted)",
+                    color: activeTopPanel === "system" ? "var(--text)" : "var(--text-muted)",
                     fontSize: 11,
                     whiteSpace: "nowrap",
                     transition: "color 0.1s, background 0.1s",
@@ -1287,9 +1206,7 @@ export function AppShell() {
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color =
-                      activeTopPanel === "system"
-                        ? "var(--text)"
-                        : "var(--text-muted)";
+                      activeTopPanel === "system" ? "var(--text)" : "var(--text-muted)";
                   }}
                 >
                   <svg
@@ -1327,16 +1244,14 @@ export function AppShell() {
                     : n >= 1000
                       ? `${(n / 1000).toFixed(0)}k`
                       : String(n);
-                const costStr =
-                  c > 0 ? (c >= 0.01 ? `$${c.toFixed(2)}` : `<$0.01`) : null;
+                const costStr = c > 0 ? (c >= 0.01 ? `$${c.toFixed(2)}` : `<$0.01`) : null;
 
                 let ctxColor = "var(--text-muted)";
                 let ctxStr: string | null = null;
                 if (contextUsage?.contextWindow) {
                   const pct = contextUsage.percent;
                   if (pct !== null && pct > 90) ctxColor = "#ef4444";
-                  else if (pct !== null && pct > 70)
-                    ctxColor = "rgba(234,179,8,0.95)";
+                  else if (pct !== null && pct > 70) ctxColor = "rgba(234,179,8,0.95)";
                   ctxStr =
                     pct !== null
                       ? `${pct.toFixed(0)}% / ${fmt(contextUsage.contextWindow)}`
@@ -1347,12 +1262,8 @@ export function AppShell() {
                 if (t) {
                   tooltipParts.push(`in: ${t.input.toLocaleString()}`);
                   tooltipParts.push(`out: ${t.output.toLocaleString()}`);
-                  tooltipParts.push(
-                    `cache read: ${t.cacheRead.toLocaleString()}`,
-                  );
-                  tooltipParts.push(
-                    `cache write: ${t.cacheWrite.toLocaleString()}`,
-                  );
+                  tooltipParts.push(`cache read: ${t.cacheRead.toLocaleString()}`);
+                  tooltipParts.push(`cache write: ${t.cacheWrite.toLocaleString()}`);
                   if (c > 0) tooltipParts.push(`cost: $${c.toFixed(4)}`);
                 }
                 if (contextUsage?.contextWindow) {
@@ -1378,10 +1289,7 @@ export function AppShell() {
                       paddingLeft: 12,
                       paddingRight: rightPanelOpen ? 12 : 48,
                       height: "100%",
-                      background:
-                        activeTopPanel === "session"
-                          ? "var(--bg-selected)"
-                          : "none",
+                      background: activeTopPanel === "session" ? "var(--bg-selected)" : "none",
                       border: "none",
                       borderTop:
                         activeTopPanel === "session"
@@ -1399,9 +1307,7 @@ export function AppShell() {
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.color =
-                        activeTopPanel === "session"
-                          ? "var(--text)"
-                          : "var(--text-muted)";
+                        activeTopPanel === "session" ? "var(--text)" : "var(--text-muted)";
                     }}
                   >
                     {isMobile && (
@@ -1628,44 +1534,19 @@ export function AppShell() {
                         ];
                         const messageRows = [
                           ["User", sessionStats.userMessages.toLocaleString()],
-                          [
-                            "Assistant",
-                            sessionStats.assistantMessages.toLocaleString(),
-                          ],
-                          [
-                            "Tool Calls",
-                            sessionStats.toolCalls.toLocaleString(),
-                          ],
-                          [
-                            "Tool Results",
-                            sessionStats.toolResults.toLocaleString(),
-                          ],
-                          [
-                            "Total",
-                            sessionStats.totalMessages.toLocaleString(),
-                          ],
+                          ["Assistant", sessionStats.assistantMessages.toLocaleString()],
+                          ["Tool Calls", sessionStats.toolCalls.toLocaleString()],
+                          ["Tool Results", sessionStats.toolResults.toLocaleString()],
+                          ["Total", sessionStats.totalMessages.toLocaleString()],
                         ];
                         const tokenRows = [
                           ["Input", sessionStats.tokens.input.toLocaleString()],
-                          [
-                            "Output",
-                            sessionStats.tokens.output.toLocaleString(),
-                          ],
+                          ["Output", sessionStats.tokens.output.toLocaleString()],
                           ...(sessionStats.tokens.cacheRead > 0
-                            ? [
-                                [
-                                  "Cache Read",
-                                  sessionStats.tokens.cacheRead.toLocaleString(),
-                                ],
-                              ]
+                            ? [["Cache Read", sessionStats.tokens.cacheRead.toLocaleString()]]
                             : []),
                           ...(sessionStats.tokens.cacheWrite > 0
-                            ? [
-                                [
-                                  "Cache Write",
-                                  sessionStats.tokens.cacheWrite.toLocaleString(),
-                                ],
-                              ]
+                            ? [["Cache Write", sessionStats.tokens.cacheWrite.toLocaleString()]]
                             : []),
                           ["Total", sessionStats.tokens.total.toLocaleString()],
                         ];
@@ -1718,10 +1599,7 @@ export function AppShell() {
                               }}
                             >
                               {sectionRows.map(([label, value]) => (
-                                <div
-                                  key={`${title}:${label}`}
-                                  style={{ display: "contents" }}
-                                >
+                                <div key={`${title}:${label}`} style={{ display: "contents" }}>
                                   <div
                                     style={{
                                       color: "var(--text-dim)",
@@ -1734,14 +1612,9 @@ export function AppShell() {
                                     style={{
                                       color: "var(--text-muted)",
                                       minWidth: 0,
-                                      overflowWrap: compact
-                                        ? "normal"
-                                        : "anywhere",
+                                      overflowWrap: compact ? "normal" : "anywhere",
                                       textAlign: valueAlign,
-                                      whiteSpace:
-                                        valueAlign === "right"
-                                          ? "nowrap"
-                                          : "normal",
+                                      whiteSpace: valueAlign === "right" ? "nowrap" : "normal",
                                     }}
                                   >
                                     {value}
@@ -1751,10 +1624,7 @@ export function AppShell() {
                             </div>
                           </div>
                         );
-                        const copyButton = (
-                          field: SessionCopyField,
-                          value: string,
-                        ) => {
+                        const copyButton = (field: SessionCopyField, value: string) => {
                           const copied = copiedSessionField === field;
                           return (
                             <button
@@ -1764,9 +1634,7 @@ export function AppShell() {
                                   ? "Copied"
                                   : `Copy ${field === "file" ? "file path" : "session ID"}`
                               }
-                              onClick={() =>
-                                handleCopySessionField(field, value)
-                              }
+                              onClick={() => handleCopySessionField(field, value)}
                               style={{
                                 alignSelf: "start",
                                 display: "inline-flex",
@@ -1775,32 +1643,25 @@ export function AppShell() {
                                 width: 22,
                                 height: 22,
                                 marginTop: -2,
-                                color: copied
-                                  ? "var(--accent)"
-                                  : "var(--text-dim)",
+                                color: copied ? "var(--accent)" : "var(--text-dim)",
                                 background: "transparent",
                                 border: "1px solid var(--border)",
                                 borderRadius: 4,
                                 cursor: "pointer",
                                 flex: "0 0 auto",
-                                transition:
-                                  "color 0.12s, border-color 0.12s, background 0.12s",
+                                transition: "color 0.12s, border-color 0.12s, background 0.12s",
                               }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.color = "var(--accent)";
-                                e.currentTarget.style.borderColor =
-                                  "var(--accent)";
-                                e.currentTarget.style.background =
-                                  "var(--bg-hover)";
+                                e.currentTarget.style.borderColor = "var(--accent)";
+                                e.currentTarget.style.background = "var(--bg-hover)";
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.color = copied
                                   ? "var(--accent)"
                                   : "var(--text-dim)";
-                                e.currentTarget.style.borderColor =
-                                  "var(--border)";
-                                e.currentTarget.style.background =
-                                  "transparent";
+                                e.currentTarget.style.borderColor = "var(--border)";
+                                e.currentTarget.style.background = "transparent";
                               }}
                             >
                               {copied ? (
@@ -1829,14 +1690,7 @@ export function AppShell() {
                                   strokeLinejoin="round"
                                   aria-hidden="true"
                                 >
-                                  <rect
-                                    x="9"
-                                    y="9"
-                                    width="13"
-                                    height="13"
-                                    rx="2"
-                                    ry="2"
-                                  />
+                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                                 </svg>
                               )}
@@ -1889,9 +1743,7 @@ export function AppShell() {
                                     {row.value}
                                   </div>
                                   <div>
-                                    {row.copyField
-                                      ? copyButton(row.copyField, row.value)
-                                      : null}
+                                    {row.copyField ? copyButton(row.copyField, row.value) : null}
                                   </div>
                                 </div>
                               ))}
@@ -1914,12 +1766,7 @@ export function AppShell() {
                           >
                             {sessionInfoSection}
                             {section("Messages", messageRows)}
-                            {section(
-                              "Tokens",
-                              [...tokenRows, ...extraTokenRows],
-                              "right",
-                              true,
-                            )}
+                            {section("Tokens", [...tokenRows, ...extraTokenRows], "right", true)}
                           </div>
                         );
                       })()
@@ -1974,9 +1821,7 @@ export function AppShell() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 14, color: "var(--text)" }}>
-                  Opening workspace...
-                </div>
+                <div style={{ fontSize: 14, color: "var(--text)" }}>Opening workspace...</div>
                 <div
                   style={{
                     maxWidth: "min(720px, 100%)",
@@ -2003,9 +1848,7 @@ export function AppShell() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 14, color: "#dc2626" }}>
-                  Unable to open workspace
-                </div>
+                <div style={{ fontSize: 14, color: "#dc2626" }}>Unable to open workspace</div>
                 <div
                   style={{
                     maxWidth: "min(720px, 100%)",
@@ -2016,9 +1859,7 @@ export function AppShell() {
                 >
                   {initialNavigation.requestedCwd}
                 </div>
-                <div style={{ maxWidth: 720, fontSize: 12 }}>
-                  {initialCwdError}
-                </div>
+                <div style={{ maxWidth: 720, fontSize: 12 }}>{initialCwdError}</div>
               </div>
             ) : showPlaceholder ? (
               activeCwd ? (
@@ -2079,20 +1920,13 @@ export function AppShell() {
                         lineHeight: 1.8,
                       }}
                     >
-                      <span
-                        style={{ color: "var(--text-dim)", marginRight: 6 }}
-                      >
-                        1.
-                      </span>
+                      <span style={{ color: "var(--text-dim)", marginRight: 6 }}>1.</span>
                       Select a project directory from the sidebar
                       <br />
-                      <span
-                        style={{ color: "var(--text-dim)", marginRight: 6 }}
-                      >
-                        2.
-                      </span>
-                      Add models via the{" "}
-                      <strong style={{ color: "var(--text)" }}>Models</strong>{" "}
+                      <span style={{ color: "var(--text-dim)", marginRight: 6 }}>2.</span>
+                      Add models via the <strong style={{ color: "var(--text)" }}>
+                        Models
+                      </strong>{" "}
                       button at the bottom
                     </div>
                   </div>
@@ -2104,7 +1938,7 @@ export function AppShell() {
 
         {/* Right panel: file viewer — always mounted, width animated via CSS */}
         <div
-          className={`right-panel-container${rightPanelOpen ? " right-panel-open" : " right-panel-closed"}`}
+          className={`right-panel-container${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`}
           style={{
             display: "flex",
             flexDirection: "column",
@@ -2141,15 +1975,9 @@ export function AppShell() {
                 cwd={activeCwd ?? undefined}
                 sourceSessionId={activeFileTab.sourceSessionId}
                 gitRefreshKey={explorerRefreshKey}
-                onMentionLines={
-                  rightPanelOpen ? handleFileLineMention : undefined
-                }
+                onMentionLines={rightPanelOpen ? handleFileLineMention : undefined}
                 onOpenFile={(filePath) =>
-                  handleOpenFile(
-                    filePath,
-                    getFileName(filePath),
-                    activeFileTab.sourceSessionId,
-                  )
+                  handleOpenFile(filePath, getFileName(filePath), activeFileTab.sourceSessionId)
                 }
               />
             ) : (
@@ -2197,9 +2025,7 @@ export function AppShell() {
           e.currentTarget.style.color = "var(--text)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.color = rightPanelOpen
-            ? "var(--text)"
-            : "var(--text-muted)";
+          e.currentTarget.style.color = rightPanelOpen ? "var(--text)" : "var(--text-muted)";
         }}
       >
         <svg
@@ -2224,29 +2050,26 @@ export function AppShell() {
           }}
         />
       )}
-      {skillsConfigOpen &&
-        (activeCwd ?? selectedSession?.cwd ?? newSessionCwd) && (
-          <SkillsConfig
-            cwd={(activeCwd ?? selectedSession?.cwd ?? newSessionCwd)!}
-            onClose={() => setSkillsConfigOpen(false)}
-          />
-        )}
-      {pluginsConfigOpen &&
-        (activeCwd ?? selectedSession?.cwd ?? newSessionCwd) && (
-          <PluginsConfig
-            cwd={(activeCwd ?? selectedSession?.cwd ?? newSessionCwd)!}
-            sessionId={selectedSession?.id ?? null}
-            onClose={() => setPluginsConfigOpen(false)}
-            onReloaded={() => setSessionKey((k) => k + 1)}
-          />
-        )}
-      {piRuntimeOpen &&
-        (activeCwd ?? selectedSession?.cwd ?? newSessionCwd) && (
-          <PiRuntimeConfig
-            cwd={(activeCwd ?? selectedSession?.cwd ?? newSessionCwd)!}
-            onClose={() => setPiRuntimeOpen(false)}
-          />
-        )}
+      {skillsConfigOpen && (activeCwd ?? selectedSession?.cwd ?? newSessionCwd) && (
+        <SkillsConfig
+          cwd={(activeCwd ?? selectedSession?.cwd ?? newSessionCwd)!}
+          onClose={() => setSkillsConfigOpen(false)}
+        />
+      )}
+      {pluginsConfigOpen && (activeCwd ?? selectedSession?.cwd ?? newSessionCwd) && (
+        <PluginsConfig
+          cwd={(activeCwd ?? selectedSession?.cwd ?? newSessionCwd)!}
+          sessionId={selectedSession?.id ?? null}
+          onClose={() => setPluginsConfigOpen(false)}
+          onReloaded={() => setSessionKey((k) => k + 1)}
+        />
+      )}
+      {piRuntimeOpen && (activeCwd ?? selectedSession?.cwd ?? newSessionCwd) && (
+        <PiRuntimeConfig
+          cwd={(activeCwd ?? selectedSession?.cwd ?? newSessionCwd)!}
+          onClose={() => setPiRuntimeOpen(false)}
+        />
+      )}
     </>
   );
 }

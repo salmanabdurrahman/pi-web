@@ -72,8 +72,16 @@ export function MermaidBlock({ code, isStreaming, defaultPreview = false }: Merm
       type="button"
       onClick={() => setShowPreview((v) => !v)}
       disabled={isStreaming}
-      title={isStreaming ? "Preview available after streaming" : (previewVisible ? "Show Mermaid source" : "Preview Mermaid diagram")}
-      className={["markdown-code-action", previewVisible ? "is-active" : ""].filter(Boolean).join(" ")}
+      title={
+        isStreaming
+          ? "Preview available after streaming"
+          : previewVisible
+            ? "Show Mermaid source"
+            : "Preview Mermaid diagram"
+      }
+      className={["markdown-code-action", previewVisible ? "is-active" : ""]
+        .filter(Boolean)
+        .join(" ")}
     >
       {previewVisible ? "Source" : "Preview"}
     </button>
@@ -83,7 +91,8 @@ export function MermaidBlock({ code, isStreaming, defaultPreview = false }: Merm
     return <CodeBlock code={code} lang="mermaid" headerAction={previewButton} />;
   }
 
-  const body = renderState?.key === currentKey && renderState.status === "error" ? (
+  const body =
+    renderState?.key === currentKey && renderState.status === "error" ? (
       <div className="mermaid-block mermaid-block-error">Invalid Mermaid diagram</div>
     ) : renderState?.key !== currentKey || renderState.status !== "ready" ? (
       <div className="mermaid-block mermaid-block-loading" aria-label="Rendering Mermaid diagram" />
@@ -159,7 +168,16 @@ function MermaidZoomDialog({ svg, onClose }: { svg: string; onClose: () => void 
                 title="Zoom out"
                 aria-label="Zoom out"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
                   <path d="M5 12h14" />
                 </svg>
               </button>
@@ -171,7 +189,16 @@ function MermaidZoomDialog({ svg, onClose }: { svg: string; onClose: () => void 
                 title="Zoom in"
                 aria-label="Zoom in"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
                   <path d="M12 5v14M5 12h14" />
                 </svg>
               </button>
@@ -183,7 +210,17 @@ function MermaidZoomDialog({ svg, onClose }: { svg: string; onClose: () => void 
               title="Fit to width"
               aria-label="Fit to width"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
               </svg>
             </button>
@@ -194,7 +231,16 @@ function MermaidZoomDialog({ svg, onClose }: { svg: string; onClose: () => void 
               title="Close"
               aria-label="Close"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
                 <path d="M6 6l12 12M18 6 6 18" />
               </svg>
             </button>
@@ -244,10 +290,7 @@ export function CodeBlock({ code, lang, headerAction }: CodeBlockProps) {
         <span className="markdown-code-lang">{lang || "text"}</span>
         <div className="markdown-code-actions">
           {headerAction}
-          <button
-            onClick={copy}
-            className="markdown-code-action"
-          >
+          <button onClick={copy} className="markdown-code-action">
             {copied ? "copied" : "copy"}
           </button>
         </div>

@@ -14,13 +14,14 @@ export const metadata: Metadata = {
   description: "Pi Web interface for the pi coding agent",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" translate="no" className={`${notoSansMono.variable} notranslate`} suppressHydrationWarning>
+    <html
+      lang="en"
+      translate="no"
+      className={`${notoSansMono.variable} notranslate`}
+      suppressHydrationWarning
+    >
       <head>
         <meta name="google" content="notranslate" />
         <script
@@ -29,7 +30,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body translate="no" className="notranslate" style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
+      <body
+        translate="no"
+        className="notranslate"
+        style={{ height: "100dvh", display: "flex", flexDirection: "column" }}
+      >
         {children}
       </body>
     </html>

@@ -1,6 +1,9 @@
 export const VISIBLE_PAGE_SIZE = 50;
 
-export function getVisibleRenderWindow(totalCount: number, visibleCount: number): {
+export function getVisibleRenderWindow(
+  totalCount: number,
+  visibleCount: number,
+): {
   startIndex: number;
   hasMore: boolean;
 } {
@@ -9,7 +12,10 @@ export function getVisibleRenderWindow(totalCount: number, visibleCount: number)
   return { startIndex, hasMore: startIndex > 0 };
 }
 
-export function getNextVisibleCount(currentVisibleCount: number, pageSize = VISIBLE_PAGE_SIZE): number {
+export function getNextVisibleCount(
+  currentVisibleCount: number,
+  pageSize = VISIBLE_PAGE_SIZE,
+): number {
   return currentVisibleCount + pageSize;
 }
 

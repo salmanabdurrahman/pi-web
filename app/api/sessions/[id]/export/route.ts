@@ -22,7 +22,8 @@ type ExportHtmlModule = {
 
 async function getPiPackageDir(): Promise<string | null> {
   try {
-    const { getPackageDir } = (await import("@earendil-works/pi-coding-agent")) as PiCodingAgentModule;
+    const { getPackageDir } =
+      (await import("@earendil-works/pi-coding-agent")) as PiCodingAgentModule;
     return getPackageDir();
   } catch {
     return null;
@@ -30,8 +31,9 @@ async function getPiPackageDir(): Promise<string | null> {
 }
 
 function encodeHeaderValue(value: string): string {
-  return encodeURIComponent(value).replace(/[!'()*]/g, (ch) =>
-    `%${ch.charCodeAt(0).toString(16).toUpperCase()}`
+  return encodeURIComponent(value).replace(
+    /[!'()*]/g,
+    (ch) => `%${ch.charCodeAt(0).toString(16).toUpperCase()}`,
   );
 }
 
@@ -50,9 +52,11 @@ async function getPiCliPath(): Promise<string | null> {
   }
 
   try {
-    const resolver = (import.meta as ImportMeta & {
-      resolve?: (specifier: string) => string | Promise<string>;
-    }).resolve;
+    const resolver = (
+      import.meta as ImportMeta & {
+        resolve?: (specifier: string) => string | Promise<string>;
+      }
+    ).resolve;
     if (typeof resolver === "function") {
       const indexUrl = await resolver("@earendil-works/pi-coding-agent");
       candidates.add(join(dirname(fileURLToPath(indexUrl)), "cli.js"));
@@ -62,14 +66,7 @@ async function getPiCliPath(): Promise<string | null> {
   }
 
   candidates.add(
-    join(
-      process.cwd(),
-      "node_modules",
-      "@earendil-works",
-      "pi-coding-agent",
-      "dist",
-      "cli.js"
-    )
+    join(process.cwd(), "node_modules", "@earendil-works", "pi-coding-agent", "dist", "cli.js"),
   );
 
   for (const candidate of candidates) {
@@ -157,7 +154,7 @@ function patchExportHtml(html: string): string {
               stack.push(node.children[i]);
             }
           }
-        }`
+        }`,
   );
 
   html = replaceRequired(
@@ -175,7 +172,7 @@ function patchExportHtml(html: string): string {
             for (let i = node.children.length - 1; i >= 0; i--) {
               stack.push(node.children[i]);
             }
-          }`
+          }`,
   );
 
   html = replaceRequired(
@@ -208,7 +205,7 @@ function patchExportHtml(html: string): string {
             }
             containsActive.set(node, has);
           }
-        }`
+        }`,
   );
 
   return html;
@@ -233,15 +230,14 @@ async function exportSession(filePath: string, outputPath: string): Promise<void
   const packageDir = await getPiPackageDir();
   if (!packageDir) throw new Error("pi CLI not found");
 
-  const exporterUrl = pathToFileURL(join(packageDir, "dist", "core", "export-html", "index.js")).href;
+  const exporterUrl = pathToFileURL(
+    join(packageDir, "dist", "core", "export-html", "index.js"),
+  ).href;
   const { exportFromFile } = (await import(exporterUrl)) as ExportHtmlModule;
   await exportFromFile(filePath, outputPath);
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const inline = new URL(req.url).searchParams.get("inline") === "1";
 

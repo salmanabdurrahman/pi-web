@@ -16,9 +16,7 @@ const mermaidSrc = `sequenceDiagram
     Bob-->>Alice: Hi`;
 
 test("MermaidBlock renders source by default", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(MermaidBlock, { code: mermaidSrc }),
-  );
+  const html = renderToStaticMarkup(React.createElement(MermaidBlock, { code: mermaidSrc }));
 
   assert.match(html, />Preview</);
   assert.match(html, /Alice/);
@@ -37,7 +35,11 @@ test("MermaidBlock can render preview by default", () => {
 
 test("MermaidBlock with isStreaming falls back to source view", () => {
   const html = renderToStaticMarkup(
-    React.createElement(MermaidBlock, { code: mermaidSrc, isStreaming: true, defaultPreview: true }),
+    React.createElement(MermaidBlock, {
+      code: mermaidSrc,
+      isStreaming: true,
+      defaultPreview: true,
+    }),
   );
 
   assert.match(html, /disabled/);

@@ -12,10 +12,14 @@ const { MarkdownBody } = await jiti.import("./MarkdownBody.tsx");
 
 function renderMarkdown(markdown) {
   return renderToStaticMarkup(
-    React.createElement(MarkdownBody, {
-      cwd: "/home/me/project",
-      onOpenFile() {},
-    }, markdown),
+    React.createElement(
+      MarkdownBody,
+      {
+        cwd: "/home/me/project",
+        onOpenFile() {},
+      },
+      markdown,
+    ),
   );
 }
 

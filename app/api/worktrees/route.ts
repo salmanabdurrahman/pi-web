@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { existsSync } from "fs";
 import { addWorktree, listWorktrees, removeWorktree, resolveProject } from "@/lib/worktree";
-import { allowFileRoot, getAllowedFileRoots, isExistingFilePathAllowed, isFilePathAllowed } from "@/lib/file-access";
+import {
+  allowFileRoot,
+  getAllowedFileRoots,
+  isExistingFilePathAllowed,
+  isFilePathAllowed,
+} from "@/lib/file-access";
 
 /** Same gate as /api/files: only session cwds / project roots / explicitly
  *  allowed dirs may be inspected or mutated through this endpoint. */
@@ -51,7 +56,7 @@ export async function GET(req: Request) {
 // POST /api/worktrees  body: { cwd, branch }  →  { path, branch }
 export async function POST(req: Request) {
   try {
-    const body = await req.json() as { cwd?: string; branch?: string };
+    const body = (await req.json()) as { cwd?: string; branch?: string };
     if (!body.cwd || typeof body.cwd !== "string") {
       return NextResponse.json({ error: "cwd is required" }, { status: 400 });
     }
@@ -75,7 +80,7 @@ export async function POST(req: Request) {
 // DELETE /api/worktrees  body: { cwd, path, force? }
 export async function DELETE(req: Request) {
   try {
-    const body = await req.json() as { cwd?: string; path?: string; force?: boolean };
+    const body = (await req.json()) as { cwd?: string; path?: string; force?: boolean };
     if (!body.cwd || typeof body.cwd !== "string") {
       return NextResponse.json({ error: "cwd is required" }, { status: 400 });
     }

@@ -99,10 +99,14 @@ function packageSourceToString(pkg: PackageSource): string {
 function isDisabledPackage(pkg: PackageSource): boolean {
   if (typeof pkg === "string") return false;
   return (
-    Array.isArray(pkg.extensions) && pkg.extensions.length === 0 &&
-    Array.isArray(pkg.skills) && pkg.skills.length === 0 &&
-    Array.isArray(pkg.prompts) && pkg.prompts.length === 0 &&
-    Array.isArray(pkg.themes) && pkg.themes.length === 0
+    Array.isArray(pkg.extensions) &&
+    pkg.extensions.length === 0 &&
+    Array.isArray(pkg.skills) &&
+    pkg.skills.length === 0 &&
+    Array.isArray(pkg.prompts) &&
+    pkg.prompts.length === 0 &&
+    Array.isArray(pkg.themes) &&
+    pkg.themes.length === 0
   );
 }
 
@@ -313,9 +317,7 @@ export async function GET(req: Request) {
       },
       project: {
         hasSettings: projectHasSettings,
-        packages: projectHasSettings
-          ? { count: projectPackages.length }
-          : null,
+        packages: projectHasSettings ? { count: projectPackages.length } : null,
       },
       resources: {
         skills: { count: resourceSkillsCount, diagnostics: resourceDiagnosticsCount },
@@ -343,7 +345,9 @@ export async function GET(req: Request) {
           piStatus: global.piStatus ?? null,
           compaction: global.compaction ? redactValue("compaction", global.compaction) : null,
           retry: global.retry ? redactValue("retry", global.retry) : null,
-          branchSummary: global.branchSummary ? redactValue("branchSummary", global.branchSummary) : null,
+          branchSummary: global.branchSummary
+            ? redactValue("branchSummary", global.branchSummary)
+            : null,
           packages: {
             count: (global.packages ?? []).length,
             loaded: 0,

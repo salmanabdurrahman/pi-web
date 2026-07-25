@@ -6,7 +6,9 @@ export async function GET() {
   const modelRuntime = await ModelRuntime.create();
   const credentials = await modelRuntime.listCredentials();
   const loggedInProviders = new Set(
-    credentials.filter((credential) => credential.type === "oauth").map((credential) => credential.providerId),
+    credentials
+      .filter((credential) => credential.type === "oauth")
+      .map((credential) => credential.providerId),
   );
   const providers = modelRuntime.getProviders().filter((provider) => provider.auth.oauth);
 
@@ -26,7 +28,7 @@ export async function GET() {
           usesCallbackServer: false,
           loggedIn: loggedInProviders.has(p.id),
         };
-      })
+      }),
   );
 
   return Response.json({ providers: result });

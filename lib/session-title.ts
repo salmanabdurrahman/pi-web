@@ -78,14 +78,12 @@ export function appendTitleRequestToTrailingUser(messages: AgentMessage[]): Agen
   const lastMessage = messages.at(-1);
   if (!lastMessage || lastMessage.role !== "user") return messages;
 
-  const content = typeof lastMessage.content === "string"
-    ? `${lastMessage.content}\n\n${TITLE_PROMPT}`
-    : [...lastMessage.content, { type: "text" as const, text: TITLE_PROMPT }];
+  const content =
+    typeof lastMessage.content === "string"
+      ? `${lastMessage.content}\n\n${TITLE_PROMPT}`
+      : [...lastMessage.content, { type: "text" as const, text: TITLE_PROMPT }];
 
-  return [
-    ...messages.slice(0, -1),
-    { ...lastMessage, content },
-  ];
+  return [...messages.slice(0, -1), { ...lastMessage, content }];
 }
 
 function stripWrappingQuotes(value: string): string {
@@ -98,7 +96,11 @@ function stripWrappingQuotes(value: string): string {
     ["\u300e", "\u300f"],
   ];
   for (const [start, end] of pairs) {
-    if (value.startsWith(start) && value.endsWith(end) && value.length > start.length + end.length) {
+    if (
+      value.startsWith(start) &&
+      value.endsWith(end) &&
+      value.length > start.length + end.length
+    ) {
       return value.slice(start.length, -end.length).trim();
     }
   }
@@ -151,15 +153,17 @@ function getAssistantResult(agent: Agent, historyLength: number): GeneratedSessi
     if (!text) continue;
     return {
       title: parseGeneratedSessionTitle(text),
-      ...(message.usage ? {
-        usage: {
-          input: message.usage.input,
-          output: message.usage.output,
-          cacheRead: message.usage.cacheRead,
-          cacheWrite: message.usage.cacheWrite,
-          total: message.usage.totalTokens,
-        },
-      } : {}),
+      ...(message.usage
+        ? {
+            usage: {
+              input: message.usage.input,
+              output: message.usage.output,
+              cacheRead: message.usage.cacheRead,
+              cacheWrite: message.usage.cacheWrite,
+              total: message.usage.totalTokens,
+            },
+          }
+        : {}),
     };
   }
   throw new Error("The model did not return a session title");

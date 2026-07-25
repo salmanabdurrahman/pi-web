@@ -4,10 +4,7 @@ import { generateSessionTitle } from "@/lib/session-title";
 import { getRpcSession, startRpcSession } from "@/lib/rpc-manager";
 import { invalidateSessionListCache, resolveSessionPath } from "@/lib/session-reader";
 
-export async function POST(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   try {

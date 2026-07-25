@@ -1,5 +1,15 @@
-import { createAgentSessionFromServices, createAgentSessionServices, getAgentDir, initTheme, SessionManager, Theme } from "@earendil-works/pi-coding-agent";
-import { KeybindingsManager as TuiKeybindingsManager, TUI_KEYBINDINGS } from "@earendil-works/pi-tui";
+import {
+  createAgentSessionFromServices,
+  createAgentSessionServices,
+  getAgentDir,
+  initTheme,
+  SessionManager,
+  Theme,
+} from "@earendil-works/pi-coding-agent";
+import {
+  KeybindingsManager as TuiKeybindingsManager,
+  TUI_KEYBINDINGS,
+} from "@earendil-works/pi-tui";
 import { randomUUID } from "crypto";
 import { existsSync, writeFileSync } from "fs";
 import { validateAgentImages } from "./image-attachments";
@@ -50,7 +60,10 @@ type ExtensionCommandContextActionsLike = {
   waitForIdle: () => Promise<void>;
   newSession: () => Promise<{ cancelled: boolean }>;
   fork: () => Promise<{ cancelled: boolean }>;
-  navigateTree: (targetId: string, options?: { summarize?: boolean }) => Promise<{ cancelled: boolean }>;
+  navigateTree: (
+    targetId: string,
+    options?: { summarize?: boolean },
+  ) => Promise<{ cancelled: boolean }>;
   switchSession: () => Promise<{ cancelled: boolean }>;
   reload: () => Promise<void>;
 };
@@ -71,19 +84,39 @@ class PlainTextTheme extends Theme {
     );
   }
 
-  override fg(...[, text]: Parameters<Theme["fg"]>): string { return text; }
-  override bg(...[, text]: Parameters<Theme["bg"]>): string { return text; }
-  override bold(text: string): string { return text; }
-  override italic(text: string): string { return text; }
-  override underline(text: string): string { return text; }
-  override inverse(text: string): string { return text; }
-  override strikethrough(text: string): string { return text; }
-  override getFgAnsi(): string { return ""; }
-  override getBgAnsi(): string { return ""; }
+  override fg(...[, text]: Parameters<Theme["fg"]>): string {
+    return text;
+  }
+  override bg(...[, text]: Parameters<Theme["bg"]>): string {
+    return text;
+  }
+  override bold(text: string): string {
+    return text;
+  }
+  override italic(text: string): string {
+    return text;
+  }
+  override underline(text: string): string {
+    return text;
+  }
+  override inverse(text: string): string {
+    return text;
+  }
+  override strikethrough(text: string): string {
+    return text;
+  }
+  override getFgAnsi(): string {
+    return "";
+  }
+  override getBgAnsi(): string {
+    return "";
+  }
   override getThinkingBorderColor(): (text: string) => string {
     return (text) => text;
   }
-  override getBashModeBorderColor(): (text: string) => string { return (text) => text; }
+  override getBashModeBorderColor(): (text: string) => string {
+    return (text) => text;
+  }
 }
 
 const PLAIN_TEXT_THEME = new PlainTextTheme();
@@ -138,7 +171,13 @@ export class AgentSessionWrapper {
   }
 
   isRunning(): boolean {
-    return this._alive && (this.promptRunning || this.inner.isStreaming || this.inner.isCompacting || this.inner.isBashRunning);
+    return (
+      this._alive &&
+      (this.promptRunning ||
+        this.inner.isStreaming ||
+        this.inner.isCompacting ||
+        this.inner.isBashRunning)
+    );
   }
 
   start(): void {
@@ -163,7 +202,10 @@ export class AgentSessionWrapper {
 
   beginExtensionBinding(options: ExtensionBindingOptions = {}): void {
     void this.ensureExtensionsBound(options).catch((err) => {
-      console.error("[pi-web] failed to dispatch session_start to extensions:", err instanceof Error ? err.message : err);
+      console.error(
+        "[pi-web] failed to dispatch session_start to extensions:",
+        err instanceof Error ? err.message : err,
+      );
     });
   }
 
@@ -195,26 +237,30 @@ export class AgentSessionWrapper {
           uiContext,
           mode: "rpc",
           commandContextActions: this.createExtensionCommandContextActions(),
-          shutdownHandler: () => this.emit({
-            type: "extension_ui_request",
-            id: randomUUID(),
-            method: "notify",
-            notifyType: "warning",
-            message: "Extension requested shutdown, but shutdown is not supported in Pi Web.",
-          } as ExtensionUiRequest as AgentEvent),
-          onError: (error) => this.emit({
-            type: "extension_error",
-            extensionPath: error.extensionPath,
-            event: error.event,
-            error: error.error,
-          }),
+          shutdownHandler: () =>
+            this.emit({
+              type: "extension_ui_request",
+              id: randomUUID(),
+              method: "notify",
+              notifyType: "warning",
+              message: "Extension requested shutdown, but shutdown is not supported in Pi Web.",
+            } as ExtensionUiRequest as AgentEvent),
+          onError: (error) =>
+            this.emit({
+              type: "extension_error",
+              extensionPath: error.extensionPath,
+              event: error.event,
+              error: error.error,
+            }),
         });
       } else {
         this.inner.extensionRunner.setUIContext?.(uiContext, "rpc");
       }
       this.extensionsBound = true;
       this.applyForcedEmptySystemPrompt();
-      console.log(`[pi-web] session_start dispatched to extensions for session ${this.inner.sessionId}`);
+      console.log(
+        `[pi-web] session_start dispatched to extensions for session ${this.inner.sessionId}`,
+      );
     })().catch((err) => {
       this.extensionBindingError = err;
       throw err;
@@ -260,13 +306,16 @@ export class AgentSessionWrapper {
 
   private resetIdleTimer(): void {
     if (this.idleTimer) clearTimeout(this.idleTimer);
-    this.idleTimer = setTimeout(() => {
-      if (this.isRunning()) {
-        this.resetIdleTimer();
-        return;
-      }
-      this.destroy();
-    }, 10 * 60 * 1000);
+    this.idleTimer = setTimeout(
+      () => {
+        if (this.isRunning()) {
+          this.resetIdleTimer();
+          return;
+        }
+        this.destroy();
+      },
+      10 * 60 * 1000,
+    );
   }
 
   private persistBashOnlySession(): void {
@@ -277,9 +326,8 @@ export class AgentSessionWrapper {
     const header = manager.getHeader();
     if (!header) return;
 
-    const content = [header, ...manager.getEntries()]
-      .map((entry) => JSON.stringify(entry))
-      .join("\n") + "\n";
+    const content =
+      [header, ...manager.getEntries()].map((entry) => JSON.stringify(entry)).join("\n") + "\n";
     writeFileSync(sessionFile, content, { encoding: "utf8", flag: "wx" });
 
     // Pi normally delays the first flush until an assistant message exists.
@@ -318,28 +366,32 @@ export class AgentSessionWrapper {
           throw new Error("Cannot send a prompt while a shell command is running");
         }
         // Fire and forget — events come via subscribe
-        const promptImages = command.images as Array<{ type: "image"; data: string; mimeType: string }> | undefined;
+        const promptImages = command.images as
+          Array<{ type: "image"; data: string; mimeType: string }> | undefined;
         const streamingBehavior = command.streamingBehavior as "steer" | "followUp" | undefined;
         this.promptRunning = true;
         notifyRunningChange();
-        this.inner.prompt(command.message as string, {
-          ...(promptImages?.length ? { images: promptImages } : {}),
-          ...(streamingBehavior ? { streamingBehavior } : {}),
-          source: "rpc",
-        }).then(() => {
-          this.promptRunning = false;
-          if (!streamingBehavior) this.emit({ type: "prompt_done" });
-          notifyRunningChange();
-        }).catch((error) => {
-          this.promptRunning = false;
-          invalidateSessionListCache();
-          this.emit({
-            type: "prompt_error",
-            errorMessage: error instanceof Error ? error.message : String(error),
+        this.inner
+          .prompt(command.message as string, {
+            ...(promptImages?.length ? { images: promptImages } : {}),
+            ...(streamingBehavior ? { streamingBehavior } : {}),
+            source: "rpc",
+          })
+          .then(() => {
+            this.promptRunning = false;
+            if (!streamingBehavior) this.emit({ type: "prompt_done" });
+            notifyRunningChange();
+          })
+          .catch((error) => {
+            this.promptRunning = false;
+            invalidateSessionListCache();
+            this.emit({
+              type: "prompt_error",
+              errorMessage: error instanceof Error ? error.message : String(error),
+            });
+            if (!streamingBehavior) this.emit({ type: "prompt_done" });
+            notifyRunningChange();
           });
-          if (!streamingBehavior) this.emit({ type: "prompt_done" });
-          notifyRunningChange();
-        });
         return null;
       }
 
@@ -367,7 +419,11 @@ export class AgentSessionWrapper {
             followUp: [...this.inner.getFollowUpMessages()],
           },
           contextUsage: contextUsage
-            ? { percent: contextUsage.percent, contextWindow: contextUsage.contextWindow, tokens: contextUsage.tokens }
+            ? {
+                percent: contextUsage.percent,
+                contextWindow: contextUsage.contextWindow,
+                tokens: contextUsage.tokens,
+              }
             : null,
           systemPrompt: this.inner.agent.state?.systemPrompt ?? "",
           thinkingLevel: this.inner.agent.state?.thinkingLevel ?? "off",
@@ -441,7 +497,12 @@ export class AgentSessionWrapper {
         // setThinkingLevel clamps xhigh→high for models where supportsXhigh()===false.
         // If the model has DeepSeek thinking compat (reasoningEffortMap maps xhigh→max),
         // force the state back so the compat layer can use it correctly.
-        if (level === "xhigh" && (this.inner.model as { compat?: { thinkingFormat?: string } } | null)?.compat?.thinkingFormat === "deepseek" && this.inner.agent?.state) {
+        if (
+          level === "xhigh" &&
+          (this.inner.model as { compat?: { thinkingFormat?: string } } | null)?.compat
+            ?.thinkingFormat === "deepseek" &&
+          this.inner.agent?.state
+        ) {
           this.inner.agent.state.thinkingLevel = "xhigh";
         }
         invalidateSessionListCache();
@@ -451,7 +512,7 @@ export class AgentSessionWrapper {
       case "compact": {
         try {
           return await this.withFinalRunningNotification(() =>
-            this.inner.compact(command.customInstructions as string | undefined)
+            this.inner.compact(command.customInstructions as string | undefined),
           );
         } finally {
           invalidateSessionListCache();
@@ -489,14 +550,22 @@ export class AgentSessionWrapper {
       }
 
       case "steer": {
-        const steerImages = command.images as Array<{ type: "image"; data: string; mimeType: string }> | undefined;
-        await this.inner.steer(command.message as string, steerImages?.length ? steerImages : undefined);
+        const steerImages = command.images as
+          Array<{ type: "image"; data: string; mimeType: string }> | undefined;
+        await this.inner.steer(
+          command.message as string,
+          steerImages?.length ? steerImages : undefined,
+        );
         return null;
       }
 
       case "follow_up": {
-        const followImages = command.images as Array<{ type: "image"; data: string; mimeType: string }> | undefined;
-        await this.inner.followUp(command.message as string, followImages?.length ? followImages : undefined);
+        const followImages = command.images as
+          Array<{ type: "image"; data: string; mimeType: string }> | undefined;
+        await this.inner.followUp(
+          command.message as string,
+          followImages?.length ? followImages : undefined,
+        );
         return null;
       }
 
@@ -580,14 +649,17 @@ export class AgentSessionWrapper {
       }
 
       case "bash": {
-        if (this.promptRunning || this.inner.isStreaming || this.inner.isCompacting || this.inner.isBashRunning) {
+        if (
+          this.promptRunning ||
+          this.inner.isStreaming ||
+          this.inner.isCompacting ||
+          this.inner.isBashRunning
+        ) {
           throw new Error("Cannot run a shell command while the session is busy");
         }
-        const execution = this.inner.executeBash(
-          command.command as string,
-          undefined,
-          { excludeFromContext: command.excludeFromContext as boolean | undefined },
-        );
+        const execution = this.inner.executeBash(command.command as string, undefined, {
+          excludeFromContext: command.excludeFromContext as boolean | undefined,
+        });
         notifyRunningChange();
         try {
           const result = await execution;
@@ -653,7 +725,9 @@ export class AgentSessionWrapper {
     try {
       lines = custom.component.render(custom.width);
     } catch (error) {
-      lines = [`Extension custom UI render failed: ${error instanceof Error ? error.message : String(error)}`];
+      lines = [
+        `Extension custom UI render failed: ${error instanceof Error ? error.message : String(error)}`,
+      ];
     }
     const event = {
       type: "extension_ui_request",
@@ -703,10 +777,7 @@ export class AgentSessionWrapper {
     }
   }
 
-  private requestExtensionCustomUi<T>(
-    factory: unknown,
-    options?: unknown,
-  ): Promise<T> {
+  private requestExtensionCustomUi<T>(factory: unknown, options?: unknown): Promise<T> {
     if (typeof factory !== "function") return Promise.resolve(undefined as T);
 
     const id = randomUUID();
@@ -714,13 +785,10 @@ export class AgentSessionWrapper {
 
     return new Promise<T>((resolve) => {
       let completed = false;
-      const tui = createHeadlessCustomUiTui(
-        () => {
-          const custom = this.activeCustomUis.get(id);
-          if (custom) this.emitCustomUiRender(id, custom);
-        },
-        width,
-      );
+      const tui = createHeadlessCustomUiTui(() => {
+        const custom = this.activeCustomUis.get(id);
+        if (custom) this.emitCustomUiRender(id, custom);
+      }, width);
       const finish = (value: T) => {
         if (completed) return;
         completed = true;
@@ -745,7 +813,11 @@ export class AgentSessionWrapper {
             }
             return;
           }
-          if (!component || typeof component !== "object" || typeof (component as CustomUiComponent).render !== "function") {
+          if (
+            !component ||
+            typeof component !== "object" ||
+            typeof (component as CustomUiComponent).render !== "function"
+          ) {
             finish(undefined as T);
             return;
           }
@@ -816,34 +888,53 @@ export class AgentSessionWrapper {
 
   private createExtensionUiContext(): ExtensionUiContextLike {
     return {
-      select: (title, options, opts) => this.requestExtensionUi(
-        { method: "select", title, options, ...(opts?.timeout ? { timeout: opts.timeout } : {}) },
-        undefined,
-        (response) => "value" in response ? response.value : undefined,
-        opts?.timeout,
-        opts?.signal,
-      ),
-      confirm: (title, message, opts) => this.requestExtensionUi(
-        { method: "confirm", title, message, ...(opts?.timeout ? { timeout: opts.timeout } : {}) },
-        false,
-        (response) => "confirmed" in response ? response.confirmed : false,
-        opts?.timeout,
-        opts?.signal,
-      ),
-      input: (title, placeholder, opts) => this.requestExtensionUi(
-        { method: "input", title, ...(placeholder !== undefined ? { placeholder } : {}), ...(opts?.timeout ? { timeout: opts.timeout } : {}) },
-        undefined,
-        (response) => "value" in response ? response.value : undefined,
-        opts?.timeout,
-        opts?.signal,
-      ),
-      editor: (title, prefill, opts) => this.requestExtensionUi(
-        { method: "editor", title, ...(prefill !== undefined ? { prefill } : {}), ...(opts?.timeout ? { timeout: opts.timeout } : {}) },
-        undefined,
-        (response) => "value" in response ? response.value : undefined,
-        opts?.timeout,
-        opts?.signal,
-      ),
+      select: (title, options, opts) =>
+        this.requestExtensionUi(
+          { method: "select", title, options, ...(opts?.timeout ? { timeout: opts.timeout } : {}) },
+          undefined,
+          (response) => ("value" in response ? response.value : undefined),
+          opts?.timeout,
+          opts?.signal,
+        ),
+      confirm: (title, message, opts) =>
+        this.requestExtensionUi(
+          {
+            method: "confirm",
+            title,
+            message,
+            ...(opts?.timeout ? { timeout: opts.timeout } : {}),
+          },
+          false,
+          (response) => ("confirmed" in response ? response.confirmed : false),
+          opts?.timeout,
+          opts?.signal,
+        ),
+      input: (title, placeholder, opts) =>
+        this.requestExtensionUi(
+          {
+            method: "input",
+            title,
+            ...(placeholder !== undefined ? { placeholder } : {}),
+            ...(opts?.timeout ? { timeout: opts.timeout } : {}),
+          },
+          undefined,
+          (response) => ("value" in response ? response.value : undefined),
+          opts?.timeout,
+          opts?.signal,
+        ),
+      editor: (title, prefill, opts) =>
+        this.requestExtensionUi(
+          {
+            method: "editor",
+            title,
+            ...(prefill !== undefined ? { prefill } : {}),
+            ...(opts?.timeout ? { timeout: opts.timeout } : {}),
+          },
+          undefined,
+          (response) => ("value" in response ? response.value : undefined),
+          opts?.timeout,
+          opts?.signal,
+        ),
       notify: (message, type) => {
         this.emit({
           type: "extension_ui_request",
@@ -899,7 +990,8 @@ export class AgentSessionWrapper {
           title,
         } as ExtensionUiRequest as AgentEvent);
       },
-      custom: <T = unknown>(factory: unknown, options?: unknown) => this.requestExtensionCustomUi<T>(factory, options),
+      custom: <T = unknown>(factory: unknown, options?: unknown) =>
+        this.requestExtensionCustomUi<T>(factory, options),
       pasteToEditor: (text) => {
         this.emit({
           type: "extension_ui_request",
@@ -920,10 +1012,15 @@ export class AgentSessionWrapper {
       addAutocompleteProvider: () => {},
       setEditorComponent: () => {},
       getEditorComponent: () => undefined,
-      get theme() { return PLAIN_TEXT_THEME; },
+      get theme() {
+        return PLAIN_TEXT_THEME;
+      },
       getAllThemes: () => [],
       getTheme: () => undefined,
-      setTheme: () => ({ success: false, error: "Theme switching is not supported in Pi Web extension UI yet" }),
+      setTheme: () => ({
+        success: false,
+        error: "Theme switching is not supported in Pi Web extension UI yet",
+      }),
       getToolsExpanded: () => false,
       setToolsExpanded: () => {},
     };
@@ -962,7 +1059,8 @@ export class AgentSessionWrapper {
 
 declare global {
   var __piSessions: Map<string, AgentSessionWrapper> | undefined;
-  var __piStartLocks: Map<string, Promise<{ session: AgentSessionWrapper; realSessionId: string }>> | undefined;
+  var __piStartLocks:
+    Map<string, Promise<{ session: AgentSessionWrapper; realSessionId: string }>> | undefined;
   var __piRunningListeners: Set<(ids: string[]) => void> | undefined;
 }
 
@@ -1012,7 +1110,9 @@ function getRunningListeners(): Set<(ids: string[]) => void> {
 export function subscribeRunningSessions(listener: (ids: string[]) => void): () => void {
   const listeners = getRunningListeners();
   listeners.add(listener);
-  return () => { listeners.delete(listener); };
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 let lastRunningSnapshot = "";
@@ -1027,7 +1127,11 @@ export function notifyRunningChange(): void {
   if (snapshot === lastRunningSnapshot) return;
   lastRunningSnapshot = snapshot;
   for (const listener of getRunningListeners()) {
-    try { listener(ids); } catch { /* ignore listener errors */ }
+    try {
+      listener(ids);
+    } catch {
+      /* ignore listener errors */
+    }
   }
 }
 
@@ -1040,7 +1144,7 @@ export async function startRpcSession(
   sessionId: string,
   sessionFile: string,
   cwd: string,
-  toolNames?: string[]
+  toolNames?: string[],
 ): Promise<{ session: AgentSessionWrapper; realSessionId: string }> {
   const registry = getRegistry();
   const locks = getLocks();

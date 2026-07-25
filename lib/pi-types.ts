@@ -94,7 +94,11 @@ export interface ExtensionUiContextLike {
   setWorkingVisible(visible: boolean): void;
   setWorkingIndicator(options?: { frames?: string[]; intervalMs?: number }): void;
   setHiddenThinkingLabel(label?: string): void;
-  setWidget(key: string, content: string[] | ((...args: never[]) => unknown) | undefined, options?: WidgetOptionsLike): void;
+  setWidget(
+    key: string,
+    content: string[] | ((...args: never[]) => unknown) | undefined,
+    options?: WidgetOptionsLike,
+  ): void;
   setFooter(factory: unknown): void;
   setHeader(factory: unknown): void;
   setTitle(title: string): void;
@@ -135,13 +139,26 @@ export interface AgentSessionLike {
   readonly bindExtensions?: unknown;
   reload(options?: { beforeSessionStart?: () => void | Promise<void> }): Promise<void>;
   subscribe(listener: (event: AgentSessionEvent) => void): () => void;
-  prompt(text: string, options?: {
-    images?: Array<{ type: "image"; data: string; mimeType: string }>;
-    streamingBehavior?: "steer" | "followUp";
-    source?: "interactive" | "rpc";
-  }): Promise<void>;
+  prompt(
+    text: string,
+    options?: {
+      images?: Array<{ type: "image"; data: string; mimeType: string }>;
+      streamingBehavior?: "steer" | "followUp";
+      source?: "interactive" | "rpc";
+    },
+  ): Promise<void>;
   abort(): Promise<void>;
-  executeBash(command: string, onChunk?: (chunk: string) => void, options?: { excludeFromContext?: boolean }): Promise<{ output: string; exitCode?: number; cancelled?: boolean; truncated?: boolean; fullOutputPath?: string }>;
+  executeBash(
+    command: string,
+    onChunk?: (chunk: string) => void,
+    options?: { excludeFromContext?: boolean },
+  ): Promise<{
+    output: string;
+    exitCode?: number;
+    cancelled?: boolean;
+    truncated?: boolean;
+    fullOutputPath?: string;
+  }>;
   abortBash(): void;
   readonly isBashRunning: boolean;
   setModel(model: ModelLike): Promise<void>;
@@ -153,8 +170,14 @@ export interface AgentSessionLike {
   getLastAssistantText(): string | undefined;
   setAutoCompactionEnabled(enabled: boolean): void;
   setAutoRetryEnabled(enabled: boolean): void;
-  steer(text: string, images?: Array<{ type: "image"; data: string; mimeType: string }>): Promise<void>;
-  followUp(text: string, images?: Array<{ type: "image"; data: string; mimeType: string }>): Promise<void>;
+  steer(
+    text: string,
+    images?: Array<{ type: "image"; data: string; mimeType: string }>,
+  ): Promise<void>;
+  followUp(
+    text: string,
+    images?: Array<{ type: "image"; data: string; mimeType: string }>,
+  ): Promise<void>;
   readonly pendingMessageCount: number;
   getSteeringMessages(): readonly string[];
   getFollowUpMessages(): readonly string[];
