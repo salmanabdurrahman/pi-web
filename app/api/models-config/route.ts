@@ -36,7 +36,10 @@ function validateModelsShape(body: unknown): string | null {
     return "body must be a JSON object";
   }
   const obj = body as Record<string, unknown>;
-  if (obj.providers !== undefined && (typeof obj.providers !== "object" || obj.providers === null || Array.isArray(obj.providers))) {
+  if (
+    obj.providers !== undefined &&
+    (typeof obj.providers !== "object" || obj.providers === null || Array.isArray(obj.providers))
+  ) {
     return "providers must be an object if present";
   }
   // Validate each provider entry has a reasonable structure

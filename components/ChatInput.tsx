@@ -2482,63 +2482,74 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
                                   gap: 6,
                                 }}
                               >
-                              <span
-                                style={{
-                                  width: 6,
-                                  height: 6,
-                                  borderRadius: "50%",
-                                  background:
-                                    group.origin === "package"
-                                      ? "var(--accent)"
-                                      : "var(--text-dim)",
-                                  flexShrink: 0,
-                                }}
-                              />
-                              <span
-                                style={{
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {source}
-                              </span>
-                              <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>
-                                {group.tools.length}
-                              </span>
-                            </div>
-                            {/* MCP server details */}
-                            {group.mcpServers && Object.keys(group.mcpServers).length > 0 && (
-                              <div style={{ paddingLeft: 22, paddingBottom: 2 }}>
-                                {Object.entries(group.mcpServers).map(([server, info]) => (
-                                  <div
-                                    key={server}
-                                    style={{
-                                      padding: "2px 8px",
-                                      color: "var(--text-dim)",
-                                      fontSize: 10,
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 4,
-                                    }}
-                                    title={`${info.activeCount}/${info.toolCount} tools active`}
-                                  >
-                                    <span style={{
-                                      width: 5, height: 5, borderRadius: "50%",
-                                      background: info.activeCount > 0 ? "#22c55e" : "var(--text-dim)",
-                                      flexShrink: 0,
-                                      opacity: 0.7,
-                                    }} />
-                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                      {server}
-                                    </span>
-                                    <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>
-                                      {info.toolCount}
-                                    </span>
-                                  </div>
-                                ))}
+                                <span
+                                  style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    background:
+                                      group.origin === "package"
+                                        ? "var(--accent)"
+                                        : "var(--text-dim)",
+                                    flexShrink: 0,
+                                  }}
+                                />
+                                <span
+                                  style={{
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {source}
+                                </span>
+                                <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>
+                                  {group.tools.length}
+                                </span>
                               </div>
-                            )}
+                              {/* MCP server details */}
+                              {group.mcpServers && Object.keys(group.mcpServers).length > 0 && (
+                                <div style={{ paddingLeft: 22, paddingBottom: 2 }}>
+                                  {Object.entries(group.mcpServers).map(([server, info]) => (
+                                    <div
+                                      key={server}
+                                      style={{
+                                        padding: "2px 8px",
+                                        color: "var(--text-dim)",
+                                        fontSize: 10,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 4,
+                                      }}
+                                      title={`${info.activeCount}/${info.toolCount} tools active`}
+                                    >
+                                      <span
+                                        style={{
+                                          width: 5,
+                                          height: 5,
+                                          borderRadius: "50%",
+                                          background:
+                                            info.activeCount > 0 ? "#22c55e" : "var(--text-dim)",
+                                          flexShrink: 0,
+                                          opacity: 0.7,
+                                        }}
+                                      />
+                                      <span
+                                        style={{
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {server}
+                                      </span>
+                                      <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>
+                                        {info.toolCount}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </React.Fragment>
                           ))}
                         </>

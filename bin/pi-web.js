@@ -14,7 +14,7 @@ const pkgDir = path.join(__dirname, "..");
 const nextDir = path.join(pkgDir, ".next");
 
 // Resolve next's CLI entry directly to avoid relying on .bin symlinks (which
-// may not exist when installed via npx).
+// may not exist when installed via bunx).
 let nextBin;
 try {
   nextBin = require.resolve("next/dist/bin/next", { paths: [pkgDir] });

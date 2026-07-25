@@ -183,17 +183,17 @@ The app reads from `~/.pi/agent/settings.json`. Fields used:
 ## Validation Commands
 
 ```bash
-# Type-check (no emit) — uses npx or direct path depending on package manager
-npx tsc --noEmit
+# Type-check (no emit)
+bunx tsc --noEmit
 
 # Lint
-npm run lint
+bun run lint
 
 # Run dev server (port 30141)
-npm run dev
+bun run dev
 ```
 
-Never run `next build` during normal development — pollutes `.next/` and breaks `npm run dev`.
+Never run `next build` during normal development — pollutes `.next/` and breaks `bun run dev`.
 
 ## Idle Timeout
 

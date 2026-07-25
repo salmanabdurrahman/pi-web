@@ -49,7 +49,9 @@ test("models-config redaction: redacts apiKey in providers", async () => {
   assert.equal(safe.providers.anthropic.name, "Anthropic");
   assert.equal(safe.providers.anthropic.secret, "<redacted>");
   assert.equal(safe.providers.anthropic.apiKey, "<env-ref>");
-  assert.deepEqual(safe.providers.anthropic.models, [{ id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6" }]);
+  assert.deepEqual(safe.providers.anthropic.models, [
+    { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6" },
+  ]);
 });
 
 test("models-config redaction: passes through providers without secrets unchanged", async () => {

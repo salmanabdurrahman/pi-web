@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const args = ["skills", "add", pkg.trim(), "-y", "--agent", "pi"];
     if (isGlobal) args.push("-g");
 
-    console.log(`[skills/install] running: npx ${args.join(" ")}`);
+    console.log(`[skills/install] running: bunx ${args.join(" ")}`);
     const { stdout, stderr } = await runNpx(args, {
       timeout: 60000,
       cwd: !isGlobal && cwd ? cwd : undefined,
@@ -41,7 +41,11 @@ export async function POST(req: Request) {
     if (!success) {
       return NextResponse.json({ error: output.slice(-300) || "Install failed" }, { status: 500 });
     }
-    auditLog("skill.install", { package: pkg.trim(), scope: isGlobal ? "global" : "project", cwd: cwd ?? null });
+    auditLog("skill.install", {
+      package: pkg.trim(),
+      scope: isGlobal ? "global" : "project",
+      cwd: cwd ?? null,
+    });
     return NextResponse.json({ success: true, output });
   } catch (e: unknown) {
     const err = e as { stdout?: string; stderr?: string; message?: string };

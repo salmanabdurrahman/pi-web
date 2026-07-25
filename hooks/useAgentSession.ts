@@ -82,7 +82,15 @@ type ToolStateInfo = {
 type ToolsState = {
   builtin: ToolStateInfo[];
   extension: ToolStateInfo[];
-  bySource: Record<string, { source: string; origin: string; tools: ToolStateInfo[]; mcpServers?: Record<string, { toolCount: number; activeCount: number }> }>;
+  bySource: Record<
+    string,
+    {
+      source: string;
+      origin: string;
+      tools: ToolStateInfo[];
+      mcpServers?: Record<string, { toolCount: number; activeCount: number }>;
+    }
+  >;
   builtinCount: number;
   extensionCount: number;
   activeCount: number;

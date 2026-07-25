@@ -14,10 +14,7 @@ export function proxy(request: NextRequest) {
   // 2. Desktop auth guard (desktop mode): require per-launch token
   //    so random local websites cannot hit the sidecar server.
   if (isDesktopMode() && !validateDesktopAuthToken(request.headers.get("x-pi-desktop-auth"))) {
-    return NextResponse.json(
-      { error: "Desktop authentication required" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Desktop authentication required" }, { status: 401 });
   }
 
   return NextResponse.next();

@@ -9,13 +9,13 @@
 **无需安装，直接运行：**
 
 ```bash
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 **或全局安装后使用：**
 
 ```bash
-npm install -g @agegr/pi-web
+bun install -g @agegr/pi-web
 pi-web
 ```
 
@@ -43,7 +43,7 @@ macOS 或 Linux：
 HTTP_PROXY=http://127.0.0.1:7890 \
 HTTPS_PROXY=http://127.0.0.1:7890 \
 NO_PROXY=localhost,127.0.0.1 \
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 Windows PowerShell：
@@ -52,7 +52,7 @@ Windows PowerShell：
 $env:HTTP_PROXY = "http://127.0.0.1:7890"
 $env:HTTPS_PROXY = "http://127.0.0.1:7890"
 $env:NO_PROXY = "localhost,127.0.0.1"
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 ## 功能介绍
@@ -76,8 +76,8 @@ npx @agegr/pi-web@latest
 ## 开发
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 本地开发端口为 [http://localhost:30141](http://localhost:30141)。
@@ -86,10 +86,10 @@ npm run dev
 
 ```bash
 node_modules/.bin/tsc --noEmit
-npm run lint
+bun run lint
 ```
 
-开发时不要运行 `next build` / `npm run build`，它会写入 `.next/`，容易影响正在运行的 dev server。发布流程再执行构建。
+开发时不要运行 `next build` / `bun run build`，它会写入 `.next/`，容易影响正在运行的 dev server。发布流程再执行构建。
 
 ## 项目结构
 
@@ -131,6 +131,6 @@ hooks/
   useDragDrop.ts      # 图片拖拽
   useTheme.ts         # 主题切换
 bin/
-  pi-web.js           # npm CLI 入口
+  pi-web.js           # CLI 入口
 instrumentation.ts    # 初始化服务端 HTTP dispatcher
 ```

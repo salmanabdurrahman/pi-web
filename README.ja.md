@@ -13,13 +13,13 @@ CLI と Pi Web で同じ pi セッションを利用できます。構造化さ�
 **インストールせずに実行：**
 
 ```bash
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 **またはグローバルにインストール：**
 
 ```bash
-npm install -g @agegr/pi-web
+bun install -g @agegr/pi-web
 pi-web
 ```
 
@@ -47,7 +47,7 @@ macOS または Linux：
 HTTP_PROXY=http://127.0.0.1:7890 \
 HTTPS_PROXY=http://127.0.0.1:7890 \
 NO_PROXY=localhost,127.0.0.1 \
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 Windows PowerShell：
@@ -56,7 +56,7 @@ Windows PowerShell：
 $env:HTTP_PROXY = "http://127.0.0.1:7890"
 $env:HTTPS_PROXY = "http://127.0.0.1:7890"
 $env:NO_PROXY = "localhost,127.0.0.1"
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 ## 機能
@@ -80,8 +80,8 @@ npx @agegr/pi-web@latest
 ## 開発
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ローカル開発サーバーは [http://localhost:30141](http://localhost:30141) で動作します。
@@ -90,10 +90,10 @@ npm run dev
 
 ```bash
 node_modules/.bin/tsc --noEmit
-npm run lint
+bun run lint
 ```
 
-ローカル開発中は `next build` / `npm run build` を実行しないでください。`.next/` に書き込みが行われ、開発サーバーに影響する可能性があります。ビルドはリリース作業に任せてください。
+ローカル開発中は `next build` / `bun run build` を実行しないでください。`.next/` に書き込みが行われ、開発サーバーに影響する可能性があります。ビルドはリリース作業に任せてください。
 
 ## プロジェクト構成
 
@@ -135,6 +135,6 @@ hooks/
   useDragDrop.ts      # 画像のドラッグ＆ドロップ
   useTheme.ts         # テーマの切り替え
 bin/
-  pi-web.js           # npm CLI エントリポイント
+  pi-web.js           # CLI エントリポイント
 instrumentation.ts    # サーバー HTTP ディスパッチャーの初期化
 ```

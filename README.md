@@ -13,13 +13,13 @@ The same pi session in CLI and Pi Web: structured tool calls, readable Markdown,
 **Run without installing:**
 
 ```bash
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 **Or install globally:**
 
 ```bash
-npm install -g @agegr/pi-web
+bun install -g @agegr/pi-web
 pi-web
 ```
 
@@ -47,7 +47,7 @@ On macOS or Linux:
 HTTP_PROXY=http://127.0.0.1:7890 \
 HTTPS_PROXY=http://127.0.0.1:7890 \
 NO_PROXY=localhost,127.0.0.1 \
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 On Windows PowerShell:
@@ -56,7 +56,7 @@ On Windows PowerShell:
 $env:HTTP_PROXY = "http://127.0.0.1:7890"
 $env:HTTPS_PROXY = "http://127.0.0.1:7890"
 $env:NO_PROXY = "localhost,127.0.0.1"
-npx @agegr/pi-web@latest
+bunx @agegr/pi-web@latest
 ```
 
 ## Features
@@ -80,8 +80,8 @@ npx @agegr/pi-web@latest
 ## Development
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 The local dev server runs at [http://localhost:30141](http://localhost:30141).
@@ -90,10 +90,10 @@ Common checks:
 
 ```bash
 node_modules/.bin/tsc --noEmit
-npm run lint
+bun run lint
 ```
 
-Avoid running `next build` / `npm run build` during local development. It writes to `.next/` and can interfere with the dev server; leave builds for release work.
+Avoid running `next build` / `bun run build` during local development. It writes to `.next/` and can interfere with the dev server; leave builds for release work.
 
 ## Project Structure
 
@@ -135,6 +135,6 @@ hooks/
   useDragDrop.ts      # image drag/drop
   useTheme.ts         # theme switching
 bin/
-  pi-web.js           # npm CLI entrypoint
+  pi-web.js           # CLI entrypoint
 instrumentation.ts    # initializes the server HTTP dispatcher
 ```

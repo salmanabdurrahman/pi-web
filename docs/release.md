@@ -13,7 +13,7 @@ Use this checklist from a clean `main` checkout.
 git status --short --branch
 git log --oneline --decorate -5
 gh auth status
-npm whoami
+npm whoami  # registry auth — no bun equivalent; keep npm CLI for this
 node -e "const p=require('./package.json'); console.log(p.version)"
 ```
 
@@ -21,25 +21,25 @@ Expected:
 
 - `git status` is clean, or only contains changes you intentionally plan to release.
 - GitHub is authenticated as an account that can push and create releases.
-- npm is authenticated as an account that can publish `@agegr/pi-web`.
+- npm is authenticated as an account that can publish `@agegr/pi-web` (use `npm whoami` — bun shares npm's auth).
 
 ## 2. Publish to npm
 
 ```bash
-npm run release
+bun run release
 ```
 
 The release script runs:
 
 ```bash
-npm version patch --no-git-tag-version && npm run build && npm publish --access public
+npm version patch --no-git-tag-version && bun run build && bun publish --access public
 ```
 
 Notes:
 
 - This bumps `package.json` and `package-lock.json`.
 - It intentionally runs a production build. Do not run `next build` during normal development; release work is the exception.
-- If `npm view @agegr/pi-web version` briefly shows the previous version, check the exact version instead:
+- If `npm view @agegr/pi-web version` briefly shows the previous version, check the exact version instead (no bun equivalent for `npm view`):
 
 ```bash
 npm view @agegr/pi-web@<version> version --registry https://registry.npmjs.org/
@@ -51,8 +51,8 @@ npm view @agegr/pi-web versions --json --registry https://registry.npmjs.org/
 Replace `<version>` with the new package version, for example `0.7.5`.
 
 ```bash
-git diff -- package.json package-lock.json
-git add package.json package-lock.json
+git diff -- package.json bun.lockb
+git add package.json bun.lockb
 git commit -m "Release v<version>"
 ```
 

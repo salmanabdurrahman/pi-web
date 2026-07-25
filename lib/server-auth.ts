@@ -14,6 +14,12 @@ declare global {
   var __piDesktopAuthToken: string | undefined;
 }
 
+// Auto-initialize from environment variable if present (desktop sidecar mode).
+// The Electron main process passes PI_DESKTOP_AUTH_TOKEN to the sidecar.
+if (!globalThis.__piDesktopAuthToken && process.env.PI_DESKTOP_AUTH_TOKEN) {
+  globalThis.__piDesktopAuthToken = process.env.PI_DESKTOP_AUTH_TOKEN;
+}
+
 /** Generate a fresh per-launch token.  Called once by the desktop main
  *  process before spawning the sidecar server. */
 export function generateDesktopAuthToken(): string {
