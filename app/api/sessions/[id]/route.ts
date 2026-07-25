@@ -12,6 +12,7 @@ import {
 } from "@/lib/session-reader";
 import { sessionPathKey } from "@/lib/session-path";
 import { getRpcSession } from "@/lib/rpc-manager";
+import { auditLog } from "@/lib/audit-log";
 
 // BranchNavigator still traverses recursively, so keep the response tree shallow.
 const MAX_PROJECTED_TREE_DEPTH = 200;
@@ -190,6 +191,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const sm = SessionManager.open(filePath);
     sm.appendSessionInfo(name.trim());
     invalidateSessionListCache();
+    auditLog("session.rename", { sessionId: id, name: name.trim() });
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
@@ -244,6 +246,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     unlinkSync(filePath);
     invalidateSessionPathCache(id);
     invalidateSessionListCache();
+    auditLog("session.delete", { sessionId: id, filePath, hadParent: !!parentSessionPath });
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });

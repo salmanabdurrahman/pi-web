@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { allowFileRoot } from "@/lib/file-access";
 import { invalidateSessionListCache } from "@/lib/session-reader";
 import { startRpcSession } from "@/lib/rpc-manager";
+import { auditLog } from "@/lib/audit-log";
 // POST /api/agent/new  body: { cwd: string; type: string; message?: string; ... }
 // Spawns a brand-new pi session. Most calls immediately send the first command;
 // type:"ensure_session" only creates the runtime so clients can query commands.
@@ -52,11 +53,13 @@ export async function POST(req: Request) {
     }
 
     if (promptCommand.type === "ensure_session") {
+      auditLog("session.create", { sessionId: realSessionId, cwd, type: "ensure_session" });
       return NextResponse.json({ success: true, sessionId: realSessionId, data: null });
     }
 
     const result = await session.send(promptCommand);
 
+    auditLog("session.create", { sessionId: realSessionId, cwd, type: promptCommand.type });
     return NextResponse.json({ success: true, sessionId: realSessionId, data: result });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });

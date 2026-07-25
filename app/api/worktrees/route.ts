@@ -7,6 +7,7 @@ import {
   isExistingFilePathAllowed,
   isFilePathAllowed,
 } from "@/lib/file-access";
+import { auditLog } from "@/lib/audit-log";
 
 /** Same gate as /api/files: only session cwds / project roots / explicitly
  *  allowed dirs may be inspected or mutated through this endpoint. */
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
     }
 
     const result = await addWorktree(body.cwd, body.branch);
+    auditLog("worktree.create", { cwd: body.cwd, branch: body.branch, path: result.path });
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -91,6 +93,7 @@ export async function DELETE(req: Request) {
     if (denied) return denied;
 
     await removeWorktree(body.cwd, body.path, body.force === true);
+    auditLog("worktree.remove", { cwd: body.cwd, path: body.path, force: body.force === true });
     return NextResponse.json({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

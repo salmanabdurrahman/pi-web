@@ -1,5 +1,6 @@
 import { ModelRuntime } from "@earendil-works/pi-coding-agent";
 import { invalidateModelsCache } from "@/lib/models-cache";
+import { auditLog } from "@/lib/audit-log";
 
 export const dynamic = "force-dynamic";
 
@@ -11,5 +12,6 @@ export async function POST(_req: Request, { params }: { params: Promise<{ provid
   }
   await modelRuntime.logout(provider);
   invalidateModelsCache();
+  auditLog("auth.oauth.logout", { provider });
   return Response.json({ ok: true });
 }

@@ -26,6 +26,7 @@ import {
   validateUploadFileNames,
 } from "@/lib/file-upload";
 import { parseFormDataWithinLimit, RequestBodyTooLargeError } from "@/lib/bounded-form-data";
+import { auditLog } from "@/lib/audit-log";
 
 const IGNORED_NAMES = new Set([
   "node_modules",
@@ -294,6 +295,13 @@ export async function POST(
       }
     }
 
+    auditLog("file.upload", {
+      directory,
+      uploaded,
+      skipped,
+      errorCount: errors.length,
+      strategy,
+    });
     return NextResponse.json(
       { uploaded, skipped, errors },
       { status: errors.length > 0 ? 207 : 200 },

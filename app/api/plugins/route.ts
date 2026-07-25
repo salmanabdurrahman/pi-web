@@ -10,6 +10,7 @@ import {
   type ResolvedResource,
 } from "@earendil-works/pi-coding-agent";
 import { getAllowedFileRoots, isExistingFilePathAllowed } from "@/lib/file-access";
+import { auditLog } from "@/lib/audit-log";
 import type {
   PluginDiagnostic,
   PluginPackageInfo,
@@ -327,19 +328,24 @@ export async function POST(req: Request) {
     if (body.action === "install") {
       if (!source) return NextResponse.json({ error: "source required" }, { status: 400 });
       await packageManager.installAndPersist(source, { local });
+      auditLog("plugin.install", { source, scope: readScope(body.scope) });
     } else if (body.action === "remove") {
       if (!source) return NextResponse.json({ error: "source required" }, { status: 400 });
       await packageManager.removeAndPersist(source, { local });
+      auditLog("plugin.remove", { source, scope: readScope(body.scope) });
     } else if (body.action === "update") {
       await packageManager.update(source);
+      auditLog("plugin.update", { source: source ?? "all" });
     } else if (body.action === "disable") {
       if (!source) return NextResponse.json({ error: "source required" }, { status: 400 });
       setPackageDisabled(settingsManager, source, readScope(body.scope), true);
       await settingsManager.flush();
+      auditLog("plugin.disable", { source, scope: readScope(body.scope) });
     } else if (body.action === "enable") {
       if (!source) return NextResponse.json({ error: "source required" }, { status: 400 });
       setPackageDisabled(settingsManager, source, readScope(body.scope), false);
       await settingsManager.flush();
+      auditLog("plugin.enable", { source, scope: readScope(body.scope) });
     } else {
       return NextResponse.json({ error: `Unsupported action: ${body.action}` }, { status: 400 });
     }

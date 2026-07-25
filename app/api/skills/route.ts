@@ -3,6 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import { getAgentDir, parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import { loadSkillsWithInstallInfo } from "@/lib/skills-service";
 import { getAllowedFileRoots, isExistingFilePathAllowed } from "@/lib/file-access";
+import { auditLog } from "@/lib/audit-log";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,7 @@ export async function PATCH(req: Request) {
     }
 
     writeFileSync(filePath, updated, "utf8");
+    auditLog("skill.toggle", { filePath, disableModelInvocation });
     return NextResponse.json({ success: true });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { runNpx } from "@/lib/npx";
 import { getAllowedFileRoots, isExistingFilePathAllowed } from "@/lib/file-access";
+import { auditLog } from "@/lib/audit-log";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
     if (!success) {
       return NextResponse.json({ error: output.slice(-300) || "Install failed" }, { status: 500 });
     }
+    auditLog("skill.install", { package: pkg.trim(), scope: isGlobal ? "global" : "project", cwd: cwd ?? null });
     return NextResponse.json({ success: true, output });
   } catch (e: unknown) {
     const err = e as { stdout?: string; stderr?: string; message?: string };

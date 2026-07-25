@@ -1,6 +1,7 @@
 import { ModelRuntime } from "@earendil-works/pi-coding-agent";
 import { NextResponse } from "next/server";
 import { invalidateModelsCache } from "@/lib/models-cache";
+import { auditLog } from "@/lib/audit-log";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,7 @@ export async function POST(req: Request, { params }: Params) {
       },
     });
     invalidateModelsCache();
+    auditLog("auth.key.store", { provider });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
@@ -63,6 +65,7 @@ export async function DELETE(_req: Request, { params }: Params) {
     const modelRuntime = await ModelRuntime.create();
     await modelRuntime.logout(provider);
     invalidateModelsCache();
+    auditLog("auth.key.delete", { provider });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
