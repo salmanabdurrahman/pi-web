@@ -76,7 +76,7 @@ interface ParityGap {
 function detectParityGaps(globalSettings: SettingsLike): ParityGap[] {
   const gaps: ParityGap[] = [];
 
-  if (globalSettings.piStatus !== undefined && globalSettings.piStatus !== null) {
+  if ((globalSettings as any).piStatus !== undefined && (globalSettings as any).piStatus !== null) {
     gaps.push({
       field: "piStatus",
       message: "piStatus is configured but Pi Web has its own status bar; this field is ignored.",
@@ -198,7 +198,7 @@ export async function GET(req: Request) {
     const globalDefaultThinkingLevel = globalSettings.defaultThinkingLevel ?? null;
     const globalEnabledModels = globalSettings.enabledModels ?? null;
     const globalTransport = globalSettings.transport ?? null;
-    const globalPiStatus = globalSettings.piStatus ?? null;
+    const globalPiStatus = (globalSettings as any).piStatus ?? null;
 
     const globalCompaction = globalSettings.compaction
       ? (redactValue("compaction", globalSettings.compaction) as CompactionSettingsLike)
@@ -297,7 +297,7 @@ export async function GET(req: Request) {
           defaultThinkingLevel: global.defaultThinkingLevel ?? null,
           enabledModels: global.enabledModels ?? null,
           transport: global.transport ?? null,
-          piStatus: global.piStatus ?? null,
+          piStatus: (global as any).piStatus ?? null,
           compaction: global.compaction ? redactValue("compaction", global.compaction) : null,
           retry: global.retry ? redactValue("retry", global.retry) : null,
           branchSummary: global.branchSummary

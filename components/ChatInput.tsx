@@ -1112,14 +1112,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
   }, [isMobile]);
 
   return (
-    <div
-      style={{
-        flexShrink: 0,
-        background: "transparent",
-        padding: "0 16px 8px",
-        paddingRight: isMobile ? 16 : 52, // desktop: 16px base + 36px for ChatMinimap alignment
-      }}
-    >
+    <div className={`shrink-0 bg-transparent pb-2 pl-4 ${isMobile ? "pr-4" : "pr-[52px]"}`}>
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -1134,7 +1127,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
           e.target.value = "";
         }}
       />
-      <div style={{ maxWidth: 820, margin: "0 auto" }}>
+      <div className="mx-auto w-full max-w-[820px]">
         {/* Queued steering / follow-up messages (delivered by pi on upcoming turns) */}
         {(queuedMessages?.steering.length ?? 0) + (queuedMessages?.followUp.length ?? 0) > 0 && (
           <div

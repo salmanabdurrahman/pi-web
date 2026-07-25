@@ -362,6 +362,7 @@ export function SessionSidebar({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCwd, setSelectedCwd] = useState<string | null>(null);
+  const [sessionSearch, setSessionSearch] = useState("");
   const [homeDir, setHomeDir] = useState<string>("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [projectFilter, setProjectFilter] = useState("");
@@ -816,9 +817,15 @@ export function SessionSidebar({
 
   // Sessions of every worktree in the selected project are shown together
   const selectedProject = projectRootFor(selectedCwd);
-  const filteredSessions = selectedProject
-    ? allSessions.filter((s) => (s.projectRoot ?? s.cwd) === selectedProject)
-    : allSessions;
+  const filteredSessions = (
+    selectedProject
+      ? allSessions.filter((s) => (s.projectRoot ?? s.cwd) === selectedProject)
+      : allSessions
+  ).filter(
+    (s) =>
+      !sessionSearch ||
+      (s.name || "Untitled session").toLowerCase().includes(sessionSearch.toLowerCase()),
+  );
   const showWorktreeSwitcher = Boolean(
     worktreeState?.isGit &&
     worktreeState.isTopLevel &&
