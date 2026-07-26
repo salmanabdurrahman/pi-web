@@ -1772,16 +1772,18 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
 
   const handleScrollPositionChange = useCallback((e?: Event) => {
     if (!agentRunningRef.current) return;
-    if (Date.now() < ignoreProgrammaticScrollUntilRef.current) return;
+    const now = Date.now();
+    if (now < ignoreProgrammaticScrollUntilRef.current) return;
 
-    // If user scrolled up manually, disable auto-scroll
     if (e && e.target instanceof HTMLElement) {
       const el = e.target;
       const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
-      if (!isAtBottom) {
-        completionScrollAllowedRef.current = false;
-      } else {
+      if (isAtBottom) {
         completionScrollAllowedRef.current = true;
+      } else if (now < userScrollIntentUntilRef.current) {
+        // Programmatic scroll-to-user during a run can leave the viewport away from
+        // the bottom. Only treat that as opt-out when there was recent user input.
+        completionScrollAllowedRef.current = false;
       }
     }
   }, []);
