@@ -87,6 +87,7 @@ Pi Web ships as a native macOS desktop app built with Electron. It wraps the sam
 - Clipboard image paste into prompts
 - Reveal in Finder and Open in Editor from file tabs
 - Per-launch auth token for localhost security
+- App icon currently reuses the bundled Pi Web favicon
 
 **Download**: Get the latest `.dmg` or `.zip` from [GitHub Releases](https://github.com/agegr/pi-web/releases).
 

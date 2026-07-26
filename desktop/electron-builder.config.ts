@@ -19,6 +19,7 @@ const config: Configuration = {
     { from: "../public", to: "standalone/public", filter: ["**/*"] },
   ],
   mac: {
+    icon: "resources/icon.png",
     category: "public.app-category.developer-tools",
     hardenedRuntime: true,
     gatekeeperAssess: false,
@@ -30,6 +31,7 @@ const config: Configuration = {
     sign: false,
   },
   linux: {
+    icon: "resources/icon.png",
     category: "Development",
     target: ["AppImage"],
   },

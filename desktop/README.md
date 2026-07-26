@@ -29,7 +29,8 @@ bun run desktop:package:mac
 
 Packaging creates unsigned artifacts in `desktop/dist/`. Code signing and
 notarization are not included in the MVP — configure them before public
-distribution.
+distribution. The package currently reuses Pi Web's bundled favicon as the
+macOS/Linux app icon (`resources/icon.png`).
 
 ## Architecture
 
@@ -40,11 +41,13 @@ desktop/
       index.ts     — main process entry: single instance lock, port alloc,
                      sidecar spawn, BrowserWindow, lifecycle
       server.ts    — Next.js sidecar: spawn/health/kill
-      ipc.ts       — IPC handlers (select-directory)
+      ipc.ts       — IPC handlers for native dialogs, clipboard,
+                     notifications, file actions, zoom, and logs
     preload/
-      index.ts     — contextBridge: window.piDesktop.selectDirectory()
+      index.ts     — contextBridge: window.piDesktop API
   out/             — electron-vite build output
   resources/
+    icon.png           — temporary app icon copied from Pi Web favicon
     entitlements.plist — macOS hardened runtime entitlements
 ```
 

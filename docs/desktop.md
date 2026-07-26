@@ -46,7 +46,9 @@ bun run desktop:package:mac
 The package command outputs to `desktop/dist/`. Artifacts are unsigned and
 not notarized by default — configure code signing before public distribution.
 Packaged builds include the standalone Next server plus `.next/static` and
-`public` assets so the app can load UI chunks, fonts, and icons offline.
+`public` assets so the app can load UI chunks, fonts, and icons offline. The
+macOS/Linux package uses Pi Web's bundled favicon as the app icon for now
+(`desktop/resources/icon.png`).
 
 Useful packaging checks:
 
@@ -185,7 +187,7 @@ is an optional wrapper for native window management and file system access.
 
 ## Known Limitations
 
-- No custom app icon (uses Electron default)
+- App icon currently reuses Pi Web's favicon, not a dedicated desktop icon
 - No code signing or notarization in default build
 - No automatic updates
 - macOS only — Windows/Linux support not yet verified
