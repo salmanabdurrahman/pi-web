@@ -243,6 +243,16 @@ function createNoticeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function isNoisyStartupNotice(message: string, type: NoticeType): boolean {
+  if (type !== "info") return false;
+  return (
+    /^pi-multi-account v[^:]+ loaded \(/.test(message) ||
+    /^pi-multi-account v[^:]+: seamless in-place resume \(pi\.continueAgent\) is not available/.test(
+      message,
+    )
+  );
+}
+
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -825,13 +835,14 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
 
   const addNotice = useCallback((notice: { id?: string; message: string; type?: NoticeType }) => {
     const message = notice.message.trim();
-    if (!message) return;
+    const type = notice.type ?? "info";
+    if (!message || isNoisyStartupNotice(message, type)) return;
     dispatchNotice({
       type: "add",
       notice: {
         id: notice.id ?? createNoticeId(),
         message,
-        type: notice.type ?? "info",
+        type,
       },
     });
   }, []);
