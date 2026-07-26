@@ -1,18 +1,50 @@
 import { BrowserWindow, Notification, clipboard, dialog, ipcMain, shell } from "electron";
 import type { IpcMainEvent, IpcMainInvokeEvent } from "electron";
-import { stat } from "node:fs/promises";
-import { basename } from "node:path";
-import { execFile } from "node:child_process";
+import { realpath, stat } from "node:fs/promises";
+import { basename, resolve } from "node:path";
 import { exportDebugLogs } from "./logging";
+import { isAllowedExternalUrl } from "./security";
 
 const ZOOM_MIN = 0.2;
 const ZOOM_MAX = 10;
 const ZOOM_STEP = 0.2;
 
-export function registerIpcHandlers(): void {
+const pickedPaths = new Set<string>();
+
+function assertTrustedSender(
+  event: IpcMainEvent | IpcMainInvokeEvent,
+  sidecarOrigin: string,
+): void {
+  const senderUrl = event.senderFrame?.url;
+  if (!senderUrl || new URL(senderUrl).origin !== sidecarOrigin) {
+    throw new Error("Untrusted IPC sender");
+  }
+}
+
+async function rememberPickedPath(path: string): Promise<void> {
+  pickedPaths.add(await realpath(path));
+}
+
+async function isPickedPath(path: string): Promise<boolean> {
+  const target = await realpath(path);
+  for (const root of pickedPaths) {
+    if (target === root || target.startsWith(`${root}/`)) return true;
+  }
+  return false;
+}
+
+function assertPlainPath(path: string): void {
+  if (typeof path !== "string" || !path || path.includes("\0")) {
+    throw new Error("Invalid path");
+  }
+  resolve(path);
+}
+
+export function registerIpcHandlers(sidecarOrigin: string): void {
   // ── Directory picker ──────────────────────────────────────────────
 
-  ipcMain.handle("select-directory", async (_event: IpcMainInvokeEvent) => {
+  ipcMain.handle("select-directory", async (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     const win = BrowserWindow.getFocusedWindow();
     if (!win) return null;
 
@@ -23,7 +55,9 @@ export function registerIpcHandlers(): void {
     });
 
     if (result.canceled) return null;
-    return result.filePaths[0] ?? null;
+    const selected = result.filePaths[0] ?? null;
+    if (selected) await rememberPickedPath(selected);
+    return selected;
   });
 
   // ── File picker ───────────────────────────────────────────────────
@@ -31,7 +65,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(
     "open-file-picker",
     async (
-      _event: IpcMainInvokeEvent,
+      event: IpcMainInvokeEvent,
       opts?: {
         multiple?: boolean;
         title?: string;
@@ -39,6 +73,7 @@ export function registerIpcHandlers(): void {
         extensions?: string[];
       },
     ) => {
+      assertTrustedSender(event, sidecarOrigin);
       const win = BrowserWindow.getFocusedWindow();
       if (!win) return null;
 
@@ -50,6 +85,7 @@ export function registerIpcHandlers(): void {
       });
 
       if (result.canceled) return null;
+      await Promise.all(result.filePaths.map(rememberPickedPath));
 
       const files = await Promise.all(
         result.filePaths.map(async (filePath) => ({
@@ -65,7 +101,8 @@ export function registerIpcHandlers(): void {
 
   // ── Notifications ─────────────────────────────────────────────────
 
-  ipcMain.on("show-notification", (_event: IpcMainEvent, title: string, body?: string) => {
+  ipcMain.on("show-notification", (event: IpcMainEvent, title: string, body?: string) => {
+    assertTrustedSender(event, sidecarOrigin);
     if (Notification.isSupported()) {
       new Notification({ title, body }).show();
     }
@@ -73,7 +110,8 @@ export function registerIpcHandlers(): void {
 
   // ── Clipboard ─────────────────────────────────────────────────────
 
-  ipcMain.handle("read-clipboard-image", () => {
+  ipcMain.handle("read-clipboard-image", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     const image = clipboard.readImage();
     if (image.isEmpty()) return null;
     const buffer = image.toPNG();
@@ -87,7 +125,10 @@ export function registerIpcHandlers(): void {
 
   // ── File system actions ───────────────────────────────────────────
 
-  ipcMain.handle("reveal-path", async (_event: IpcMainInvokeEvent, path: string) => {
+  ipcMain.handle("reveal-path", async (event: IpcMainInvokeEvent, path: string) => {
+    assertTrustedSender(event, sidecarOrigin);
+    assertPlainPath(path);
+    if (!(await isPickedPath(path))) throw new Error("Path is outside user-picked roots");
     const exists = await stat(path).then(
       () => true,
       () => false,
@@ -97,38 +138,35 @@ export function registerIpcHandlers(): void {
     return true;
   });
 
-  ipcMain.handle(
-    "open-path",
-    async (_event: IpcMainInvokeEvent, path: string, appName?: string) => {
-      if (!appName) {
-        await shell.openPath(path);
-        return;
-      }
-      await new Promise<void>((resolve, reject) => {
-        const [cmd, args] =
-          process.platform === "darwin"
-            ? (["open", ["-a", appName, path]] as const)
-            : ([appName, [path]] as const);
-        execFile(cmd, args, (err) => (err ? reject(err) : resolve()));
-      });
-      return;
-    },
-  );
+  ipcMain.handle("open-path", async (event: IpcMainInvokeEvent, path: string, appName?: string) => {
+    assertTrustedSender(event, sidecarOrigin);
+    assertPlainPath(path);
+    if (appName) throw new Error("Opening with arbitrary apps is not supported");
+    if (!(await isPickedPath(path))) throw new Error("Path is outside user-picked roots");
+    await shell.openPath(path);
+    return;
+  });
 
-  ipcMain.on("open-link", (_event: IpcMainEvent, url: string) => {
-    void shell.openExternal(url);
+  ipcMain.on("open-link", (event: IpcMainEvent, url: string) => {
+    assertTrustedSender(event, sidecarOrigin);
+    if (isAllowedExternalUrl(url)) void shell.openExternal(url);
   });
 
   // ── Zoom ──────────────────────────────────────────────────────────
 
-  ipcMain.handle("get-zoom-factor", (event: IpcMainInvokeEvent) => event.sender.getZoomFactor());
+  ipcMain.handle("get-zoom-factor", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
+    return event.sender.getZoomFactor();
+  });
 
   ipcMain.handle("set-zoom-factor", (event: IpcMainInvokeEvent, factor: number) => {
+    assertTrustedSender(event, sidecarOrigin);
     const clamped = Math.min(Math.max(factor, ZOOM_MIN), ZOOM_MAX);
     event.sender.setZoomFactor(clamped);
   });
 
   ipcMain.handle("zoom-in", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     const current = event.sender.getZoomFactor();
     const clamped = Math.min(current + ZOOM_STEP, ZOOM_MAX);
     event.sender.setZoomFactor(clamped);
@@ -136,6 +174,7 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle("zoom-out", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     const current = event.sender.getZoomFactor();
     const clamped = Math.max(current - ZOOM_STEP, ZOOM_MIN);
     event.sender.setZoomFactor(clamped);
@@ -143,35 +182,41 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle("reset-zoom", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     event.sender.setZoomFactor(1);
     return 1;
   });
 
   // ── Debug logs ────────────────────────────────────────────────────
 
-  ipcMain.handle("export-debug-logs", () => {
+  ipcMain.handle("export-debug-logs", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     return exportDebugLogs();
   });
 
   // ── Window state ──────────────────────────────────────────────────
 
   ipcMain.handle("get-window-focused", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     const win = BrowserWindow.fromWebContents(event.sender);
     return win?.isFocused() ?? false;
   });
 
   ipcMain.handle("set-window-focus", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     const win = BrowserWindow.fromWebContents(event.sender);
     win?.focus();
   });
 
   // ── App info ──────────────────────────────────────────────────────
 
-  ipcMain.handle("get-app-version", () => {
+  ipcMain.handle("get-app-version", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     return import("electron").then(({ app }) => app.getVersion());
   });
 
-  ipcMain.handle("is-packaged", () => {
+  ipcMain.handle("is-packaged", (event: IpcMainInvokeEvent) => {
+    assertTrustedSender(event, sidecarOrigin);
     return import("electron").then(({ app }) => app.isPackaged);
   });
 }

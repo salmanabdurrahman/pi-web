@@ -52,11 +52,21 @@ In desktop mode, a random 64-character hex token is generated at startup.
 The token is:
 
 - Passed to the Next.js sidecar via `PI_DESKTOP_AUTH_TOKEN` env var
-- Sent by the BrowserWindow as `X-Pi-Desktop-Auth` header on every API request
+- Sent by the BrowserWindow as `X-Pi-Desktop-Auth` only for same-origin sidecar `/api/*` requests
 - Validated by `proxy.ts` middleware for all `/api/*` routes
 
-Without the token, API requests return 401. This prevents random local
-websites from accessing the sidecar server.
+Without the token, API requests return 401. The token is never attached to
+external origins or non-API page/subresource requests.
+
+Desktop hardening:
+
+- BrowserWindow navigation is limited to the current sidecar origin.
+- New windows are denied; allowed `http:`/`https:` links open in the OS browser.
+- Preload IPC handlers validate `event.senderFrame.url` against the sidecar origin.
+- `openLink()` accepts only `http:`/`https:` URLs.
+- `revealPath()` and `openPath()` accept only paths under user-picked roots from native pickers.
+- Arbitrary app-name launches are disabled; `openPath()` uses the OS default handler.
+- Renderer runs with `contextIsolation: true`, `nodeIntegration: false`, and `sandbox: true`.
 
 ## Preload API
 
@@ -69,8 +79,8 @@ websites from accessing the sidecar server.
 | `showNotification(title, body?)` | Shows native macOS notification when window is unfocused. |
 | `readClipboardImage()` | Reads image from clipboard. Returns `{ buffer, width, height }` or `null`. |
 | `revealPath(path)` | Reveals file in Finder. Returns `true` if path exists. |
-| `openPath(path, appName?)` | Opens file with default or specified app. |
-| `openLink(url)` | Opens URL in external browser. |
+| `openPath(path)` | Opens user-picked file/folder with default app. Arbitrary app launch is disabled. |
+| `openLink(url)` | Opens `http:`/`https:` URL in external browser. |
 | `getZoomFactor()` / `setZoomFactor(n)` | Get/set window zoom level. |
 | `zoomIn()` / `zoomOut()` / `resetZoom()` | Step zoom in/out, reset to 1. |
 | `exportDebugLogs()` | Exports redacted debug logs archive. Returns path to zip. |
@@ -130,7 +140,7 @@ These are granted automatically when running from the terminal.
 For public distribution:
 
 1. **Code signing**: Configure `electron-builder.config.ts` with your Apple Developer ID.
-2. **Hardened runtime**: The app includes `resources/entitlements.plist` with minimal entitlements.
+2. **Hardened runtime**: The app includes `resources/entitlements.plist` with only JIT entitlement for Electron/V8.
 3. **Notarization**: Add `notarize` config to `electron-builder.config.ts` with your Apple notarization credentials.
 4. **DMG signing**: The `.dmg` must be signed for Gatekeeper to accept it.
 
@@ -141,7 +151,7 @@ Without notarization, users need to right-click → Open on first launch, or run
 | Feature | Web Mode | Desktop Mode |
 |---|---|---|
 | Server | Next.js on port 30141 | Next.js on random loopback port |
-| Auth | Origin-based guard | Origin + per-launch token |
+| Auth | Origin guard; non-loopback bind requires explicit auth token | Origin + per-launch token |
 | Directory picker | Text input field | Native macOS dialog |
 | File picker | Browser `<input type="file">` | Native macOS dialog |
 | Clipboard image | Not available | Native clipboard read |

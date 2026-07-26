@@ -28,7 +28,15 @@ try {
   }
 }
 
-const { port, hostname, openBrowser } = parseLaunchOptions();
+let launchOptions;
+try {
+  launchOptions = parseLaunchOptions();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
+
+const { port, hostname, openBrowser, authToken } = launchOptions;
 
 if (!fs.existsSync(nextDir)) {
   console.error("Build artifacts not found. Please report this issue.");
@@ -43,7 +51,10 @@ if (hostname) nextArgs.push("-H", hostname);
 const child = spawn(process.execPath, [nextBin, ...nextArgs], {
   cwd: pkgDir,
   stdio: ["inherit", "pipe", "inherit"],
-  env: { ...process.env },
+  env: {
+    ...process.env,
+    ...(authToken ? { PI_DESKTOP_AUTH_TOKEN: authToken } : {}),
+  },
 });
 
 let browserOpened = false;

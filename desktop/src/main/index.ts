@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, shell } from "electron";
 import type { OnBeforeSendHeadersListenerDetails, BeforeSendResponse } from "electron";
 import windowState from "electron-window-state";
 import { dirname, join } from "node:path";
@@ -7,6 +7,12 @@ import { registerIpcHandlers } from "./ipc";
 import { killSidecar, spawnNextServer, waitForHealth } from "./server";
 import { initLogging, writeLog } from "./logging";
 import { createMenu } from "./menu";
+import {
+  isAllowedExternalUrl,
+  isSidecarUrl,
+  setSidecarOrigin,
+  shouldAttachDesktopAuthHeader,
+} from "./security";
 
 const isDev = !app.isPackaged;
 let mainWindow: BrowserWindow | null = null;
@@ -42,20 +48,27 @@ function createMainWindow(port: number, authToken: string): BrowserWindow {
       preload: getPreloadPath(),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false, // needed for electron-window-state + preload IPC
+      sandbox: true,
     },
   });
 
   state.manage(win);
 
-  // Inject auth token into every API request from the renderer.
-  // The proxy middleware requires X-Pi-Desktop-Auth for all /api/* routes.
+  const sidecarUrl = `http://127.0.0.1:${port}`;
+  setSidecarOrigin(sidecarUrl);
+
+  // Inject auth token only into local sidecar API requests.
+  // Never attach it to app pages, external origins, or subresources.
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (
       details: OnBeforeSendHeadersListenerDetails,
       callback: (beforeSendResponse: BeforeSendResponse) => void,
     ) => {
-      details.requestHeaders["X-Pi-Desktop-Auth"] = authToken;
+      if (shouldAttachDesktopAuthHeader(details)) {
+        details.requestHeaders["X-Pi-Desktop-Auth"] = authToken;
+      } else {
+        delete details.requestHeaders["X-Pi-Desktop-Auth"];
+      }
       callback({ requestHeaders: details.requestHeaders });
     },
   );
@@ -92,8 +105,16 @@ function createMainWindow(port: number, authToken: string): BrowserWindow {
     }
   });
 
-  const url = `http://127.0.0.1:${port}`;
-  void win.loadURL(url);
+  win.webContents.on("will-navigate", (event, navigationUrl) => {
+    if (!isSidecarUrl(navigationUrl)) event.preventDefault();
+  });
+
+  win.webContents.setWindowOpenHandler(({ url: targetUrl }) => {
+    if (isAllowedExternalUrl(targetUrl)) void shell.openExternal(targetUrl);
+    return { action: "deny" };
+  });
+
+  void win.loadURL(sidecarUrl);
 
   win.once("ready-to-show", () => {
     win.show();
@@ -137,7 +158,7 @@ async function main() {
 
   await app.whenReady();
 
-  registerIpcHandlers();
+  registerIpcHandlers(`http://127.0.0.1:${port}`);
 
   // Wait for Next.js server to be ready
   try {
