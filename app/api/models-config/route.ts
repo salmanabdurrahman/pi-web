@@ -4,6 +4,7 @@ import { join, dirname } from "path";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
 import { invalidateModelsCache } from "@/lib/models-cache";
 import { redactValue } from "@/lib/secret-redaction";
+import { mergePreservingSecretPlaceholders } from "@/lib/models-config-merge";
 import { auditLog } from "@/lib/audit-log";
 
 export const dynamic = "force-dynamic";
@@ -79,7 +80,9 @@ export async function PUT(req: Request) {
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
-    writeModelsJson(body);
+    const current = readModelsJson();
+    const merged = mergePreservingSecretPlaceholders(current, body) as Record<string, unknown>;
+    writeModelsJson(merged);
     invalidateModelsCache();
     auditLog("config.write", { path: getModelsPath() });
     return NextResponse.json({ success: true });

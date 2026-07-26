@@ -13,9 +13,16 @@ const SECRET_KEY_PATTERNS = [
   /(?<![a-zA-Z])api[_-]?key(?![a-zA-Z])/i,
   /(?<![a-zA-Z])secret(?![a-zA-Z])/i,
   /(?<![a-zA-Z])token(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])access[_-]?token(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])refresh[_-]?token(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])id[_-]?token(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])cookie(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])session(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])bearer(?![a-zA-Z])/i,
   /(?<![a-zA-Z])password(?![a-zA-Z])/i,
   /(?<![a-zA-Z])credential(?![a-zA-Z])/i,
   /(?<![a-zA-Z])private[_-]?key(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])auth(?:orization)?(?![a-zA-Z])/i,
 ];
 
 function looksSecret(key) {
@@ -29,20 +36,10 @@ function looksEnvRef(value) {
 
 function redactValue(key, value) {
   if (value === undefined || value === null) return value;
-  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+  if (Array.isArray(value)) return value.map((item) => redactValue(key, item));
+  if (typeof value === "object" && value !== null) {
     const redacted = {};
-    for (const [k, v] of Object.entries(value)) {
-      // Only redact primitive values — never redact entire objects
-      if (typeof v === "object" && v !== null && !Array.isArray(v)) {
-        redacted[k] = redactValue(k, v);
-      } else if (looksSecret(k)) {
-        if (typeof v === "string" && looksEnvRef(v)) redacted[k] = "<env-ref>";
-        else if (typeof v === "string" && v.length > 0) redacted[k] = "<redacted>";
-        else redacted[k] = "<redacted>";
-      } else {
-        redacted[k] = v;
-      }
-    }
+    for (const [k, v] of Object.entries(value)) redacted[k] = redactValue(k, v);
     return redacted;
   }
   if (looksSecret(key)) {
@@ -131,9 +128,12 @@ describe("redactValue", () => {
     });
   });
 
-  it("handles empty arrays — passes through", () => {
+  it("recurses arrays", () => {
     assert.deepEqual(redactValue("items", []), []);
     assert.deepEqual(redactValue("items", [1, 2, 3]), [1, 2, 3]);
+    assert.deepEqual(redactValue("headers", [{ Authorization: "Bearer x" }]), [
+      { Authorization: "<redacted>" },
+    ]);
   });
 
   it("handles empty string in secret key", () => {
@@ -192,8 +192,8 @@ describe("config summary shape", () => {
     const requiredKeys = ["agentDir", "cwd", "global", "project", "resources", "parityGaps"];
     // Structural check: all keys exist in expected shape
     const sample = {
-      agentDir: "/tmp",
-      cwd: "/tmp",
+      agentDir: null,
+      cwd: null,
       global: {
         defaultProvider: null,
         defaultModel: null,
@@ -208,6 +208,7 @@ describe("config summary shape", () => {
         skills: { count: 0 },
         extensions: { count: 0 },
         themes: { count: 0 },
+        mcp: { serverCount: 0, authRefTypes: [], directTools: { enabled: 0, disabled: 0 } },
       },
       project: { hasSettings: false, packages: null },
       resources: { skills: { count: 0, diagnostics: 0 } },

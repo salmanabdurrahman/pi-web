@@ -1951,9 +1951,30 @@ function AddProviderPicker({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
+function hasChangedRedactedSecret(original: unknown, current: unknown): boolean {
+  if (original === "<redacted>" || original === "<env-ref>") return current !== original;
+  if (Array.isArray(original) && Array.isArray(current)) {
+    return original.some((item, index) => hasChangedRedactedSecret(item, current[index]));
+  }
+  if (
+    typeof original === "object" &&
+    original !== null &&
+    typeof current === "object" &&
+    current !== null &&
+    !Array.isArray(original) &&
+    !Array.isArray(current)
+  ) {
+    return Object.entries(original as Record<string, unknown>).some(([key, value]) =>
+      hasChangedRedactedSecret(value, (current as Record<string, unknown>)[key]),
+    );
+  }
+  return false;
+}
+
 export function ModelsConfig({ onClose }: { onClose: () => void }) {
   const isMobile = useIsMobile();
   const [config, setConfig] = useState<ModelsJson>({ providers: {} });
+  const [originalConfig, setOriginalConfig] = useState<ModelsJson>({ providers: {} });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -1983,6 +2004,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
       .then((d: ModelsJson) => {
         const normalized = d.providers ? d : { ...d, providers: {} };
         setConfig(normalized);
+        setOriginalConfig(normalized);
         const keys = Object.keys(normalized.providers ?? {});
         if (keys.length > 0) setSelection({ type: "provider", name: keys[0] });
       })
@@ -2087,6 +2109,14 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
     setSaveError(null);
     setSavedOk(false);
     try {
+      if (
+        hasChangedRedactedSecret(originalConfig, config) &&
+        !window.confirm(
+          "This save replaces at least one redacted secret placeholder. Existing secrets are preserved only when placeholders stay unchanged. Continue?",
+        )
+      ) {
+        return;
+      }
       const res = await fetch("/api/models-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -2096,6 +2126,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
       if (!res.ok || d.error) setSaveError(d.error ?? `HTTP ${res.status}`);
       else {
         setSavedOk(true);
+        setOriginalConfig(config);
         setTimeout(() => setSavedOk(false), 2000);
       }
     } catch (e) {
@@ -2103,7 +2134,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
     } finally {
       setSaving(false);
     }
-  }, [config]);
+  }, [config, originalConfig]);
 
   const providers = Object.entries(config.providers ?? {});
   const activeOAuth = oauthProviders.filter((p) => p.loggedIn);

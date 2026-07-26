@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
 import { NextResponse } from "next/server";
 import {
   DefaultResourceLoader,
@@ -5,7 +7,8 @@ import {
   SettingsManager,
   type PackageSource,
 } from "@earendil-works/pi-coding-agent";
-import { looksEnvRef, looksSecret, redactValue } from "@/lib/secret-redaction";
+import { redactValue } from "@/lib/secret-redaction";
+import { getAllowedFileRoots, isExistingFilePathAllowed } from "@/lib/file-access";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +52,46 @@ interface BranchSummarySettingsLike {
 
 function packageSourceToString(pkg: PackageSource): string {
   return typeof pkg === "string" ? pkg : pkg.source;
+}
+
+interface McpSummary {
+  serverCount: number;
+  authRefTypes: string[];
+  directTools: { enabled: number; disabled: number };
+}
+
+function summarizeMcpConfig(agentDir: string): McpSummary {
+  const empty = { serverCount: 0, authRefTypes: [], directTools: { enabled: 0, disabled: 0 } };
+  const path = join(agentDir, "mcp.json");
+  if (!existsSync(path)) return empty;
+  try {
+    const raw = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+    const serversValue = raw.servers ?? raw.mcpServers ?? raw;
+    if (typeof serversValue !== "object" || serversValue === null || Array.isArray(serversValue)) {
+      return empty;
+    }
+    const authTypes = new Set<string>();
+    let directEnabled = 0;
+    let directDisabled = 0;
+    for (const server of Object.values(serversValue as Record<string, unknown>)) {
+      if (typeof server !== "object" || server === null || Array.isArray(server)) continue;
+      const s = server as Record<string, unknown>;
+      if (s.directTools === true) directEnabled += 1;
+      if (s.directTools === false) directDisabled += 1;
+      const env = s.env;
+      if (typeof env === "object" && env !== null && !Array.isArray(env)) authTypes.add("env");
+      if (s.auth !== undefined || s.authRef !== undefined) authTypes.add("auth-ref");
+      if (s.headers !== undefined) authTypes.add("headers");
+      if (s.oauth !== undefined) authTypes.add("oauth");
+    }
+    return {
+      serverCount: Object.keys(serversValue as Record<string, unknown>).length,
+      authRefTypes: Array.from(authTypes).sort(),
+      directTools: { enabled: directEnabled, disabled: directDisabled },
+    };
+  } catch {
+    return empty;
+  }
 }
 
 function isDisabledPackage(pkg: PackageSource): boolean {
@@ -154,8 +197,8 @@ function detectParityGaps(globalSettings: SettingsLike): ParityGap[] {
 // ── Main endpoint ────────────────────────────────────────────────────────────
 
 export interface ConfigSummary {
-  agentDir: string;
-  cwd: string;
+  agentDir: string | null;
+  cwd: string | null;
   global: {
     defaultProvider: string | null;
     defaultModel: string | null;
@@ -171,6 +214,7 @@ export interface ConfigSummary {
     skills: { count: number };
     extensions: { count: number };
     themes: { count: number };
+    mcp: McpSummary;
   };
   project: {
     hasSettings: boolean;
@@ -185,6 +229,16 @@ export interface ConfigSummary {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const requestedCwd = searchParams.get("cwd") || process.cwd();
+  const includeDetails = searchParams.get("details") === "1";
+
+  if (!existsSync(requestedCwd)) {
+    return NextResponse.json({ error: "CWD not found" }, { status: 404 });
+  }
+
+  const allowedRoots = await getAllowedFileRoots();
+  if (!isExistingFilePathAllowed(requestedCwd, allowedRoots)) {
+    return NextResponse.json({ error: "CWD is outside allowed roots" }, { status: 403 });
+  }
 
   try {
     const agentDir = getAgentDir();
@@ -224,6 +278,8 @@ export async function GET(req: Request) {
     const globalSkills = globalSettings.skills ?? [];
     const globalThemes = globalSettings.themes ?? [];
 
+    const globalMcp = summarizeMcpConfig(agentDir);
+
     // ── Project overrides ──
     const projectHasSettings = Object.keys(projectSettings).length > 0;
     const projectPackages = projectSettings.packages ?? [];
@@ -244,8 +300,8 @@ export async function GET(req: Request) {
     const parityGaps = detectParityGaps(globalSettings as unknown as SettingsLike);
 
     const summary: ConfigSummary = {
-      agentDir,
-      cwd: requestedCwd,
+      agentDir: includeDetails ? agentDir : null,
+      cwd: includeDetails ? requestedCwd : null,
       global: {
         defaultProvider: globalDefaultProvider,
         defaultModel: globalDefaultModel,
@@ -260,15 +316,16 @@ export async function GET(req: Request) {
           count: globalPackages.length,
           loaded: loadedPkgs.length,
           disabled: disabledPkgs.length,
-          sources: packageSources,
+          sources: includeDetails ? packageSources : [],
         },
         prompts: {
           count: globalPrompts.length,
-          paths: globalPrompts,
+          paths: includeDetails ? globalPrompts : [],
         },
         skills: { count: globalSkills.length },
         extensions: { count: globalExtensions.length },
         themes: { count: globalThemes.length },
+        mcp: globalMcp,
       },
       project: {
         hasSettings: projectHasSettings,
@@ -289,8 +346,8 @@ export async function GET(req: Request) {
       const global = settingsManager.getGlobalSettings();
 
       return NextResponse.json({
-        agentDir,
-        cwd: requestedCwd,
+        agentDir: includeDetails ? agentDir : null,
+        cwd: includeDetails ? requestedCwd : null,
         global: {
           defaultProvider: global.defaultProvider ?? null,
           defaultModel: global.defaultModel ?? null,
@@ -307,24 +364,28 @@ export async function GET(req: Request) {
             count: (global.packages ?? []).length,
             loaded: 0,
             disabled: 0,
-            sources: (global.packages ?? []).map(packageSourceToString),
+            sources: includeDetails ? (global.packages ?? []).map(packageSourceToString) : [],
           },
-          prompts: { count: (global.prompts ?? []).length, paths: global.prompts ?? [] },
+          prompts: {
+            count: (global.prompts ?? []).length,
+            paths: includeDetails ? (global.prompts ?? []) : [],
+          },
           skills: { count: (global.skills ?? []).length },
           extensions: { count: (global.extensions ?? []).length },
           themes: { count: (global.themes ?? []).length },
+          mcp: summarizeMcpConfig(agentDir),
         },
         project: { hasSettings: false, packages: null },
         resources: { skills: { count: 0, diagnostics: 0 } },
         parityGaps: [],
         _fallback: true,
-        _error: error instanceof Error ? error.message : String(error),
+        _error: "Config summary fallback used",
       });
     } catch (fallbackError) {
       return NextResponse.json(
         {
           error: "Failed to load config",
-          detail: error instanceof Error ? error.message : String(error),
+          detail: "Config summary unavailable",
         },
         { status: 500 },
       );

@@ -6,6 +6,12 @@ const SECRET_KEY_PATTERNS = [
   /(?<![a-zA-Z])api[_-]?key(?![a-zA-Z])/i,
   /(?<![a-zA-Z])secret(?![a-zA-Z])/i,
   /(?<![a-zA-Z])token(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])access[_-]?token(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])refresh[_-]?token(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])id[_-]?token(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])cookie(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])session(?![a-zA-Z])/i,
+  /(?<![a-zA-Z])bearer(?![a-zA-Z])/i,
   /(?<![a-zA-Z])password(?![a-zA-Z])/i,
   /(?<![a-zA-Z])credential(?![a-zA-Z])/i,
   /(?<![a-zA-Z])private[_-]?key(?![a-zA-Z])/i,
@@ -27,9 +33,8 @@ export function looksEnvRef(value: unknown): boolean {
 /**
  * Recursively redact secret values in an object tree.
  *
- * Only primitive values are redacted — nested objects whose key matches
- * a secret pattern are traversed, not replaced wholesale.  Array values
- * are returned as-is (arrays of primitives are rare for config keys).
+ * Only primitive values are redacted — nested objects/arrays whose key matches
+ * a secret pattern are traversed, not replaced wholesale.
  *
  * Redaction replacements:
  *  - `<redacted>` for non-empty string / non-null primitive values
@@ -37,18 +42,13 @@ export function looksEnvRef(value: unknown): boolean {
  */
 export function redactValue(key: string, value: unknown): unknown {
   if (value === undefined || value === null) return value;
-  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+  if (Array.isArray(value)) {
+    return value.map((item) => redactValue(key, item));
+  }
+  if (typeof value === "object" && value !== null) {
     const redacted: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (typeof v === "object" && v !== null && !Array.isArray(v)) {
-        redacted[k] = redactValue(k, v);
-      } else if (looksSecret(k)) {
-        if (typeof v === "string" && looksEnvRef(v)) redacted[k] = "<env-ref>";
-        else if (typeof v === "string" && v.length > 0) redacted[k] = "<redacted>";
-        else redacted[k] = "<redacted>";
-      } else {
-        redacted[k] = v;
-      }
+      redacted[k] = redactValue(k, v);
     }
     return redacted;
   }

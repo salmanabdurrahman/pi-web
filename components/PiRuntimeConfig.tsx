@@ -12,8 +12,8 @@ interface ParityGap {
 }
 
 interface ConfigSummary {
-  agentDir: string;
-  cwd: string;
+  agentDir: string | null;
+  cwd: string | null;
   global: {
     defaultProvider: string | null;
     defaultModel: string | null;
@@ -45,6 +45,11 @@ interface ConfigSummary {
     skills: { count: number };
     extensions: { count: number };
     themes: { count: number };
+    mcp: {
+      serverCount: number;
+      authRefTypes: string[];
+      directTools: { enabled: number; disabled: number };
+    };
   };
   project: {
     hasSettings: boolean;
@@ -173,11 +178,14 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetch(`/api/pi/config-summary?cwd=${encodeURIComponent(cwd)}`);
+      const qs = new URLSearchParams({ cwd });
+      if (showDetails) qs.set("details", "1");
+      const res = await fetch(`/api/pi/config-summary?${qs.toString()}`);
       const d = (await res.json()) as ConfigSummary & { error?: string; detail?: string };
       if (!res.ok || d.error) throw new Error(d.error ?? d.detail ?? `HTTP ${res.status}`);
       setData(d);
@@ -187,7 +195,7 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
       setLoading(false);
       setRefreshing(false);
     }
-  }, [cwd]);
+  }, [cwd, showDetails]);
 
   useEffect(() => {
     setLoading(true);
@@ -198,11 +206,7 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
     setRefreshing(true);
     // Invalidate caches then reload
     try {
-      await fetch("/api/models-config", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-      }).catch(() => {});
+      await fetch("/api/pi/config-refresh", { method: "POST" }).catch(() => {});
     } catch {
       /* ignore */
     }
@@ -307,8 +311,31 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
         <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
           {/* Agent Dir */}
           <Section title="Agent Directory">
-            <Row label="Agent dir" value={shortenPath(data.agentDir)} mono />
-            <Row label="CWD" value={shortenPath(data.cwd)} mono />
+            <Row
+              label="Agent dir"
+              value={data.agentDir ? shortenPath(data.agentDir) : "Hidden by default"}
+              mono
+            />
+            <Row label="CWD" value={data.cwd ? shortenPath(data.cwd) : "Hidden by default"} mono />
+            <Row
+              label="Details"
+              value={
+                <button
+                  onClick={() => setShowDetails((v) => !v)}
+                  style={{
+                    padding: "2px 8px",
+                    background: "none",
+                    border: "1px solid var(--border)",
+                    borderRadius: 4,
+                    color: "var(--text-muted)",
+                    cursor: "pointer",
+                    fontSize: 11,
+                  }}
+                >
+                  {showDetails ? "Hide paths" : "Show local paths"}
+                </button>
+              }
+            />
             {data._fallback && (
               <Row
                 label="Status"
@@ -555,10 +582,21 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
           </Section>
 
           {/* Resource counts */}
-          <Section title="Resources (raw paths)">
+          <Section title="Resources (configured counts)">
             <Row label="Skills" value={g.skills.count} mono />
             <Row label="Extensions" value={g.extensions.count} mono />
             <Row label="Themes" value={g.themes.count} mono />
+          </Section>
+
+          {/* MCP */}
+          <Section title="MCP Config">
+            <Row label="Servers" value={g.mcp.serverCount} mono />
+            <Row
+              label="Auth refs"
+              value={g.mcp.authRefTypes.length ? g.mcp.authRefTypes.join(", ") : "None detected"}
+              mono
+            />
+            <Row label="directTools enabled" value={g.mcp.directTools.enabled} mono />
           </Section>
 
           {/* Resolved resources */}

@@ -25,9 +25,11 @@ How Pi Web reads, uses, and mutates the global Pi agent config at `~/.pi/agent/s
 | `transport` | ❌ | ❌ | CLI transport selection; not applicable |
 | `theme` | ❌ | ❌ | Pi Web has its own theme system |
 | `lastChangelogVersion` | ❌ | ❌ | CLI changelog tracking |
-| `defaultProjectTrust` | ❌ | ❌ | CLI trust prompt |
+| `defaultProjectTrust` | ❌ | ❌ | CLI trust config; not Pi Web file-access allow-list |
 | `enableInstallTelemetry` | ❌ | ❌ | CLI telemetry |
 | `enableAnalytics` | ❌ | ❌ | CLI analytics |
+| `mcp.json` servers | ✅ | ❌ | Shows counts/auth-ref type/status only; never token values |
+| `trust.json` roots | ⚠️ | ❌ | CLI trust config only; Pi Web allowed roots come from sessions, selected dirs, project roots, and runtime additions |
 
 ## Config Mutations
 
@@ -38,6 +40,8 @@ Pi Web mutates these config paths:
 - Read/write model provider entries
 - Validates shape before write
 - Secrets redacted in GET responses
+- Redacted placeholders (`<redacted>`, `<env-ref>`) preserve existing secret fields on save
+- UI warns before replacing placeholder secrets with new literal values
 
 ### `packages` in `settings.json`
 
@@ -88,7 +92,14 @@ Pi Web mutates these config paths:
 
 ## Config Refresh
 
-`POST /api/pi/config-refresh` invalidates model and resource caches. Use after editing `settings.json` or `models.json` externally. The Pi Runtime panel in Settings also provides a refresh button.
+`POST /api/pi/config-refresh` invalidates runtime caches without writing config files. It clears model and session-list caches; resource summaries are reloaded from a fresh loader per request. Use after editing `settings.json` or `models.json` externally. The Pi Runtime panel in Settings also provides a refresh button.
+
+## Local hardening
+
+- Keep `~/.pi/agent/auth.json` private; do not print or paste it into transcripts.
+- Run `chmod 600 ~/.pi/agent/mcp.json` when MCP config contains tokens, auth refs, private workspace IDs, or command env metadata.
+- Rotate tokens if terminal/tool transcripts containing token fragments were persisted or shared.
+- Config summary hides local paths by default; use details view only in trusted local UI.
 
 ## File Locations
 

@@ -75,3 +75,38 @@ test("models-config redaction: handles empty providers", async () => {
   assert.deepEqual(redactValue("root", { providers: {} }), { providers: {} });
   assert.deepEqual(redactValue("root", {}), {});
 });
+
+test("models-config merge: preserves redacted provider secrets", async () => {
+  const { mergePreservingSecretPlaceholders } = await import("../../../lib/models-config-merge.ts");
+  const current = {
+    providers: {
+      openai: {
+        apiKey: "sk-live",
+        headers: { Authorization: "Bearer live", "X-Trace": "keep" },
+      },
+    },
+  };
+  const incoming = {
+    providers: {
+      openai: {
+        apiKey: "<redacted>",
+        headers: { Authorization: "<redacted>", "X-Trace": "changed" },
+      },
+    },
+  };
+  assert.deepEqual(mergePreservingSecretPlaceholders(current, incoming), {
+    providers: {
+      openai: {
+        apiKey: "sk-live",
+        headers: { Authorization: "Bearer live", "X-Trace": "changed" },
+      },
+    },
+  });
+});
+
+test("models-config merge: allows explicit secret replacement", async () => {
+  const { mergePreservingSecretPlaceholders } = await import("../../../lib/models-config-merge.ts");
+  const current = { providers: { openai: { apiKey: "sk-old" } } };
+  const incoming = { providers: { openai: { apiKey: "sk-new" } } };
+  assert.deepEqual(mergePreservingSecretPlaceholders(current, incoming), incoming);
+});
