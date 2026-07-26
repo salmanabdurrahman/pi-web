@@ -330,28 +330,7 @@ function UserMessageView({
             <button
               onClick={copyContent}
               title="Copy message"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "3px 8px",
-                height: 22,
-                background: "none",
-                border: "none",
-                borderRadius: 5,
-                color: copied ? "var(--accent)" : "var(--text-dim)",
-                cursor: "pointer",
-                fontSize: 11,
-                fontWeight: 400,
-                whiteSpace: "nowrap",
-                transition: "color 0.12s",
-              }}
-              onMouseEnter={(e) => {
-                if (!copied) e.currentTarget.style.color = "var(--accent)";
-              }}
-              onMouseLeave={(e) => {
-                if (!copied) e.currentTarget.style.color = "var(--text-dim)";
-              }}
+              className={`flex h-[22px] cursor-pointer items-center gap-[4px] rounded-[5px] border-none bg-transparent px-[8px] py-[3px] text-[11px] font-normal whitespace-nowrap transition-colors hover:text-[var(--accent)] ${copied ? "text-[var(--accent)]" : "text-[var(--text-dim)]"}`}
             >
               {copied ? (
                 <svg
@@ -401,28 +380,7 @@ function UserMessageView({
                     onEditContent?.(content);
                   }}
                   title="Edit from here — branches within this session"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "3px 8px",
-                    height: 22,
-                    background: "none",
-                    border: "none",
-                    borderRadius: 5,
-                    color: "var(--text-dim)",
-                    cursor: "pointer",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    whiteSpace: "nowrap",
-                    transition: "color 0.12s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "var(--accent)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "var(--text-dim)";
-                  }}
+                  className="flex h-[22px] cursor-pointer items-center gap-[4px] rounded-[5px] border-none bg-transparent px-[8px] py-[3px] text-[11px] font-normal whitespace-nowrap text-[var(--text-dim)] transition-colors hover:text-[var(--accent)]"
                 >
                   <svg
                     width="11"
@@ -451,28 +409,7 @@ function UserMessageView({
                       ? "Creating new session…"
                       : "New session — creates an independent copy from here"
                   }
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "3px 8px",
-                    height: 22,
-                    background: "none",
-                    border: "none",
-                    borderRadius: 5,
-                    color: forking ? "var(--accent)" : "var(--text-dim)",
-                    cursor: forking ? "not-allowed" : "pointer",
-                    fontSize: 11,
-                    fontWeight: 400,
-                    whiteSpace: "nowrap",
-                    transition: "color 0.12s",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!forking) e.currentTarget.style.color = "var(--accent)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!forking) e.currentTarget.style.color = "var(--text-dim)";
-                  }}
+                  className={`flex h-[22px] items-center gap-[4px] rounded-[5px] border-none bg-transparent px-[8px] py-[3px] text-[11px] font-normal whitespace-nowrap transition-colors enabled:cursor-pointer enabled:hover:text-[var(--accent)] disabled:cursor-not-allowed ${forking ? "text-[var(--accent)]" : "text-[var(--text-dim)]"}`}
                 >
                   <svg
                     width="11"
@@ -761,30 +698,7 @@ function AssistantMessageView({
           <button
             onClick={copyContent}
             title="Copy message"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "3px 8px",
-              height: 22,
-              background: "none",
-              border: "none",
-              borderRadius: 5,
-              color: copied ? "var(--accent)" : "var(--text-dim)",
-              cursor: "pointer",
-              fontSize: 11,
-              fontWeight: 400,
-              whiteSpace: "nowrap",
-              opacity: hovered ? 1 : 0,
-              pointerEvents: hovered ? "auto" : "none",
-              transition: "opacity 0.12s, color 0.12s",
-            }}
-            onMouseEnter={(e) => {
-              if (!copied) e.currentTarget.style.color = "var(--accent)";
-            }}
-            onMouseLeave={(e) => {
-              if (!copied) e.currentTarget.style.color = "var(--text-dim)";
-            }}
+            className={`flex h-[22px] cursor-pointer items-center gap-[4px] rounded-[5px] border-none bg-transparent px-[8px] py-[3px] text-[11px] font-normal whitespace-nowrap transition-colors transition-opacity hover:text-[var(--accent)] ${hovered ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"} ${copied ? "text-[var(--accent)]" : "text-[var(--text-dim)]"}`}
           >
             {copied ? (
               <svg

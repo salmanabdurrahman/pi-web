@@ -7,7 +7,6 @@ import { TitleBar } from "./TitleBar";
 import { SessionSidebar } from "./SessionSidebar";
 import { ChatWindow } from "./ChatWindow";
 import { FileViewer } from "./FileViewer";
-import { ReviewPanel } from "./ReviewPanel";
 import { TabBar, type Tab } from "./TabBar";
 import { ModelsConfig } from "./ModelsConfig";
 import { SkillsConfig } from "./SkillsConfig";
@@ -188,9 +187,7 @@ export function AppShell() {
   const [fileTabs, setFileTabs] = useState<Tab[]>([]);
   const [activeFileTabId, setActiveFileTabId] = useState<string | null>(null);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [rightPanelMode, setRightPanelMode] = useState<"files" | "review" | "context" | "tools">(
-    "files",
-  );
+  const [rightPanelMode, setRightPanelMode] = useState<"files" | "context" | "tools">("files");
 
   // Same @mention format as the chat input's @ autocomplete, so the agent's
   // read tool resolves it the same way (it strips the @ prefix).
@@ -580,160 +577,6 @@ export function AppShell() {
         onAtMention={handleAtMention}
         onAtMentions={handleAtMentions}
       />
-      <div
-        style={{
-          padding: "8px",
-          flexShrink: 0,
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 4,
-        }}
-      >
-        {(
-          [
-            {
-              label: "Models",
-              onClick: () => setModelsConfigOpen(true),
-              disabled: false,
-              icon: (
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="4" y="4" width="16" height="16" rx="2" />
-                  <rect x="9" y="9" width="6" height="6" />
-                  <line x1="9" y1="1" x2="9" y2="4" />
-                  <line x1="15" y1="1" x2="15" y2="4" />
-                  <line x1="9" y1="20" x2="9" y2="23" />
-                  <line x1="15" y1="20" x2="15" y2="23" />
-                  <line x1="20" y1="9" x2="23" y2="9" />
-                  <line x1="20" y1="14" x2="23" y2="14" />
-                  <line x1="1" y1="9" x2="4" y2="9" />
-                  <line x1="1" y1="14" x2="4" y2="14" />
-                </svg>
-              ),
-            },
-            {
-              label: "Skills",
-              onClick: () => setSkillsConfigOpen(true),
-              disabled: !activeCwd && !selectedSession?.cwd && !newSessionCwd,
-              icon: (
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
-              ),
-            },
-            {
-              label: "Plugins",
-              onClick: () => setPluginsConfigOpen(true),
-              disabled: !activeCwd && !selectedSession?.cwd && !newSessionCwd,
-              icon: (
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M9 7V2" />
-                  <path d="M15 7V2" />
-                  <path d="M6 13V8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v5a6 6 0 0 1-12 0Z" />
-                  <path d="M12 19v3" />
-                </svg>
-              ),
-            },
-            {
-              label: "Runtime",
-              onClick: () => setPiRuntimeOpen(true),
-              disabled: !activeCwd && !selectedSession?.cwd && !newSessionCwd,
-              icon: (
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M12 1v2" />
-                  <path d="M12 21v2" />
-                  <path d="M4.22 4.22l1.42 1.42" />
-                  <path d="M18.36 18.36l1.42 1.42" />
-                  <path d="M1 12h2" />
-                  <path d="M21 12h2" />
-                  <path d="M4.22 19.78l1.42-1.42" />
-                  <path d="M18.36 5.64l1.42-1.42" />
-                </svg>
-              ),
-            },
-          ] as {
-            label: string;
-            onClick: () => void;
-            disabled: boolean;
-            icon: React.ReactNode;
-          }[]
-        ).map(({ label, onClick, disabled, icon }) => (
-          <button
-            key={label}
-            onClick={onClick}
-            disabled={disabled}
-            title={label}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              height: 32,
-              padding: 0,
-              background: "none",
-              border: "none",
-              borderRadius: 9,
-              color: "var(--text-muted)",
-              cursor: disabled ? "default" : "pointer",
-              fontSize: 12,
-              opacity: disabled ? 0.35 : 1,
-              transition: "background 0.12s, color 0.12s",
-            }}
-            onMouseEnter={(e) => {
-              if (!disabled) {
-                e.currentTarget.style.background = "var(--bg-hover)";
-                e.currentTarget.style.color = "var(--text)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "none";
-              e.currentTarget.style.color = "var(--text-muted)";
-            }}
-          >
-            {icon}
-            {label}
-          </button>
-        ))}
-      </div>
     </>
   );
 
@@ -881,27 +724,7 @@ export function AppShell() {
                 onClick={handleSidebarToggle}
                 title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
                 aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 36,
-                  height: 36,
-                  padding: 0,
-                  background: "none",
-                  border: "none",
-                  borderRight: "1px solid var(--border)",
-                  color: "var(--text-muted)",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  transition: "color 0.12s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "var(--text)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "var(--text-muted)";
-                }}
+                className="flex h-[36px] w-[36px] shrink-0 items-center justify-center border-r border-none border-[var(--border)] bg-transparent p-0 text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
               >
                 {sidebarOpen ? (
                   <svg
@@ -944,27 +767,7 @@ export function AppShell() {
                 title={isDark ? "Switch to light mode" : "Switch to dark mode"}
                 aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
                 aria-pressed={isDark}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 36,
-                  height: 36,
-                  padding: 0,
-                  background: "none",
-                  border: "none",
-                  borderRight: "1px solid var(--border)",
-                  color: "var(--text-muted)",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  transition: "color 0.12s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "var(--text)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "var(--text-muted)";
-                }}
+                className="flex h-[36px] w-[36px] shrink-0 items-center justify-center border-r border-none border-[var(--border)] bg-transparent p-0 text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
               >
                 {isDark ? (
                   <svg
@@ -1019,35 +822,7 @@ export function AppShell() {
                         : "Full history is available after the session is saved"
                     }
                     aria-label="View full history"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      height: "100%",
-                      padding: "0 12px",
-                      background: "none",
-                      border: "none",
-                      borderTop: "2px solid transparent",
-                      borderRight: "1px solid var(--border)",
-                      color: selectedSession ? "var(--text-muted)" : "var(--text-dim)",
-                      cursor: selectedSession ? "pointer" : "not-allowed",
-                      opacity: selectedSession ? 1 : 0.45,
-                      flexShrink: 0,
-                      fontSize: 11,
-                      whiteSpace: "nowrap",
-                      transition: "color 0.1s, background 0.1s, opacity 0.1s",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!selectedSession) return;
-                      e.currentTarget.style.color = "var(--text)";
-                      e.currentTarget.style.background = "var(--bg-hover)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = selectedSession
-                        ? "var(--text-muted)"
-                        : "var(--text-dim)";
-                      e.currentTarget.style.background = "none";
-                    }}
+                    className="flex h-full shrink-0 items-center gap-[6px] border-t-2 border-r border-none border-[var(--border)] border-t-transparent bg-transparent px-[12px] text-[11px] whitespace-nowrap text-[var(--text-muted)] transition-colors enabled:cursor-pointer enabled:hover:bg-[var(--bg-hover)] enabled:hover:text-[var(--text)] disabled:cursor-not-allowed disabled:text-[var(--text-dim)] disabled:opacity-45"
                   >
                     <svg
                       width="12"
@@ -1058,10 +833,7 @@ export function AppShell() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      style={{
-                        color: selectedSession ? "var(--text-muted)" : "var(--text-dim)",
-                        flexShrink: 0,
-                      }}
+                      className="shrink-0"
                     >
                       <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
                       <path d="M3 3v5h5" />
@@ -1101,45 +873,7 @@ export function AppShell() {
                         disabled={disabled}
                         title={title}
                         aria-label={label}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          height: "100%",
-                          padding: "0 12px",
-                          background: "none",
-                          border: "none",
-                          borderTop: "2px solid transparent",
-                          borderRight: "1px solid var(--border)",
-                          color: isError
-                            ? "#dc2626"
-                            : isSuccess
-                              ? "var(--accent)"
-                              : disabled
-                                ? "var(--text-dim)"
-                                : "var(--text-muted)",
-                          cursor: disabled ? "not-allowed" : "pointer",
-                          opacity: disabled && autoNameStatus.kind !== "naming" ? 0.45 : 1,
-                          flexShrink: 0,
-                          fontSize: 11,
-                          whiteSpace: "nowrap",
-                          transition: "color 0.1s, background 0.1s, opacity 0.1s",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (disabled) return;
-                          e.currentTarget.style.color = isError ? "#dc2626" : "var(--text)";
-                          e.currentTarget.style.background = "var(--bg-hover)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = isError
-                            ? "#dc2626"
-                            : isSuccess
-                              ? "var(--accent)"
-                              : disabled
-                                ? "var(--text-dim)"
-                                : "var(--text-muted)";
-                          e.currentTarget.style.background = "none";
-                        }}
+                        className={`flex h-full shrink-0 items-center gap-[6px] border-t-2 border-r border-none border-[var(--border)] border-t-transparent bg-transparent px-[12px] text-[11px] whitespace-nowrap transition-colors enabled:cursor-pointer enabled:hover:bg-[var(--bg-hover)] disabled:cursor-not-allowed disabled:text-[var(--text-dim)] ${disabled && autoNameStatus.kind !== "naming" ? "opacity-45" : "opacity-100"} ${isError ? "text-[#dc2626] enabled:hover:text-[#dc2626]" : isSuccess ? "text-[var(--accent)] enabled:hover:text-[var(--text)]" : "text-[var(--text-muted)] enabled:hover:text-[var(--text)]"}`}
                       >
                         {autoNameStatus.kind === "naming" ? (
                           <svg
@@ -1217,32 +951,7 @@ export function AppShell() {
                     title="System prompt"
                     aria-label="System prompt"
                     aria-pressed={activeTopPanel === "system"}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      height: "100%",
-                      padding: "0 12px",
-                      background: activeTopPanel === "system" ? "var(--bg-selected)" : "none",
-                      border: "none",
-                      borderTop:
-                        activeTopPanel === "system"
-                          ? "2px solid var(--accent)"
-                          : "2px solid transparent",
-                      borderRight: "1px solid var(--border)",
-                      cursor: "pointer",
-                      color: activeTopPanel === "system" ? "var(--text)" : "var(--text-muted)",
-                      fontSize: 11,
-                      whiteSpace: "nowrap",
-                      transition: "color 0.1s, background 0.1s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "var(--text)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color =
-                        activeTopPanel === "system" ? "var(--text)" : "var(--text-muted)";
-                    }}
+                    className={`flex h-full cursor-pointer items-center gap-[6px] border-t-2 border-r border-none border-[var(--border)] bg-transparent px-[12px] text-[11px] whitespace-nowrap transition-colors hover:text-[var(--text)] ${activeTopPanel === "system" ? "border-t-[var(--accent)] bg-[var(--bg-selected)] text-[var(--text)]" : "border-t-transparent text-[var(--text-muted)]"}`}
                   >
                     <svg
                       width="12"
@@ -1253,9 +962,9 @@ export function AppShell() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      className="shrink-0"
                       style={{
                         color: systemPrompt ? "var(--accent)" : "var(--text-dim)",
-                        flexShrink: 0,
                       }}
                     >
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -1316,34 +1025,7 @@ export function AppShell() {
                       title={tooltip || "Session info"}
                       aria-label="Session info"
                       aria-pressed={activeTopPanel === "session"}
-                      style={{
-                        marginLeft: "auto",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        paddingLeft: 12,
-                        paddingRight: rightPanelOpen ? 12 : 48,
-                        height: "100%",
-                        background: activeTopPanel === "session" ? "var(--bg-selected)" : "none",
-                        border: "none",
-                        borderTop:
-                          activeTopPanel === "session"
-                            ? "2px solid var(--accent)"
-                            : "2px solid transparent",
-                        fontSize: 11,
-                        color: "var(--text-muted)",
-                        whiteSpace: "nowrap",
-                        cursor: "pointer",
-                        fontVariantNumeric: "tabular-nums",
-                        transition: "color 0.1s, background 0.1s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = "var(--text)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color =
-                          activeTopPanel === "session" ? "var(--text)" : "var(--text-muted)";
-                      }}
+                      className={`ml-auto flex h-full cursor-pointer items-center gap-[10px] border-t-2 border-none bg-transparent pl-[12px] text-[11px] whitespace-nowrap tabular-nums transition-colors hover:text-[var(--text)] ${rightPanelOpen ? "pr-[12px]" : "pr-[48px]"} ${activeTopPanel === "session" ? "border-t-[var(--accent)] bg-[var(--bg-selected)] text-[var(--text)]" : "border-t-transparent text-[var(--text-muted)]"}`}
                     >
                       {isMobile && (
                         <svg
@@ -1670,34 +1352,7 @@ export function AppShell() {
                                     : `Copy ${field === "file" ? "file path" : "session ID"}`
                                 }
                                 onClick={() => handleCopySessionField(field, value)}
-                                style={{
-                                  alignSelf: "start",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  width: 22,
-                                  height: 22,
-                                  marginTop: -2,
-                                  color: copied ? "var(--accent)" : "var(--text-dim)",
-                                  background: "transparent",
-                                  border: "1px solid var(--border)",
-                                  borderRadius: 4,
-                                  cursor: "pointer",
-                                  flex: "0 0 auto",
-                                  transition: "color 0.12s, border-color 0.12s, background 0.12s",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.color = "var(--accent)";
-                                  e.currentTarget.style.borderColor = "var(--accent)";
-                                  e.currentTarget.style.background = "var(--bg-hover)";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.color = copied
-                                    ? "var(--accent)"
-                                    : "var(--text-dim)";
-                                  e.currentTarget.style.borderColor = "var(--border)";
-                                  e.currentTarget.style.background = "transparent";
-                                }}
+                                className={`-mt-[2px] inline-flex h-[22px] w-[22px] shrink-0 cursor-pointer items-center justify-center rounded border border-[var(--border)] bg-transparent transition-colors hover:border-[var(--accent)] hover:bg-[var(--bg-hover)] hover:text-[var(--accent)] ${copied ? "text-[var(--accent)]" : "text-[var(--text-dim)]"}`}
                               >
                                 {copied ? (
                                   <svg
@@ -1997,12 +1652,6 @@ export function AppShell() {
 
             {/* Right panel content */}
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]">
-              {rightPanelMode === "review" && (
-                <ReviewPanel
-                  cwd={activeCwd ?? ""}
-                  onMentionFile={(path) => handleAtMentions([path])}
-                />
-              )}
               {rightPanelMode === "files" && (
                 <>
                   <div className="flex h-[36px] shrink-0 items-center border-b border-[var(--border)] bg-[var(--bg-panel)]">
@@ -2040,38 +1689,49 @@ export function AppShell() {
                 </>
               )}
               {rightPanelMode === "context" && (
-                <div className="p-4 text-[13px] text-[var(--text-muted)]">
+                <div className="flex h-full flex-col p-4 text-[13px] text-[var(--text-muted)]">
                   <h3 className="mb-2 font-semibold text-[var(--text)]">Session Context</h3>
-                  <p>No extra context configured.</p>
-                  <p className="mt-4 opacity-70">(Phase 6: Session Context Panel placeholder)</p>
+                  {systemPrompt ? (
+                    <div className="flex-1 overflow-auto rounded border border-[var(--border)] bg-[var(--bg-panel)] p-3 font-mono text-[12px] leading-[1.6] whitespace-pre-wrap text-[var(--text)]">
+                      {systemPrompt}
+                    </div>
+                  ) : systemPrompt === "" ? (
+                    <p className="mt-2 opacity-70">
+                      No tools or skills configured (empty system prompt).
+                    </p>
+                  ) : agentRunning ? (
+                    <p className="mt-2 opacity-70">Loading context...</p>
+                  ) : (
+                    <p className="mt-2 opacity-70">Send a message to load the system prompt</p>
+                  )}
                 </div>
               )}
               {rightPanelMode === "tools" && (
-                <div className="p-4 text-[13px] text-[var(--text-muted)]">
+                <div className="flex h-full flex-col p-4 text-[13px] text-[var(--text-muted)]">
                   <h3 className="mb-2 font-semibold text-[var(--text)]">Runtime Tools</h3>
                   <p>Global agent resources and loaded extensions.</p>
                   <div className="mt-4 flex flex-col gap-2">
                     <button
                       onClick={() => setModelsConfigOpen(true)}
-                      className="rounded border border-[var(--border)] bg-[var(--bg-panel)] p-2 text-left hover:text-[var(--text)]"
+                      className="rounded border border-[var(--border)] bg-[var(--bg-panel)] p-2 text-left transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text)]"
                     >
                       Configure Models
                     </button>
                     <button
                       onClick={() => setSkillsConfigOpen(true)}
-                      className="rounded border border-[var(--border)] bg-[var(--bg-panel)] p-2 text-left hover:text-[var(--text)]"
+                      className="rounded border border-[var(--border)] bg-[var(--bg-panel)] p-2 text-left transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text)]"
                     >
                       Configure Skills
                     </button>
                     <button
                       onClick={() => setPluginsConfigOpen(true)}
-                      className="rounded border border-[var(--border)] bg-[var(--bg-panel)] p-2 text-left hover:text-[var(--text)]"
+                      className="rounded border border-[var(--border)] bg-[var(--bg-panel)] p-2 text-left transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text)]"
                     >
                       Configure Plugins
                     </button>
                     <button
                       onClick={() => setPiRuntimeOpen(true)}
-                      className="rounded border border-[var(--border)] bg-[var(--bg-panel)] p-2 text-left hover:text-[var(--text)]"
+                      className="rounded border border-[var(--border)] bg-[var(--bg-panel)] p-2 text-left transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text)]"
                     >
                       Pi Runtime Status
                     </button>
@@ -2087,30 +1747,9 @@ export function AppShell() {
         onClick={() => setRightPanelOpen((v) => !v)}
         title={rightPanelOpen ? "Hide file panel" : "Show file panel"}
         aria-label={rightPanelOpen ? "Hide file panel" : "Show file panel"}
+        className="fixed top-[38px] right-0 z-[300] flex h-[36px] w-[36px] cursor-pointer items-center justify-center border-b border-l border-none border-[var(--border)] bg-[var(--bg-panel)] p-0 text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
         style={{
-          position: "fixed",
-          top: 38,
-          right: 0,
-          zIndex: 300,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 36,
-          height: 36,
-          padding: 0,
-          background: "var(--bg-panel)",
-          border: "none",
-          borderLeft: "1px solid var(--border)",
-          borderBottom: "1px solid var(--border)",
           color: rightPanelOpen ? "var(--text)" : "var(--text-muted)",
-          cursor: "pointer",
-          transition: "color 0.12s",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = "var(--text)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = rightPanelOpen ? "var(--text)" : "var(--text-muted)";
         }}
       >
         <svg

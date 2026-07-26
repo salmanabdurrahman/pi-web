@@ -887,37 +887,9 @@ export function SessionSidebar({
             <button
               onClick={handleNewSession}
               disabled={!selectedCwd}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 5,
-                background: "var(--bg-hover)",
-                border: "1px solid var(--border)",
-                color: selectedCwd ? "var(--text-muted)" : "var(--text-dim)",
-                cursor: selectedCwd ? "pointer" : "not-allowed",
-                height: 32,
-                paddingLeft: 10,
-                paddingRight: 12,
-                borderRadius: 7,
-                fontSize: 12,
-                fontWeight: 500,
-                letterSpacing: "-0.01em",
-                flexShrink: 0,
-                transition: "background 0.12s, color 0.12s, border-color 0.12s",
-              }}
+              disabled={!selectedCwd}
               title={selectedCwd ? `New session in ${selectedCwd}` : "Select a project first"}
-              onMouseEnter={(e) => {
-                if (!selectedCwd) return;
-                e.currentTarget.style.background = "var(--bg-selected)";
-                e.currentTarget.style.color = "var(--accent)";
-                e.currentTarget.style.borderColor = "rgba(37,99,235,0.35)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--bg-hover)";
-                e.currentTarget.style.color = selectedCwd ? "var(--text-muted)" : "var(--text-dim)";
-                e.currentTarget.style.borderColor = "var(--border)";
-              }}
+              className="flex h-[32px] shrink-0 items-center justify-center gap-[5px] rounded-[7px] border border-[var(--border)] bg-[var(--bg-hover)] pr-[12px] pl-[10px] text-[12px] font-medium tracking-[-0.01em] text-[var(--text-muted)] transition-colors enabled:cursor-pointer enabled:hover:border-[rgba(37,99,235,0.35)] enabled:hover:bg-[var(--bg-selected)] enabled:hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:text-[var(--text-dim)]"
             >
               <svg
                 width="12"
@@ -935,33 +907,7 @@ export function SessionSidebar({
             </button>
             <button
               onClick={() => loadSessions(false)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: sessionRefreshDone ? "rgba(74,222,128,0.18)" : "var(--bg-hover)",
-                border: `1px solid ${sessionRefreshDone ? "rgba(74,222,128,0.4)" : "var(--border)"}`,
-                color: sessionRefreshDone ? "#4ade80" : "var(--text-muted)",
-                cursor: "pointer",
-                width: 32,
-                height: 32,
-                borderRadius: 7,
-                padding: 0,
-                flexShrink: 0,
-                transition: "background 0.3s, color 0.3s, border-color 0.3s",
-              }}
-              onMouseEnter={(e) => {
-                if (sessionRefreshDone) return;
-                e.currentTarget.style.background = "var(--bg-selected)";
-                e.currentTarget.style.color = "var(--accent)";
-                e.currentTarget.style.borderColor = "rgba(37,99,235,0.35)";
-              }}
-              onMouseLeave={(e) => {
-                if (sessionRefreshDone) return;
-                e.currentTarget.style.background = "var(--bg-hover)";
-                e.currentTarget.style.color = "var(--text-muted)";
-                e.currentTarget.style.borderColor = "var(--border)";
-              }}
+              className={`flex h-[32px] w-[32px] shrink-0 cursor-pointer items-center justify-center rounded-[7px] border p-0 transition-colors ${sessionRefreshDone ? "border-[rgba(74,222,128,0.4)] bg-[rgba(74,222,128,0.18)] text-[#4ade80]" : "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-muted)] hover:border-[rgba(37,99,235,0.35)] hover:bg-[var(--bg-selected)] hover:text-[var(--accent)]"}`}
               title="Refresh"
             >
               {sessionRefreshDone ? (
@@ -1549,30 +1495,7 @@ export function SessionSidebar({
                               onClick={() => void handleRemoveWorktree(wt.path, false)}
                               disabled={wtBusy}
                               title={`Remove worktree checkout ${wt.path}; the branch is kept`}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: 34,
-                                height: 28,
-                                padding: 0,
-                                marginRight: 4,
-                                background: "none",
-                                border: "none",
-                                color: "var(--text-dim)",
-                                cursor: "pointer",
-                                borderRadius: 5,
-                                flexShrink: 0,
-                                transition: "color 0.12s, background 0.12s",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.color = "#ef4444";
-                                e.currentTarget.style.background = "rgba(239,68,68,0.08)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.color = "var(--text-dim)";
-                                e.currentTarget.style.background = "none";
-                              }}
+                              className="mr-[4px] flex h-[28px] w-[34px] shrink-0 items-center justify-center rounded-[5px] border-none bg-transparent p-0 text-[var(--text-dim)] transition-colors enabled:cursor-pointer enabled:hover:bg-[rgba(239,68,68,0.08)] enabled:hover:text-[#ef4444]"
                             >
                               <svg
                                 width="12"
@@ -1873,32 +1796,7 @@ export function SessionSidebar({
                 disabled={explorerUploadBusy}
                 title="Upload files to project root"
                 aria-label="Upload files"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 26,
-                  height: 26,
-                  padding: 0,
-                  background: "none",
-                  border: "none",
-                  color: "var(--text-dim)",
-                  cursor: explorerUploadBusy ? "default" : "pointer",
-                  borderRadius: 5,
-                  flexShrink: 0,
-                  opacity: explorerUploadBusy ? 0.6 : 1,
-                  transition: "color 0.3s, background 0.3s",
-                }}
-                onMouseEnter={(e) => {
-                  if (explorerUploadBusy) return;
-                  e.currentTarget.style.color = "var(--text-muted)";
-                  e.currentTarget.style.background = "var(--bg-hover)";
-                }}
-                onMouseLeave={(e) => {
-                  if (explorerUploadBusy) return;
-                  e.currentTarget.style.color = "var(--text-dim)";
-                  e.currentTarget.style.background = "none";
-                }}
+                className={`flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[5px] border-none bg-transparent p-0 text-[var(--text-dim)] transition-colors enabled:cursor-pointer enabled:hover:bg-[var(--bg-hover)] enabled:hover:text-[var(--text-muted)] disabled:cursor-default disabled:opacity-60`}
               >
                 <svg
                   width="13"
@@ -1929,32 +1827,7 @@ export function SessionSidebar({
                 );
               }}
               title="Refresh explorer"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 26,
-                height: 26,
-                padding: 0,
-                marginRight: 6,
-                background: explorerRefreshDone ? "rgba(74,222,128,0.18)" : "none",
-                border: "none",
-                color: explorerRefreshDone ? "#4ade80" : "var(--text-dim)",
-                cursor: "pointer",
-                borderRadius: 5,
-                flexShrink: 0,
-                transition: "color 0.3s, background 0.3s",
-              }}
-              onMouseEnter={(e) => {
-                if (explorerRefreshDone) return;
-                e.currentTarget.style.color = "var(--text-muted)";
-                e.currentTarget.style.background = "var(--bg-hover)";
-              }}
-              onMouseLeave={(e) => {
-                if (explorerRefreshDone) return;
-                e.currentTarget.style.color = "var(--text-dim)";
-                e.currentTarget.style.background = "none";
-              }}
+              className={`mr-[6px] flex h-[26px] w-[26px] shrink-0 cursor-pointer items-center justify-center rounded-[5px] border-none p-0 transition-colors ${explorerRefreshDone ? "bg-[rgba(74,222,128,0.18)] text-[#4ade80]" : "bg-transparent text-[var(--text-dim)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-muted)]"}`}
             >
               {explorerRefreshDone ? (
                 <svg
@@ -2534,31 +2407,7 @@ function SessionItem({
               <button
                 onClick={startRename}
                 title="Rename"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 32,
-                  height: 32,
-                  padding: 0,
-                  background: "var(--bg-hover)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 7,
-                  color: "var(--text-muted)",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  transition: "background 0.12s, color 0.12s, border-color 0.12s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "var(--bg-selected)";
-                  e.currentTarget.style.color = "var(--accent)";
-                  e.currentTarget.style.borderColor = "rgba(37,99,235,0.35)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "var(--bg-hover)";
-                  e.currentTarget.style.color = "var(--text-muted)";
-                  e.currentTarget.style.borderColor = "var(--border)";
-                }}
+                className="flex h-[32px] w-[32px] shrink-0 cursor-pointer items-center justify-center rounded-[7px] border border-[var(--border)] bg-[var(--bg-hover)] p-0 text-[var(--text-muted)] transition-colors hover:border-[rgba(37,99,235,0.35)] hover:bg-[var(--bg-selected)] hover:text-[var(--accent)]"
               >
                 <svg
                   width="14"
@@ -2576,31 +2425,7 @@ function SessionItem({
               <button
                 onClick={handleDeleteClick}
                 title="Delete"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 32,
-                  height: 32,
-                  padding: 0,
-                  background: "var(--bg-hover)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 7,
-                  color: "var(--text-muted)",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  transition: "background 0.12s, color 0.12s, border-color 0.12s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(239,68,68,0.08)";
-                  e.currentTarget.style.color = "#ef4444";
-                  e.currentTarget.style.borderColor = "rgba(239,68,68,0.35)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "var(--bg-hover)";
-                  e.currentTarget.style.color = "var(--text-muted)";
-                  e.currentTarget.style.borderColor = "var(--border)";
-                }}
+                className="flex h-[32px] w-[32px] shrink-0 cursor-pointer items-center justify-center rounded-[7px] border border-[var(--border)] bg-[var(--bg-hover)] p-0 text-[var(--text-muted)] transition-colors hover:border-[rgba(239,68,68,0.35)] hover:bg-[rgba(239,68,68,0.08)] hover:text-[#ef4444]"
               >
                 <svg
                   width="14"
