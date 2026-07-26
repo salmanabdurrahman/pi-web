@@ -1736,8 +1736,14 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
   );
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
-    ignoreProgrammaticScrollUntilRef.current = Date.now() + PROGRAMMATIC_SCROLL_IGNORE_MS;
-    messagesEndRef.current?.scrollIntoView({ behavior });
+    const ignoreMs = behavior === "smooth" ? PROGRAMMATIC_SCROLL_IGNORE_MS : 50;
+    ignoreProgrammaticScrollUntilRef.current = Date.now() + ignoreMs;
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior });
+    }
   }, []);
 
   const scrollUserMsgToTop = useCallback(() => {
@@ -1760,13 +1766,24 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
         return;
     }
     userScrollIntentUntilRef.current = Date.now() + USER_SCROLL_INTENT_MS;
+    ignoreProgrammaticScrollUntilRef.current = 0;
+    completionScrollAllowedRef.current = false;
   }, []);
 
-  const handleScrollPositionChange = useCallback(() => {
+  const handleScrollPositionChange = useCallback((e?: Event) => {
     if (!agentRunningRef.current) return;
     if (Date.now() < ignoreProgrammaticScrollUntilRef.current) return;
-    if (Date.now() > userScrollIntentUntilRef.current) return;
-    completionScrollAllowedRef.current = false;
+
+    // If user scrolled up manually, disable auto-scroll
+    if (e && e.target instanceof HTMLElement) {
+      const el = e.target;
+      const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+      if (!isAtBottom) {
+        completionScrollAllowedRef.current = false;
+      } else {
+        completionScrollAllowedRef.current = true;
+      }
+    }
   }, []);
 
   // Load session on mount
@@ -1868,6 +1885,24 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
       }
     }
   }, [messages.length, agentRunning, scrollToBottom, scrollUserMsgToTop]);
+
+  // Auto-scroll on content resize during agent execution
+  useEffect(() => {
+    if (!agentRunning) return;
+
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const inner = container.firstElementChild;
+    if (!inner) return;
+
+    const ro = new ResizeObserver(() => {
+      if (agentRunningRef.current && completionScrollAllowedRef.current) {
+        scrollToBottom("auto");
+      }
+    });
+    ro.observe(inner);
+    return () => ro.disconnect();
+  }, [agentRunning, scrollToBottom]);
 
   // Load model list
   useEffect(() => {

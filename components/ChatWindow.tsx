@@ -450,35 +450,6 @@ export function ChatWindow({
     ? (modelThinkingLevelMaps[`${displayModelValue.provider}:${displayModelValue.modelId}`] ?? null)
     : null;
 
-  {
-    showJumpToBottom && (
-      <div className="absolute bottom-[100px] left-1/2 z-40 -translate-x-1/2">
-        <button
-          onClick={() => {
-            scrollContainerRef.current?.scrollTo({
-              top: scrollContainerRef.current.scrollHeight,
-              behavior: "smooth",
-            });
-          }}
-          className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-panel)] px-3 py-1.5 text-xs text-[var(--text)] shadow-md transition-colors hover:bg-[var(--bg-hover)]"
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 5v14M19 12l-7 7-7-7" />
-          </svg>
-          Jump to bottom
-        </button>
-      </div>
-    );
-  }
   const docks = (
     <div className="mx-auto mb-2 flex w-full max-w-[820px] flex-col gap-2">
       {extensionDialog && (
@@ -1019,16 +990,7 @@ export function ChatWindow({
                     />
                   )}
 
-                  {agentRunning && (
-                    <div
-                      style={{
-                        height: scrollContainerRef.current
-                          ? scrollContainerRef.current.clientHeight
-                          : "80vh",
-                      }}
-                    />
-                  )}
-
+                  <div style={{ height: 24 }} />
                   <div ref={messagesEndRef} />
                 </div>
               </div>
@@ -1040,6 +1002,34 @@ export function ChatWindow({
                 scrollContainer={scrollContainerRef}
                 messageRefs={messageRefs}
               />
+            )}
+
+            {showJumpToBottom && (
+              <div className="absolute bottom-4 left-1/2 z-40 -translate-x-1/2">
+                <button
+                  onClick={() => {
+                    scrollContainerRef.current?.scrollTo({
+                      top: scrollContainerRef.current.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  }}
+                  className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-panel)] px-3 py-1.5 text-xs text-[var(--text)] shadow-md transition-colors hover:bg-[var(--bg-hover)]"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 5v14M19 12l-7 7-7-7" />
+                  </svg>
+                  Jump to bottom
+                </button>
+              </div>
             )}
           </div>
 
