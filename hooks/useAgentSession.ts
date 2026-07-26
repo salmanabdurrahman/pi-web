@@ -195,8 +195,9 @@ export interface UseAgentSessionOptions {
 export type ThinkingLevelOption =
   "auto" | "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
 
-const PROGRAMMATIC_SCROLL_IGNORE_MS = 700;
+const PROGRAMMATIC_SCROLL_IGNORE_MS = 1200;
 const USER_SCROLL_INTENT_MS = 1200;
+const AUTO_SCROLL_BOTTOM_THRESHOLD_PX = 140;
 const PROMPT_SETTLE_INITIAL_DELAY_MS = 800;
 const PROMPT_SETTLE_POLL_MS = 600;
 const PROMPT_SETTLE_MAX_MS = 20_000;
@@ -1790,7 +1791,8 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
 
     if (e && e.target instanceof HTMLElement) {
       const el = e.target;
-      const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+      const isAtBottom =
+        el.scrollHeight - el.scrollTop - el.clientHeight <= AUTO_SCROLL_BOTTOM_THRESHOLD_PX;
       if (isAtBottom) {
         completionScrollAllowedRef.current = true;
       } else if (now < userScrollIntentUntilRef.current) {
@@ -1866,10 +1868,8 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
 
   useEffect(() => {
     window.addEventListener("keydown", markUserScrollIntent);
-    window.addEventListener("pointerdown", markUserScrollIntent, { passive: true });
     return () => {
       window.removeEventListener("keydown", markUserScrollIntent);
-      window.removeEventListener("pointerdown", markUserScrollIntent);
     };
   }, [markUserScrollIntent]);
 
@@ -1878,10 +1878,12 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     if (!container) return;
     container.addEventListener("wheel", markUserScrollIntent, { passive: true });
     container.addEventListener("touchstart", markUserScrollIntent, { passive: true });
+    container.addEventListener("pointerdown", markUserScrollIntent, { passive: true });
     container.addEventListener("scroll", handleScrollPositionChange, { passive: true });
     return () => {
       container.removeEventListener("wheel", markUserScrollIntent);
       container.removeEventListener("touchstart", markUserScrollIntent);
+      container.removeEventListener("pointerdown", markUserScrollIntent);
       container.removeEventListener("scroll", handleScrollPositionChange);
     };
   }, [messages.length, loading, handleScrollPositionChange, markUserScrollIntent]);
@@ -1911,7 +1913,13 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     if (!inner) return;
 
     const ro = new ResizeObserver(() => {
-      if (agentRunningRef.current && completionScrollAllowedRef.current) {
+      if (!agentRunningRef.current) return;
+      const distanceFromBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight;
+      if (distanceFromBottom <= AUTO_SCROLL_BOTTOM_THRESHOLD_PX) {
+        completionScrollAllowedRef.current = true;
+      }
+      if (completionScrollAllowedRef.current) {
         scrollToBottom("auto");
       }
     });
