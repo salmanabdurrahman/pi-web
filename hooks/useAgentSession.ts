@@ -249,7 +249,8 @@ function isNoisyStartupNotice(message: string, type: NoticeType): boolean {
     /^pi-multi-account v[^:]+ loaded \(/.test(message) ||
     /^pi-multi-account v[^:]+: seamless in-place resume \(pi\.continueAgent\) is not available/.test(
       message,
-    )
+    ) ||
+    message === "pi-code-review-graph loaded. Use /crg-enable or /crg-status."
   );
 }
 
