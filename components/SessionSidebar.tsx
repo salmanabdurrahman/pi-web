@@ -239,108 +239,6 @@ function buildSessionTree(sessions: SessionInfo[]): SessionTreeNode[] {
   return roots;
 }
 
-const SCRAMBLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-
-function useScramble(target: string, running: boolean): string {
-  const [display, setDisplay] = useState(target);
-  const frameRef = useRef<number | null>(null);
-  const iterRef = useRef(0);
-
-  useEffect(() => {
-    if (!running) {
-      setDisplay(target);
-      return;
-    }
-    iterRef.current = 0;
-    const totalFrames = target.length * 4;
-
-    const step = () => {
-      iterRef.current += 1;
-      const progress = iterRef.current / totalFrames;
-      const resolved = Math.floor(progress * target.length);
-
-      setDisplay(
-        target
-          .split("")
-          .map((char, i) => {
-            if (char === " ") return " ";
-            if (i < resolved) return char;
-            return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
-          })
-          .join(""),
-      );
-
-      if (iterRef.current < totalFrames) {
-        frameRef.current = requestAnimationFrame(step);
-      } else {
-        setDisplay(target);
-      }
-    };
-
-    frameRef.current = requestAnimationFrame(step);
-    return () => {
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
-    };
-  }, [target, running]);
-
-  return display;
-}
-
-function PiWebTitle() {
-  const [showVersion, setShowVersion] = useState(false);
-  const [scrambling, setScrambling] = useState(false);
-  const revertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const target = showVersion
-    ? `${process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"}p${process.env.NEXT_PUBLIC_PI_VERSION ?? "0.0.0"}`
-    : "Pi Web";
-  const display = useScramble(target, scrambling);
-
-  const triggerScramble = useCallback((toVersion: boolean) => {
-    setShowVersion(toVersion);
-    setScrambling(true);
-    setTimeout(() => setScrambling(false), (toVersion ? 6 : 8) * 4 * (1000 / 60) + 100);
-  }, []);
-
-  const handleClick = useCallback(() => {
-    if (revertTimerRef.current) clearTimeout(revertTimerRef.current);
-
-    const next = !showVersion;
-    triggerScramble(next);
-
-    if (next) {
-      revertTimerRef.current = setTimeout(() => triggerScramble(false), 3000);
-    }
-  }, [showVersion, triggerScramble]);
-
-  useEffect(
-    () => () => {
-      if (revertTimerRef.current) clearTimeout(revertTimerRef.current);
-    },
-    [],
-  );
-
-  return (
-    <button
-      onClick={handleClick}
-      style={{
-        background: "none",
-        border: "none",
-        padding: 0,
-        cursor: "default",
-        fontWeight: 700,
-        fontSize: 15,
-        letterSpacing: "-0.01em",
-        color: showVersion ? "var(--accent)" : "var(--text)",
-        fontFamily: "var(--font-mono)",
-        minWidth: "6ch",
-      }}
-    >
-      {display}
-    </button>
-  );
-}
-
 export function SessionSidebar({
   selectedSessionId,
   onSelectSession,
@@ -869,78 +767,80 @@ export function SessionSidebar({
       {/* Header */}
       <div
         style={{
-          padding: "12px 10px 10px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          height: 36,
+          padding: "0 10px",
           borderBottom: "1px solid var(--border)",
           flexShrink: 0,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 10,
-          }}
-        >
-          <PiWebTitle />
-          <div style={{ display: "flex", gap: 6 }}>
-            <button
-              onClick={handleNewSession}
-              disabled={!selectedCwd}
-              title={selectedCwd ? `New session in ${selectedCwd}` : "Select a project first"}
-              className="flex h-[32px] shrink-0 items-center justify-center gap-[5px] rounded-[7px] border border-[var(--border)] bg-[var(--bg-hover)] pr-[12px] pl-[10px] text-[12px] font-medium tracking-[-0.01em] text-[var(--text-muted)] transition-colors enabled:cursor-pointer enabled:hover:border-[rgba(37,99,235,0.35)] enabled:hover:bg-[var(--bg-selected)] enabled:hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:text-[var(--text-dim)]"
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            onClick={handleNewSession}
+            disabled={!selectedCwd}
+            title={selectedCwd ? `New session in ${selectedCwd}` : "Select a project first"}
+            className="flex h-[32px] shrink-0 items-center justify-center gap-[5px] rounded-[7px] border border-[var(--border)] bg-[var(--bg-hover)] pr-[12px] pl-[10px] text-[12px] font-medium tracking-[-0.01em] text-[var(--text-muted)] transition-colors enabled:cursor-pointer enabled:hover:border-[rgba(37,99,235,0.35)] enabled:hover:bg-[var(--bg-selected)] enabled:hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:text-[var(--text-dim)]"
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
             >
+              <line x1="6" y1="1" x2="6" y2="11" />
+              <line x1="1" y1="6" x2="11" y2="6" />
+            </svg>
+            New
+          </button>
+          <button
+            onClick={() => loadSessions(false)}
+            className={`flex h-[32px] w-[32px] shrink-0 cursor-pointer items-center justify-center rounded-[7px] border p-0 transition-colors ${sessionRefreshDone ? "border-[rgba(74,222,128,0.4)] bg-[rgba(74,222,128,0.18)] text-[#4ade80]" : "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-muted)] hover:border-[rgba(37,99,235,0.35)] hover:bg-[var(--bg-selected)] hover:text-[var(--accent)]"}`}
+            title="Refresh"
+          >
+            {sessionRefreshDone ? (
               <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#4ade80"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2.2"
+                strokeWidth="2"
                 strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <line x1="6" y1="1" x2="6" y2="11" />
-                <line x1="1" y1="6" x2="11" y2="6" />
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
               </svg>
-              New
-            </button>
-            <button
-              onClick={() => loadSessions(false)}
-              className={`flex h-[32px] w-[32px] shrink-0 cursor-pointer items-center justify-center rounded-[7px] border p-0 transition-colors ${sessionRefreshDone ? "border-[rgba(74,222,128,0.4)] bg-[rgba(74,222,128,0.18)] text-[#4ade80]" : "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-muted)] hover:border-[rgba(37,99,235,0.35)] hover:bg-[var(--bg-selected)] hover:text-[var(--accent)]"}`}
-              title="Refresh"
-            >
-              {sessionRefreshDone ? (
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#4ade80"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : (
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                  <path d="M3 3v5h5" />
-                </svg>
-              )}
-            </button>
-          </div>
+            )}
+          </button>
         </div>
+      </div>
 
+      <div
+        style={{
+          padding: "10px",
+          borderBottom: "1px solid var(--border)",
+          flexShrink: 0,
+        }}
+      >
         {/* CWD picker */}
         <div ref={dropdownRef} style={{ position: "relative" }}>
           <button

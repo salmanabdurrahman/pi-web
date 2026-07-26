@@ -11,7 +11,6 @@ interface TitleBarProps {
 
 export function TitleBar({ sessionStats, contextUsage, isRunning }: TitleBarProps) {
   const [piVersion, setPiVersion] = useState<string>("...");
-  const [appVersion] = useState<string>("0.8.0");
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
@@ -49,8 +48,6 @@ export function TitleBar({ sessionStats, contextUsage, isRunning }: TitleBarProp
       }
     >
       <div className="flex items-center gap-[14px]">
-        <span className="font-semibold text-[var(--text)]">Pi Web</span>
-        <span className="opacity-70">v{appVersion}</span>
         {piVersion !== "..." && <span className="opacity-70">Pi {piVersion}</span>}
       </div>
 
