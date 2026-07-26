@@ -14,6 +14,7 @@ try {
 }
 
 const nextConfig: NextConfig = {
+  ...(process.env.PI_WEB_NEXT_DIST_DIR ? { distDir: process.env.PI_WEB_NEXT_DIST_DIR } : {}),
   output: "standalone",
   serverExternalPackages: [
     "undici",
@@ -22,7 +23,7 @@ const nextConfig: NextConfig = {
     "@earendil-works/pi-ai",
     "@earendil-works/pi-tui",
   ],
-  allowedDevOrigins: ["192.168.*.*"],
+  allowedDevOrigins: ["127.0.0.1", "192.168.*.*"],
   async headers() {
     return [
       {

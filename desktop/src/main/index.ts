@@ -64,10 +64,11 @@ function createMainWindow(port: number, authToken: string): BrowserWindow {
       details: OnBeforeSendHeadersListenerDetails,
       callback: (beforeSendResponse: BeforeSendResponse) => void,
     ) => {
+      for (const key of Object.keys(details.requestHeaders)) {
+        if (key.toLowerCase() === "x-pi-desktop-auth") delete details.requestHeaders[key];
+      }
       if (shouldAttachDesktopAuthHeader(details)) {
         details.requestHeaders["X-Pi-Desktop-Auth"] = authToken;
-      } else {
-        delete details.requestHeaders["X-Pi-Desktop-Auth"];
       }
       callback({ requestHeaders: details.requestHeaders });
     },

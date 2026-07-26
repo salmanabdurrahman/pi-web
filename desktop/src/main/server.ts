@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { appendFileSync } from "node:fs";
 import { app } from "electron";
 import { sidecarOutPath, sidecarErrPath, writeLog } from "./logging";
+import { redactLogText } from "./log-redaction";
 
 let sidecarProcess: ChildProcess | null = null;
 
@@ -73,8 +74,12 @@ export async function spawnNextServer(authToken: string): Promise<{
     env: {
       ...process.env,
       PORT: String(port),
+      HOSTNAME: "127.0.0.1",
       ...(isPackaged ? { ELECTRON_RUN_AS_NODE: "1" } : {}),
       PI_DESKTOP_AUTH_TOKEN: authToken,
+      // Keep desktop dev isolated from web dev (`bun run dev`) so Next's dev lock
+      // does not reject a second server for the same project directory.
+      ...(!isPackaged ? { PI_WEB_NEXT_DIST_DIR: ".next-desktop-dev" } : {}),
       // Prevent auto-open browser in dev mode
       PI_WEB_NO_OPEN: "1",
       // Loopback enforcement
@@ -84,7 +89,7 @@ export async function spawnNextServer(authToken: string): Promise<{
   });
 
   child.stdout?.on("data", (chunk: Buffer) => {
-    const text = chunk.toString("utf8").trimEnd();
+    const text = redactLogText(chunk.toString("utf8").trimEnd());
     if (text) {
       process.stdout.write(`[pi-web] ${text}\n`);
       try {
@@ -96,7 +101,7 @@ export async function spawnNextServer(authToken: string): Promise<{
   });
 
   child.stderr?.on("data", (chunk: Buffer) => {
-    const text = chunk.toString("utf8").trimEnd();
+    const text = redactLogText(chunk.toString("utf8").trimEnd());
     if (text) {
       process.stderr.write(`[pi-web] ${text}\n`);
       try {

@@ -32,7 +32,11 @@ test("packaged --dir bundle includes standalone static and public assets", async
   const resources = join(appPath, "Contents", "Resources");
   assert.equal(await existsNonEmpty(join(resources, "standalone", "server.js")), true);
   assert.equal(existsSync(join(resources, "standalone", ".next", "static")), true);
-  assert.equal(existsSync(join(resources, "standalone", "public")), true);
+
+  const sourcePublic = join(import.meta.dirname, "..", "public");
+  if (existsSync(sourcePublic)) {
+    assert.equal(existsSync(join(resources, "standalone", "public")), true);
+  }
 });
 
 test("packaged app launch reaches health then quits sidecar", async (t) => {

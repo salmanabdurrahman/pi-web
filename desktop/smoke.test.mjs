@@ -23,13 +23,34 @@ test("desktop preload exposes window.piDesktop", async () => {
 test("desktop server spawns on loopback port", async () => {
   const source = await readFile(new URL("../desktop/src/main/server.ts", import.meta.url), "utf8");
   assert.match(source, /127\.0\.0\.1/);
+  assert.match(source, /HOSTNAME/);
   assert.match(source, /port/);
 });
 
 test("desktop server generates per-launch auth token", async () => {
-  const source = await readFile(new URL("../desktop/src/main/server.ts", import.meta.url), "utf8");
+  const serverSource = await readFile(
+    new URL("../desktop/src/main/server.ts", import.meta.url),
+    "utf8",
+  );
+  const mainSource = await readFile(
+    new URL("../desktop/src/main/index.ts", import.meta.url),
+    "utf8",
+  );
   // Should set auth token via environment variable
-  assert.match(source, /PI_DESKTOP_AUTH_TOKEN/);
+  assert.match(serverSource, /PI_DESKTOP_AUTH_TOKEN/);
+  assert.match(mainSource, /toLowerCase\(\) === "x-pi-desktop-auth"/);
+});
+
+test("desktop dev uses isolated Next dist dir", async () => {
+  const serverSource = await readFile(
+    new URL("../desktop/src/main/server.ts", import.meta.url),
+    "utf8",
+  );
+  const nextConfigSource = await readFile(new URL("../next.config.ts", import.meta.url), "utf8");
+  assert.match(serverSource, /PI_WEB_NEXT_DIST_DIR/);
+  assert.match(serverSource, /\.next-desktop-dev/);
+  assert.match(nextConfigSource, /distDir/);
+  assert.match(nextConfigSource, /PI_WEB_NEXT_DIST_DIR/);
 });
 
 test("desktop menu includes essential items", async () => {
@@ -41,9 +62,14 @@ test("desktop menu includes essential items", async () => {
 
 test("desktop logging exports redacted logs with sharing warning", async () => {
   const source = await readFile(new URL("../desktop/src/main/logging.ts", import.meta.url), "utf8");
+  const serverSource = await readFile(
+    new URL("../desktop/src/main/server.ts", import.meta.url),
+    "utf8",
+  );
   assert.match(source, /writeLog/);
   assert.match(source, /initLogging/);
   assert.match(source, /redactLogText/);
+  assert.match(serverSource, /redactLogText/);
   assert.match(source, /README\.txt/);
   assert.match(source, /local paths, session names, project names/);
 });

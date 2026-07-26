@@ -1,6 +1,12 @@
 const eslintConfig = [
   {
-    ignores: [".next/**", "node_modules/**", "references/**", "desktop/dist/**"],
+    ignores: [
+      ".next/**",
+      ".next-desktop-dev/**",
+      "node_modules/**",
+      "references/**",
+      "desktop/dist/**",
+    ],
   },
   {
     plugins: {

@@ -45,10 +45,7 @@ export function redactText(value: string): string {
     /([?&](?:api[_-]?key|token|secret|password|auth|credential)=)[^&#\s]+/gi,
     "$1<redacted>",
   );
-  text = text.replace(
-    /([a-z][a-z0-9+.-]*:\/\/)([^\s/@:]+)(?::([^\s/@]*))?@/gi,
-    "$1<redacted>@",
-  );
+  text = text.replace(/([a-z][a-z0-9+.-]*:\/\/)([^\s/@:]+)(?::([^\s/@]*))?@/gi, "$1<redacted>@");
   text = text.replace(/Bearer\s+[A-Za-z0-9._-]{20,}/gi, "Bearer <redacted>");
   return text;
 }
