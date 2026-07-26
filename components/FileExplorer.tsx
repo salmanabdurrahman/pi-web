@@ -120,12 +120,12 @@ const GIT_STATUS_LABELS: Record<GitFileStatusKind, string> = {
 };
 
 const GIT_STATUS_COLORS: Record<GitFileStatusKind, string> = {
-  modified: "#d6a84b",
-  added: "#4ade80",
-  deleted: "#f87171",
+  modified: "var(--warning)",
+  added: "var(--success)",
+  deleted: "var(--error)",
   renamed: "#60a5fa",
-  untracked: "#4ade80",
-  conflict: "#f87171",
+  untracked: "var(--success)",
+  conflict: "var(--error)",
 };
 
 function uploadFiles(
@@ -213,8 +213,8 @@ function DismissButton({ onClick, title }: { onClick: () => void; title: string 
       }}
     >
       <svg
-        width="13"
-        height="13"
+        width="14"
+        height="14"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -418,7 +418,7 @@ function TreeNode({
             style={{
               flexShrink: 0,
               transform: open ? "rotate(90deg)" : "none",
-              transition: "transform 0.1s",
+              transition: "transform 0.15s",
             }}
           >
             <polyline points="3 2 7 5 3 8" />
@@ -450,7 +450,7 @@ function TreeNode({
               height: 6,
               flexShrink: 0,
               borderRadius: "50%",
-              background: "#3b82f6",
+              background: "var(--info)",
             }}
           />
         )}
@@ -480,7 +480,7 @@ function TreeNode({
               height: 6,
               flexShrink: 0,
               borderRadius: "50%",
-              background: "#d6a84b",
+              background: "var(--warning)",
             }}
           />
         )}
@@ -558,8 +558,8 @@ function TreeNode({
             }}
           >
             <svg
-              width="11"
-              height="11"
+              width="12"
+              height="12"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -585,7 +585,7 @@ function TreeNode({
             background: "var(--bg-panel)",
             border: "1px solid var(--border)",
             borderRadius: 6,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+            boxShadow: "var(--shadow-md)",
             minWidth: 180,
             padding: "4px 0",
           }}
@@ -884,8 +884,8 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
               >
                 {uploadPhase === "checking" ? (
                   <svg
-                    width="13"
-                    height="13"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -898,8 +898,8 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                   </svg>
                 ) : (
                   <svg
-                    width="13"
-                    height="13"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -932,7 +932,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                       width: `${uploadProgress}%`,
                       height: "100%",
                       background: "var(--text-muted)",
-                      transition: "width 120ms ease",
+                      transition: "width 150ms ease",
                     }}
                   />
                 </div>
@@ -945,7 +945,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
               role="alert"
               style={{
                 padding: 7,
-                border: "1px solid color-mix(in srgb, #f59e0b 55%, var(--border))",
+                border: "1px solid color-mix(in srgb, var(--warning) 55%, var(--border))",
                 borderRadius: 4,
                 background: "color-mix(in srgb, #f59e0b 9%, var(--bg-panel))",
               }}
@@ -954,7 +954,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                 style={{
                   fontSize: 11,
                   color: "var(--text)",
-                  lineHeight: 1.35,
+                  lineHeight: 1.4,
                   overflowWrap: "anywhere",
                 }}
               >
@@ -967,25 +967,25 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                   style={{
                     marginTop: 3,
                     fontSize: 10,
-                    color: "#f59e0b",
-                    lineHeight: 1.35,
+                    color: "var(--warning)",
+                    lineHeight: 1.4,
                     overflowWrap: "anywhere",
                   }}
                 >
                   Cannot replace: {pendingConflict.nonReplaceable.join(", ")}
                 </div>
               )}
-              <div style={{ display: "flex", gap: 5, marginTop: 7 }}>
+              <div style={{ display: "flex", gap: 6, marginTop: 7 }}>
                 <button
                   type="button"
                   onClick={() => void performUpload(pendingConflict.files, "overwrite")}
                   style={{
                     height: 22,
                     padding: "0 7px",
-                    border: "1px solid #ef4444",
+                    border: "1px solid var(--error)",
                     borderRadius: 4,
                     background: "transparent",
-                    color: "#ef4444",
+                    color: "var(--error)",
                     cursor: "pointer",
                     fontSize: 10,
                   }}
@@ -1036,8 +1036,8 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                 alignItems: "flex-start",
                 gap: 6,
                 fontSize: 11,
-                lineHeight: 1.35,
-                color: "#f87171",
+                lineHeight: 1.4,
+                color: "var(--error)",
               }}
             >
               <span style={{ minWidth: 0, flex: 1, overflowWrap: "anywhere" }}>{uploadError}</span>
@@ -1063,11 +1063,16 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                     <span
                       title={`${uploadSummary.uploaded.length} uploaded`}
                       aria-label={`${uploadSummary.uploaded.length} uploaded`}
-                      style={{ display: "flex", alignItems: "center", gap: 3, color: "#22c55e" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        color: "var(--success)",
+                      }}
                     >
                       <svg
-                        width="13"
-                        height="13"
+                        width="14"
+                        height="14"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1088,13 +1093,13 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 3,
+                        gap: 4,
                         color: "var(--text-dim)",
                       }}
                     >
                       <svg
-                        width="13"
-                        height="13"
+                        width="14"
+                        height="14"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1112,11 +1117,16 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                     <span
                       title={`${uploadSummary.errors.length} failed`}
                       aria-label={`${uploadSummary.errors.length} failed`}
-                      style={{ display: "flex", alignItems: "center", gap: 3, color: "#f87171" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        color: "var(--error)",
+                      }}
                     >
                       <svg
-                        width="13"
-                        height="13"
+                        width="14"
+                        height="14"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1185,12 +1195,12 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
                     marginTop: 3,
                     minWidth: 0,
                     fontSize: 10,
-                    color: "#f87171",
+                    color: "var(--error)",
                   }}
                 >
                   <svg
-                    width="11"
-                    height="11"
+                    width="12"
+                    height="12"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -1227,7 +1237,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(function FileE
             Loading files...
           </div>
         ) : error ? (
-          <div style={{ padding: "8px 12px", fontSize: 11, color: "#f87171" }}>{error}</div>
+          <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--error)" }}>{error}</div>
         ) : (
           roots.map((node) => (
             <TreeNode

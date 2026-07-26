@@ -54,9 +54,9 @@ function findInstalledPackage(
 
 function statusColor(status: PluginPackageInfo["status"]): string {
   if (status === "loaded") return "var(--accent)";
-  if (status === "installed") return "#f59e0b";
+  if (status === "installed") return "var(--warning)";
   if (status === "disabled") return "var(--text-dim)";
-  return "#ef4444";
+  return "var(--error)";
 }
 
 function ResourceList({ pkg }: { pkg: PluginPackageInfo }) {
@@ -155,10 +155,16 @@ function ScopeTag({ scope }: { scope: PluginScope }) {
       style={{
         fontSize: 10,
         padding: "1px 5px",
-        borderRadius: 3,
+        borderRadius: 4,
         flexShrink: 0,
-        background: scope === "project" ? "rgba(99,102,241,0.12)" : "rgba(120,120,120,0.12)",
-        color: scope === "project" ? "rgba(99,102,241,0.85)" : "var(--text-dim)",
+        background:
+          scope === "project"
+            ? "color-mix(in srgb, var(--accent) 12%, transparent)"
+            : "var(--bg-hover)",
+        color:
+          scope === "project"
+            ? "color-mix(in srgb, var(--accent) 85%, transparent)"
+            : "var(--text-dim)",
       }}
     >
       {scope}
@@ -169,10 +175,10 @@ function ScopeTag({ scope }: { scope: PluginScope }) {
 function buttonStyle(disabled?: boolean, danger?: boolean): React.CSSProperties {
   return {
     padding: "6px 12px",
-    background: danger ? "rgba(239,68,68,0.08)" : "none",
+    background: danger ? "color-mix(in srgb, var(--error) 8%, transparent)" : "none",
     border: "1px solid var(--border)",
     borderRadius: 6,
-    color: danger ? "#ef4444" : "var(--text-muted)",
+    color: danger ? "var(--error)" : "var(--text-muted)",
     cursor: disabled ? "not-allowed" : "pointer",
     fontSize: 12,
     opacity: disabled ? 0.5 : 1,
@@ -208,7 +214,7 @@ function Toggle({
         cursor: loading ? "wait" : "pointer",
         background: enabled ? "var(--accent)" : "var(--border)",
         position: "relative",
-        transition: "background 0.18s",
+        transition: "background 0.15s",
         outline: "none",
         opacity: loading ? 0.65 : 1,
       }}
@@ -222,8 +228,8 @@ function Toggle({
           height: 16,
           borderRadius: "50%",
           background: "var(--bg)",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.22)",
-          transition: "left 0.18s cubic-bezier(.4,0,.2,1)",
+          boxShadow: "var(--shadow-sm)",
+          transition: "left 0.15s cubic-bezier(.4,0,.2,1)",
         }}
       />
     </button>
@@ -242,7 +248,7 @@ function SegmentedScope({
       style={{
         display: "inline-flex",
         border: "1px solid var(--border)",
-        borderRadius: 7,
+        borderRadius: 8,
         overflow: "hidden",
         height: 30,
       }}
@@ -306,19 +312,19 @@ function AddPluginPanel({
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 18,
+        gap: 16,
         maxWidth: 660,
         minHeight: "100%",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>Add Plugin</div>
         <div style={{ fontSize: 12, color: "var(--text-dim)", fontFamily: "var(--font-mono)" }}>
           {installLocation(scope, cwd)}
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <label
           htmlFor="plugin-source"
           style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)" }}
@@ -366,7 +372,7 @@ function AddPluginPanel({
         </button>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)" }}>Examples</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {examples.map((example) => (
@@ -403,7 +409,9 @@ function AddPluginPanel({
       </div>
 
       {actionError && (
-        <div style={{ fontSize: 12, color: "#ef4444", whiteSpace: "pre-wrap" }}>{actionError}</div>
+        <div style={{ fontSize: 12, color: "var(--error)", whiteSpace: "pre-wrap" }}>
+          {actionError}
+        </div>
       )}
     </div>
   );
@@ -458,8 +466,8 @@ function PackageDetail({
               style={{
                 fontSize: 10,
                 padding: "1px 5px",
-                borderRadius: 3,
-                background: "rgba(120,120,120,0.12)",
+                borderRadius: 4,
+                background: "var(--bg-hover)",
                 color: "var(--text-dim)",
               }}
             >
@@ -471,9 +479,9 @@ function PackageDetail({
                 style={{
                   fontSize: 10,
                   padding: "1px 5px",
-                  borderRadius: 3,
-                  background: "rgba(245,158,11,0.12)",
-                  color: "#d97706",
+                  borderRadius: 4,
+                  background: "color-mix(in srgb, var(--warning) 12%, transparent)",
+                  color: "var(--warning)",
                 }}
               >
                 filtered
@@ -526,7 +534,7 @@ function PackageDetail({
           gridTemplateColumns: "minmax(96px, 130px) minmax(0, 1fr)",
           gap: "9px 14px",
           fontSize: 12,
-          lineHeight: 1.45,
+          lineHeight: 1.4,
         }}
       >
         <div style={{ color: "var(--text-dim)" }}>Status</div>
@@ -552,7 +560,7 @@ function PackageDetail({
         <div style={{ color: "var(--text-dim)" }}>Installed path</div>
         <div
           style={{
-            color: pkg.installedPath ? "var(--text-muted)" : "#ef4444",
+            color: pkg.installedPath ? "var(--text-muted)" : "var(--error)",
             fontFamily: "var(--font-mono)",
             overflowWrap: "anywhere",
           }}
@@ -578,9 +586,13 @@ function PackageDetail({
         <ResourceList pkg={pkg} />
       </div>
 
-      {actionMessage && <div style={{ fontSize: 12, color: "#16a34a" }}>{actionMessage}</div>}
+      {actionMessage && (
+        <div style={{ fontSize: 12, color: "var(--success)" }}>{actionMessage}</div>
+      )}
       {actionError && (
-        <div style={{ fontSize: 12, color: "#ef4444", whiteSpace: "pre-wrap" }}>{actionError}</div>
+        <div style={{ fontSize: 12, color: "var(--error)", whiteSpace: "pre-wrap" }}>
+          {actionError}
+        </div>
       )}
     </div>
   );
@@ -732,7 +744,7 @@ export function PluginsConfig({
         position: "fixed",
         inset: 0,
         zIndex: 1000,
-        background: "rgba(0,0,0,0.35)",
+        background: "var(--backdrop)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -752,7 +764,7 @@ export function PluginsConfig({
           borderRadius: 8,
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+          boxShadow: "var(--shadow-lg)",
           overflow: "hidden",
         }}
       >
@@ -823,7 +835,9 @@ export function PluginsConfig({
                   Loading...
                 </div>
               ) : error ? (
-                <div style={{ padding: "10px 8px", fontSize: 11, color: "#ef4444" }}>{error}</div>
+                <div style={{ padding: "10px 8px", fontSize: 11, color: "var(--error)" }}>
+                  {error}
+                </div>
               ) : packages.length === 0 ? (
                 <div style={{ padding: "10px 8px", fontSize: 11, color: "var(--text-dim)" }}>
                   No plugins configured
@@ -857,9 +871,9 @@ export function PluginsConfig({
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 7,
+                            gap: 8,
                             padding: "8px 8px",
-                            borderRadius: 5,
+                            borderRadius: 6,
                             cursor: "pointer",
                             background: isSelected ? "var(--bg-selected)" : "none",
                           }}
@@ -942,7 +956,7 @@ export function PluginsConfig({
                   alignItems: "center",
                   gap: 6,
                   padding: "7px 8px",
-                  borderRadius: 5,
+                  borderRadius: 6,
                   border: "none",
                   width: "100%",
                   cursor: "pointer",
@@ -958,8 +972,8 @@ export function PluginsConfig({
                 }}
               >
                 <svg
-                  width="13"
-                  height="13"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -1042,7 +1056,9 @@ export function PluginsConfig({
                   .map((d) => `${d.type}: ${d.source ? `${d.source}: ` : ""}${d.message}`)
                   .join("\n")}
                 style={{
-                  color: data.diagnostics.some((d) => d.type === "error") ? "#ef4444" : "#d97706",
+                  color: data.diagnostics.some((d) => d.type === "error")
+                    ? "var(--error)"
+                    : "var(--warning)",
                 }}
               >
                 {data.diagnostics.length} diagnostic{data.diagnostics.length === 1 ? "" : "s"}

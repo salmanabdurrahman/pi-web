@@ -76,8 +76,8 @@ function ErrorFallback({ error, errorInfo }: { error: Error | null; errorInfo: E
         padding: 32,
         background: "var(--bg)",
         color: "var(--text)",
-        fontFamily: "var(--font-noto-mono), monospace",
-        lineHeight: 1.6,
+        fontFamily: "var(--font-mono)",
+        lineHeight: 1.5,
       }}
     >
       <div style={{ maxWidth: 560, width: "100%" }}>
@@ -94,7 +94,7 @@ function ErrorFallback({ error, errorInfo }: { error: Error | null; errorInfo: E
             height="24"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#ef4444"
+            stroke="var(--error)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -141,7 +141,7 @@ function ErrorFallback({ error, errorInfo }: { error: Error | null; errorInfo: E
               border: "none",
               borderRadius: 8,
               background: "var(--accent)",
-              color: "#fff",
+              color: "var(--text-on-accent)",
               fontSize: 13,
               cursor: "pointer",
               fontWeight: 500,

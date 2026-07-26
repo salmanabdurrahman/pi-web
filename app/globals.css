@@ -15,6 +15,12 @@
   --color-assistant-bg: var(--assistant-bg);
   --color-tool-bg: var(--tool-bg);
   --color-bg-subtle: var(--bg-subtle);
+  --color-error: var(--error);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-text-on-accent: var(--text-on-accent);
+  --color-backdrop: var(--backdrop);
   --font-mono-font: var(--font-mono);
 }
 
@@ -33,6 +39,17 @@
   --assistant-bg: #ffffff;
   --tool-bg: #f9fafb;
   --bg-subtle: rgba(0, 0, 0, 0.03);
+  --error: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+  --text-on-accent: #ffffff;
+  --backdrop: rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.18);
+  --shadow-up: 0 -4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.28);
 }
 
 html.dark {
@@ -50,6 +67,17 @@ html.dark {
   --assistant-bg: #1a1a1a;
   --tool-bg: #1f2937;
   --bg-subtle: rgba(255, 255, 255, 0.04);
+  --error: #f87171;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --info: #60a5fa;
+  --text-on-accent: #111827;
+  --backdrop: rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.18);
+  --shadow-up: 0 -4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.28);
 }
 
 /* Theme toggle: circular wipe via View Transitions API.
@@ -197,7 +225,7 @@ code {
 }
 .markdown-body .markdown-inline-code {
   background: var(--bg-subtle);
-  border-radius: 5px;
+  border-radius: 6px;
   padding: 1px 5px;
   color: var(--text);
   font-family: var(--font-mono);
@@ -262,7 +290,7 @@ code {
   overflow-x: auto;
   overflow-y: hidden;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: 8px;
 }
 .markdown-body table {
   border-collapse: separate;
@@ -284,7 +312,7 @@ code {
 .markdown-body th {
   background: var(--bg-panel);
   color: color-mix(in srgb, var(--text) 88%, var(--text-muted));
-  font-weight: 650;
+  font-weight: 600;
 }
 .markdown-body tbody tr:nth-child(even) td {
   background: var(--bg-subtle);
@@ -385,7 +413,7 @@ code {
   margin-bottom: 4px;
   color: var(--text);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 600;
 }
 .compaction-file-list {
   max-height: 180px;
@@ -411,7 +439,7 @@ code {
   position: relative;
   margin: 6px 0;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--bg);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 42%, transparent);
@@ -430,7 +458,7 @@ code {
 .markdown-code-lang {
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-weight: 650;
+  font-weight: 600;
 }
 .markdown-code-actions {
   display: flex;
@@ -439,7 +467,7 @@ code {
 }
 .markdown-code-action {
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 6px;
   padding: 2px 7px;
   background: var(--bg);
   color: var(--text-muted);
@@ -545,7 +573,7 @@ code {
   height: 24px;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 6px;
   background: var(--bg);
 }
 .mermaid-zoom-stepper button,
@@ -572,7 +600,7 @@ code {
 .mermaid-zoom-icon-button {
   flex: 0 0 24px;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 6px;
 }
 .mermaid-zoom-stepper button:hover:not(:disabled),
 .mermaid-zoom-icon-button:hover {
@@ -609,7 +637,7 @@ code {
 .mermaid-zoom-canvas {
   padding: 12px;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--bg-panel);
   margin: 0 auto;
   transition: width 0.15s ease;
@@ -685,7 +713,7 @@ code {
   height: 24px;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 .file-viewer-mode-button {
@@ -719,7 +747,7 @@ code {
   box-sizing: border-box;
   flex: 0 0 24px;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 6px;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
@@ -793,7 +821,7 @@ code {
   font-size: 0.9em;
   background: var(--bg-panel);
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 .markdown-file-preview pre code {
   background: none;

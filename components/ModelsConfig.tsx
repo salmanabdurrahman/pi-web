@@ -177,7 +177,7 @@ const inputStyle = {
   padding: "6px 9px",
   background: "var(--bg-panel)",
   border: "1px solid var(--border)",
-  borderRadius: 5,
+  borderRadius: 6,
   color: "var(--text)",
   fontSize: 12,
   outline: "none",
@@ -271,8 +271,8 @@ function SecretTextInput({
       >
         {visible ? (
           <svg
-            width="15"
-            height="15"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -287,8 +287,8 @@ function SecretTextInput({
           </svg>
         ) : (
           <svg
-            width="15"
-            height="15"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -434,9 +434,9 @@ function ProviderDetail({
           style={{
             padding: "3px 8px",
             background: "none",
-            border: "1px solid rgba(239,68,68,0.3)",
+            border: "1px solid color-mix(in srgb, var(--error) 30%, transparent)",
             borderRadius: 4,
-            color: "#ef4444",
+            color: "var(--error)",
             cursor: "pointer",
             fontSize: 11,
           }}
@@ -456,7 +456,7 @@ function ProviderDetail({
               background: "var(--accent)",
               border: "none",
               borderRadius: 4,
-              color: "#fff",
+              color: "var(--text-on-accent)",
               cursor: "pointer",
               fontSize: 11,
               alignSelf: "flex-start",
@@ -510,10 +510,10 @@ const LEVEL_COLORS: Record<ThinkingLevel, string> = {
   off: "var(--text-dim)",
   minimal: "#6b7280",
   low: "#60a5fa",
-  medium: "#a78bfa",
+  medium: "var(--accent)",
   high: "#f472b6",
   xhigh: "#fb923c",
-  max: "#ef4444",
+  max: "var(--error)",
 };
 
 function ThinkingLevelMapEditor({
@@ -553,19 +553,19 @@ function ThinkingLevelMapEditor({
           border: "none",
           cursor: "pointer",
           fontWeight: 400,
-          transition: "background 0.1s, color 0.1s",
+          transition: "background 0.15s, color 0.15s",
           whiteSpace: "nowrap",
           background: "var(--bg-panel)",
           color: "var(--text-dim)",
         };
         const btnActive: React.CSSProperties = {
           background: "var(--accent)",
-          color: "#fff",
+          color: "var(--text-on-accent)",
           fontWeight: 600,
         };
         const btnActiveDisabled: React.CSSProperties = {
-          background: "#ef4444",
-          color: "#fff",
+          background: "var(--error)",
+          color: "var(--text-on-accent)",
           fontWeight: 600,
         };
 
@@ -584,7 +584,7 @@ function ThinkingLevelMapEditor({
           >
             {/* Level badge */}
             <div
-              style={{ display: "flex", alignItems: "center", gap: 5, width: 68, flexShrink: 0 }}
+              style={{ display: "flex", alignItems: "center", gap: 6, width: 68, flexShrink: 0 }}
             >
               <span
                 style={{
@@ -612,7 +612,7 @@ function ThinkingLevelMapEditor({
             <div
               style={{
                 display: "flex",
-                borderRadius: 5,
+                borderRadius: 6,
                 border: "1px solid var(--border)",
                 overflow: "hidden",
                 flexShrink: 0,
@@ -640,10 +640,10 @@ function ThinkingLevelMapEditor({
             <div
               style={{
                 display: "flex",
-                borderRadius: 5,
+                borderRadius: 6,
                 border: `1px solid ${state === "string" ? "var(--accent)" : "var(--border)"}`,
                 overflow: "hidden",
-                transition: "border-color 0.1s",
+                transition: "border-color 0.15s",
               }}
             >
               <button
@@ -674,7 +674,7 @@ function ThinkingLevelMapEditor({
                   fontFamily: "var(--font-mono)",
                   fontSize: 11,
                   padding: "4px 7px",
-                  transition: "background 0.1s, color 0.1s",
+                  transition: "background 0.15s, color 0.15s",
                 }}
               />
             </div>
@@ -802,7 +802,7 @@ function ModelDetail({
                     : testState.phase === "success"
                       ? "#dcfce7"
                       : "#e5e7eb",
-                color: "#111827",
+                color: "var(--text-on-accent)",
                 fontSize: 11,
                 display: "inline-flex",
                 alignItems: "center",
@@ -822,12 +822,12 @@ function ModelDetail({
             style={{
               height: 24,
               padding: "0 8px",
-              background: testState.phase === "success" ? "#16a34a" : "none",
-              border: `1px solid ${testState.phase === "success" ? "#16a34a" : "var(--border)"}`,
+              background: testState.phase === "success" ? "var(--success)" : "none",
+              border: `1px solid ${testState.phase === "success" ? "var(--success)" : "var(--border)"}`,
               borderRadius: 4,
               color:
                 testState.phase === "success"
-                  ? "#fff"
+                  ? "var(--text-on-accent)"
                   : !model.id.trim() || testState.phase === "testing"
                     ? "var(--text-dim)"
                     : "var(--text-muted)",
@@ -837,13 +837,13 @@ function ModelDetail({
               alignItems: "center",
               justifyContent: "center",
               boxSizing: "border-box",
-              gap: 5,
+              gap: 6,
             }}
           >
             {testState.phase === "success" && (
               <svg
-                width="11"
-                height="11"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -866,9 +866,9 @@ function ModelDetail({
               height: 24,
               padding: "0 8px",
               background: "none",
-              border: "1px solid rgba(239,68,68,0.3)",
+              border: "1px solid color-mix(in srgb, var(--error) 30%, transparent)",
               borderRadius: 4,
-              color: "#ef4444",
+              color: "var(--error)",
               cursor: "pointer",
               fontSize: 11,
               boxSizing: "border-box",
@@ -1165,11 +1165,16 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
               width: 7,
               height: 7,
               borderRadius: "50%",
-              background: provider.loggedIn ? "#4ade80" : "var(--border)",
+              background: provider.loggedIn ? "var(--success)" : "var(--border)",
               display: "inline-block",
             }}
           />
-          <span style={{ fontSize: 11, color: provider.loggedIn ? "#4ade80" : "var(--text-dim)" }}>
+          <span
+            style={{
+              fontSize: 11,
+              color: provider.loggedIn ? "var(--success)" : "var(--text-dim)",
+            }}
+          >
             {provider.loggedIn ? "connected" : "not connected"}
           </span>
         </div>
@@ -1201,7 +1206,7 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
                     padding: "6px 9px",
                     background: "var(--bg)",
                     border: "1px solid var(--border)",
-                    borderRadius: 5,
+                    borderRadius: 6,
                     color: "var(--text)",
                     cursor: "pointer",
                     fontSize: 12,
@@ -1253,7 +1258,7 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
                   padding: "6px 9px",
                   background: "var(--bg)",
                   border: "1px solid var(--border)",
-                  borderRadius: 5,
+                  borderRadius: 6,
                   color: "var(--text)",
                   fontSize: 12,
                   outline: "none",
@@ -1268,8 +1273,8 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
                   padding: "6px 12px",
                   background: inputValue.trim() ? "var(--accent)" : "var(--bg-panel)",
                   border: "none",
-                  borderRadius: 5,
-                  color: inputValue.trim() ? "#fff" : "var(--text-dim)",
+                  borderRadius: 6,
+                  color: inputValue.trim() ? "var(--text-on-accent)" : "var(--text-dim)",
                   cursor: inputValue.trim() ? "pointer" : "not-allowed",
                   fontSize: 12,
                   fontWeight: 600,
@@ -1291,7 +1296,7 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
                 padding: "8px 10px",
                 background: "var(--bg)",
                 border: "1px solid var(--border)",
-                borderRadius: 5,
+                borderRadius: 6,
                 color: "var(--text)",
                 fontSize: 16,
                 fontWeight: 700,
@@ -1322,10 +1327,12 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
           </p>
         )}
         {loginState.phase === "success" && (
-          <p style={{ margin: 0, fontSize: 12, color: "#4ade80" }}>Connected successfully.</p>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--success)" }}>
+            Connected successfully.
+          </p>
         )}
         {loginState.phase === "error" && (
-          <p style={{ margin: 0, fontSize: 12, color: "#f87171" }}>{loginState.message}</p>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--error)" }}>{loginState.message}</p>
         )}
       </div>
 
@@ -1341,7 +1348,7 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
               padding: "5px 12px",
               background: "none",
               border: "1px solid var(--border)",
-              borderRadius: 5,
+              borderRadius: 6,
               color: "var(--text-muted)",
               cursor: "pointer",
               fontSize: 12,
@@ -1357,8 +1364,8 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
                 padding: "5px 14px",
                 background: "var(--accent)",
                 border: "none",
-                borderRadius: 5,
-                color: "#fff",
+                borderRadius: 6,
+                color: "var(--text-on-accent)",
                 cursor: "pointer",
                 fontSize: 12,
                 fontWeight: 600,
@@ -1372,9 +1379,9 @@ function OAuthDetail({ provider, onRefresh }: { provider: OAuthProvider; onRefre
                 style={{
                   padding: "5px 12px",
                   background: "none",
-                  border: "1px solid rgba(239,68,68,0.3)",
-                  borderRadius: 5,
-                  color: "#ef4444",
+                  border: "1px solid color-mix(in srgb, var(--error) 30%, transparent)",
+                  borderRadius: 6,
+                  color: "var(--error)",
                   cursor: "pointer",
                   fontSize: 12,
                 }}
@@ -1465,12 +1472,15 @@ function ApiKeyDetail({
               width: 7,
               height: 7,
               borderRadius: "50%",
-              background: provider.configured ? "#4ade80" : "var(--border)",
+              background: provider.configured ? "var(--success)" : "var(--border)",
               display: "inline-block",
             }}
           />
           <span
-            style={{ fontSize: 11, color: provider.configured ? "#4ade80" : "var(--text-dim)" }}
+            style={{
+              fontSize: 11,
+              color: provider.configured ? "var(--success)" : "var(--text-dim)",
+            }}
           >
             {provider.configured ? "configured" : "not configured"}
           </span>
@@ -1502,17 +1512,21 @@ function ApiKeyDetail({
             disabled={saving || !apiKey.trim() || savedOk}
             style={{
               padding: "6px 12px",
-              background: savedOk ? "#16a34a" : apiKey.trim() ? "var(--accent)" : "var(--bg-panel)",
+              background: savedOk
+                ? "var(--success)"
+                : apiKey.trim()
+                  ? "var(--accent)"
+                  : "var(--bg-panel)",
               border: "none",
-              borderRadius: 5,
-              color: apiKey.trim() || savedOk ? "#fff" : "var(--text-dim)",
+              borderRadius: 6,
+              color: apiKey.trim() || savedOk ? "var(--text-on-accent)" : "var(--text-dim)",
               cursor: saving || !apiKey.trim() || savedOk ? "not-allowed" : "pointer",
               fontSize: 12,
               fontWeight: 600,
               flexShrink: 0,
               display: "flex",
               alignItems: "center",
-              gap: 5,
+              gap: 6,
             }}
           >
             {savedOk && (
@@ -1534,7 +1548,7 @@ function ApiKeyDetail({
         </div>
       </Field>
 
-      {error && <p style={{ margin: 0, fontSize: 12, color: "#f87171" }}>{error}</p>}
+      {error && <p style={{ margin: 0, fontSize: 12, color: "var(--error)" }}>{error}</p>}
 
       {provider.configured && (
         <button
@@ -1544,9 +1558,9 @@ function ApiKeyDetail({
             alignSelf: "flex-start",
             padding: "5px 12px",
             background: "none",
-            border: "1px solid rgba(239,68,68,0.3)",
-            borderRadius: 5,
-            color: "#ef4444",
+            border: "1px solid color-mix(in srgb, var(--error) 30%, transparent)",
+            borderRadius: 6,
+            color: "var(--error)",
             cursor: removing ? "not-allowed" : "pointer",
             fontSize: 12,
           }}
@@ -1651,12 +1665,12 @@ function AddProviderPicker({
     padding: "10px 12px",
     background: "var(--bg-panel)",
     border: "1px solid var(--border)",
-    borderRadius: 7,
+    borderRadius: 8,
     boxSizing: "border-box",
     cursor: "pointer",
     minWidth: 0,
     textAlign: "left",
-    transition: "border-color 0.12s, background 0.12s",
+    transition: "border-color 0.15s, background 0.15s",
     width: "100%",
   };
 
@@ -1666,7 +1680,7 @@ function AddProviderPicker({
         position: "fixed",
         inset: 0,
         zIndex: 1100,
-        background: "rgba(0,0,0,0.4)",
+        background: "var(--backdrop)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -1685,7 +1699,7 @@ function AddProviderPicker({
           borderRadius: 10,
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
+          boxShadow: "var(--shadow-lg)",
           overflow: "hidden",
         }}
       >
@@ -1701,8 +1715,8 @@ function AddProviderPicker({
           }}
         >
           <svg
-            width="13"
-            height="13"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -1791,7 +1805,7 @@ function AddProviderPicker({
                         fontSize: 12,
                         fontWeight: 600,
                         color: "var(--text)",
-                        lineHeight: 1.3,
+                        lineHeight: 1.4,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -1807,7 +1821,7 @@ function AddProviderPicker({
                     style={{
                       width: 26,
                       height: 26,
-                      borderRadius: 5,
+                      borderRadius: 6,
                       background: "var(--bg-hover)",
                       border: "1px dashed var(--border)",
                       display: "flex",
@@ -1817,8 +1831,8 @@ function AddProviderPicker({
                     }}
                   >
                     <svg
-                      width="13"
-                      height="13"
+                      width="14"
+                      height="14"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -1872,7 +1886,7 @@ function AddProviderPicker({
                         fontSize: 12,
                         fontWeight: 600,
                         color: "var(--text)",
-                        lineHeight: 1.3,
+                        lineHeight: 1.4,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -1926,7 +1940,7 @@ function AddProviderPicker({
                         fontSize: 12,
                         fontWeight: 600,
                         color: "var(--text)",
-                        lineHeight: 1.3,
+                        lineHeight: 1.4,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -2189,7 +2203,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
           position: "fixed",
           inset: 0,
           zIndex: 1000,
-          background: "rgba(0,0,0,0.35)",
+          background: "var(--backdrop)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -2209,7 +2223,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
             borderRadius: 10,
             display: "flex",
             flexDirection: "column",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+            boxShadow: "var(--shadow-lg)",
             overflow: "hidden",
           }}
         >
@@ -2281,9 +2295,9 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 7,
+                        gap: 8,
                         padding: "5px 8px",
-                        borderRadius: 5,
+                        borderRadius: 6,
                         cursor: "pointer",
                         background: isSelected ? "var(--bg-selected)" : "none",
                       }}
@@ -2321,9 +2335,9 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 7,
+                        gap: 8,
                         padding: "5px 8px",
-                        borderRadius: 5,
+                        borderRadius: 6,
                         cursor: "pointer",
                         background: isSelected ? "var(--bg-selected)" : "none",
                       }}
@@ -2376,7 +2390,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                             alignItems: "center",
                             gap: 6,
                             padding: "7px 8px",
-                            borderRadius: 5,
+                            borderRadius: 6,
                             cursor: "pointer",
                             background: isProviderSelected ? "var(--bg-selected)" : "none",
                           }}
@@ -2389,8 +2403,8 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                           }}
                         >
                           <svg
-                            width="11"
-                            height="11"
+                            width="12"
+                            height="12"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -2443,7 +2457,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                                 alignItems: "center",
                                 gap: 6,
                                 padding: "5px 8px 5px 26px",
-                                borderRadius: 5,
+                                borderRadius: 6,
                                 cursor: "pointer",
                                 background: isModelSelected ? "var(--bg-selected)" : "none",
                               }}
@@ -2471,11 +2485,12 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                               {m.reasoning && (
                                 <span
                                   style={{
-                                    fontSize: 9,
+                                    fontSize: 10,
                                     padding: "1px 4px",
-                                    background: "rgba(99,102,241,0.12)",
-                                    color: "rgba(99,102,241,0.8)",
-                                    borderRadius: 3,
+                                    background:
+                                      "color-mix(in srgb, var(--accent) 12%, transparent)",
+                                    color: "color-mix(in srgb, var(--accent) 80%, transparent)",
+                                    borderRadius: 4,
                                     flexShrink: 0,
                                   }}
                                 >
@@ -2497,7 +2512,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                             alignItems: "center",
                             gap: 4,
                             padding: "4px 8px 4px 26px",
-                            borderRadius: 5,
+                            borderRadius: 6,
                             cursor: "pointer",
                             color: "var(--text-dim)",
                           }}
@@ -2526,12 +2541,12 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: 5,
+                    gap: 6,
                     width: "100%",
                     padding: "6px 0",
                     background: "none",
                     border: "1px dashed var(--border)",
-                    borderRadius: 5,
+                    borderRadius: 6,
                     color: "var(--text-muted)",
                     cursor: "pointer",
                     fontSize: 12,
@@ -2584,7 +2599,7 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
             }}
           >
             {saveError && (
-              <span style={{ fontSize: 12, color: "#f87171", flex: 1 }}>{saveError}</span>
+              <span style={{ fontSize: 12, color: "var(--error)", flex: 1 }}>{saveError}</span>
             )}
             <button
               onClick={onClose}
@@ -2607,10 +2622,18 @@ export function ModelsConfig({ onClose }: { onClose: () => void }) {
                 position: "relative",
                 padding: "6px 16px",
                 minWidth: 92,
-                background: savedOk ? "#16a34a" : saving ? "var(--bg-panel)" : "var(--accent)",
+                background: savedOk
+                  ? "var(--success)"
+                  : saving
+                    ? "var(--bg-panel)"
+                    : "var(--accent)",
                 border: "none",
                 borderRadius: 6,
-                color: savedOk ? "#fff" : saving ? "var(--text-muted)" : "#fff",
+                color: savedOk
+                  ? "var(--text-on-accent)"
+                  : saving
+                    ? "var(--text-muted)"
+                    : "var(--text-on-accent)",
                 cursor: saving || savedOk ? "default" : "pointer",
                 fontSize: 13,
                 fontWeight: 600,

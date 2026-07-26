@@ -529,12 +529,12 @@ export function ChatWindow({
       onDrop={handleDrop}
     >
       {isDragOver && !sessionBusy && (
-        <div className="pointer-events-none absolute inset-0 z-50 flex animate-[drop-zone-in_0.15s_ease_both] items-center justify-center bg-[rgba(37,99,235,0.06)] backdrop-blur-[1px]">
+        <div className="bg-[color-mix(in srgb, var(--accent) 6%, transparent)] pointer-events-none absolute inset-0 z-50 flex animate-[drop-zone-in_0.15s_ease_both] items-center justify-center backdrop-blur-[1px]">
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             {[0, 0.8, 1.6].map((delay) => (
               <div
                 key={delay}
-                className="absolute h-[720px] w-[720px] animate-[drop-ripple_2.4s_ease-out_infinite_backwards] rounded-full border-[1.5px] border-solid border-[rgba(37,99,235,0.5)]"
+                className="border-[color-mix(in srgb, var(--accent) 50%, transparent)] absolute h-[720px] w-[720px] animate-[drop-ripple_2.4s_ease-out_infinite_backwards] rounded-full border-[1.5px] border-solid"
                 style={{ transformOrigin: "center", animationDelay: `${delay}s` }}
               />
             ))}
@@ -545,7 +545,7 @@ export function ChatWindow({
             viewBox="0 0 140 140"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="drop-shadow-[0_6px_18px_rgba(37,99,235,0.18)]"
+            className="drop-shadow-[0_6px_18px_color-mix(in srgb, var(--accent) 18%, transparent)]"
           >
             <rect
               x="28"
@@ -553,14 +553,14 @@ export function ChatWindow({
               width="84"
               height="60"
               rx="8"
-              fill="rgba(37,99,235,0.08)"
-              stroke="rgba(37,99,235,0.50)"
+              fill="color-mix(in srgb, var(--accent) 8%, transparent)"
+              stroke="color-mix(in srgb, var(--accent) 50%, transparent)"
               strokeWidth="1.8"
             />
             <path
               d="M36 100 L54 72 L68 88 L80 74 L104 100Z"
-              fill="rgba(37,99,235,0.16)"
-              stroke="rgba(37,99,235,0.40)"
+              fill="color-mix(in srgb, var(--accent) 16%, transparent)"
+              stroke="color-mix(in srgb, var(--accent) 40%, transparent)"
               strokeWidth="1.4"
               strokeLinejoin="round"
             />
@@ -568,11 +568,15 @@ export function ChatWindow({
               cx="96"
               cy="58"
               r="8"
-              fill="rgba(37,99,235,0.22)"
-              stroke="rgba(37,99,235,0.55)"
+              fill="color-mix(in srgb, var(--accent) 22%, transparent)"
+              stroke="color-mix(in srgb, var(--accent) 55.00000000000001%, transparent)"
               strokeWidth="1.6"
             />
-            <g stroke="rgba(37,99,235,0.45)" strokeWidth="1.4" strokeLinecap="round">
+            <g
+              stroke="color-mix(in srgb, var(--accent) 45%, transparent)"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            >
               <line x1="96" y1="46" x2="96" y2="43" />
               <line x1="96" y1="70" x2="96" y2="73" />
               <line x1="84" y1="58" x2="81" y2="58" />
@@ -1101,7 +1105,7 @@ function ExtensionWidgets({ widgets }: { widgets: Array<{ key: string; lines: st
           key={widget.key}
           style={{
             border: "1px solid var(--border)",
-            borderRadius: 7,
+            borderRadius: 8,
             background: "var(--bg-panel)",
             overflow: "hidden",
           }}
@@ -1159,9 +1163,9 @@ function NoticeShelf({
       {notices.map((notice, index) => {
         const color =
           notice.type === "error"
-            ? "#ef4444"
+            ? "var(--error)"
             : notice.type === "warning"
-              ? "#d97706"
+              ? "var(--warning)"
               : notice.type === "success"
                 ? "#10b981"
                 : "var(--accent)";
@@ -1184,15 +1188,13 @@ function NoticeShelf({
               color: "var(--text-muted)",
               width: "fit-content",
               maxWidth: "min(100%, 620px)",
-              boxShadow: floating
-                ? "0 1px 2px rgba(15,23,42,0.05), 0 10px 28px -14px rgba(15,23,42,0.24)"
-                : "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -12px rgba(15,23,42,0.10)",
+              boxShadow: floating ? "var(--shadow-lg)" : "var(--shadow-sm)",
               fontSize: 18,
-              lineHeight: 1.45,
+              lineHeight: 1.4,
               transformOrigin: "top center",
               animation: notice.exiting
-                ? "notice-shelf-out 0.18s ease-in forwards"
-                : "notice-shelf-in 0.18s ease-out both",
+                ? "notice-shelf-out 0.15s ease-in forwards"
+                : "notice-shelf-in 0.15s ease-out both",
               padding: "0 12px",
             }}
           >
@@ -1282,14 +1284,14 @@ function ExtensionDialog({
     >
       <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ color: "var(--text)", fontSize: 14, fontWeight: 650 }}>{request.title}</div>
+          <div style={{ color: "var(--text)", fontSize: 14, fontWeight: 600 }}>{request.title}</div>
           {expired && (
             <span
               style={{
                 padding: "1px 7px",
                 borderRadius: 4,
-                background: "rgba(248,113,113,0.15)",
-                color: "#f87171",
+                background: "color-mix(in srgb, var(--error) 15%, transparent)",
+                color: "var(--error)",
                 fontSize: 11,
                 fontWeight: 600,
               }}
@@ -1324,7 +1326,7 @@ function ExtensionDialog({
             style={{
               color: "var(--text-muted)",
               fontSize: 13,
-              lineHeight: 1.6,
+              lineHeight: 1.5,
               whiteSpace: "pre-wrap",
             }}
           >
@@ -1340,7 +1342,7 @@ function ExtensionDialog({
                 style={{
                   width: "100%",
                   padding: "9px 10px",
-                  borderRadius: 7,
+                  borderRadius: 8,
                   border: "1px solid var(--border)",
                   background: "var(--bg-panel)",
                   color: "var(--text)",
@@ -1367,7 +1369,7 @@ function ExtensionDialog({
             style={{
               width: "100%",
               padding: "9px 10px",
-              borderRadius: 7,
+              borderRadius: 8,
               border: "1px solid var(--border)",
               background: "var(--bg-panel)",
               color: "var(--text)",
@@ -1389,14 +1391,14 @@ function ExtensionDialog({
               width: "100%",
               minHeight: 220,
               padding: 10,
-              borderRadius: 7,
+              borderRadius: 8,
               border: "1px solid var(--border)",
               background: "var(--bg-panel)",
               color: "var(--text)",
               outline: "none",
               resize: "vertical",
               fontSize: 13,
-              lineHeight: 1.55,
+              lineHeight: 1.5,
               fontFamily: "var(--font-mono)",
             }}
           />
@@ -1434,7 +1436,7 @@ function ExtensionDialog({
               borderRadius: 6,
               border: "1px solid var(--accent)",
               background: "var(--accent)",
-              color: "#fff",
+              color: "var(--text-on-accent)",
               cursor: "pointer",
             }}
           >
@@ -1448,7 +1450,7 @@ function ExtensionDialog({
               borderRadius: 6,
               border: "1px solid var(--accent)",
               background: "var(--accent)",
-              color: "#fff",
+              color: "var(--text-on-accent)",
               cursor: "pointer",
             }}
           >
@@ -1499,7 +1501,7 @@ function ExtensionCustomPanel({
         alignItems: "center",
         justifyContent: "center",
         padding: 20,
-        background: "rgba(0,0,0,0.18)",
+        background: "var(--bg-hover)",
       }}
     >
       <div
@@ -1515,7 +1517,7 @@ function ExtensionCustomPanel({
           border: "1px solid var(--border)",
           borderRadius: 8,
           background: "var(--bg)",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
+          boxShadow: "var(--shadow-xl)",
           overflow: "hidden",
           outline: "none",
         }}
@@ -1578,7 +1580,7 @@ function ExtensionCustomPanel({
             borderBottom: "1px solid var(--border)",
           }}
         >
-          <div style={{ color: "var(--text)", fontSize: 13, fontWeight: 650 }}>Extension panel</div>
+          <div style={{ color: "var(--text)", fontSize: 13, fontWeight: 600 }}>Extension panel</div>
           <button
             onClick={() => onInput(request, "\x03")}
             style={{
@@ -1604,7 +1606,7 @@ function ExtensionCustomPanel({
             color: "var(--text)",
             fontFamily: "var(--font-mono)",
             fontSize: 13,
-            lineHeight: 1.45,
+            lineHeight: 1.4,
             whiteSpace: "pre",
           }}
         >

@@ -256,11 +256,11 @@ function UserMessageView({
             flex: 1,
             minWidth: 0,
             background: "var(--user-bg)",
-            border: "1px solid rgba(59,130,246,0.2)",
+            border: "1px solid color-mix(in srgb, var(--info) 20%, transparent)",
             borderRadius: 12,
             padding: "8px 12px",
             fontSize: 14,
-            lineHeight: 1.6,
+            lineHeight: 1.5,
             color: "var(--text)",
             wordBreak: "break-word",
           }}
@@ -292,7 +292,7 @@ function UserMessageView({
                       borderRadius: 6,
                       objectFit: "contain",
                       display: "block",
-                      border: "1px solid rgba(59,130,246,0.15)",
+                      border: "1px solid color-mix(in srgb, var(--info) 15%, transparent)",
                     }}
                   />
                 );
@@ -321,10 +321,10 @@ function UserMessageView({
           <div
             style={{
               display: "flex",
-              gap: 3,
+              gap: 4,
               opacity: hovered ? 1 : 0,
               pointerEvents: hovered ? "auto" : "none",
-              transition: "opacity 0.12s",
+              transition: "opacity 0.15s",
             }}
           >
             <button
@@ -334,8 +334,8 @@ function UserMessageView({
             >
               {copied ? (
                 <svg
-                  width="11"
-                  height="11"
+                  width="12"
+                  height="12"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -347,8 +347,8 @@ function UserMessageView({
                 </svg>
               ) : (
                 <svg
-                  width="11"
-                  height="11"
+                  width="12"
+                  height="12"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -356,7 +356,7 @@ function UserMessageView({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <rect x="9" y="9" width="14" height="14" rx="2" ry="2" />
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
               )}
@@ -367,10 +367,10 @@ function UserMessageView({
             <div
               style={{
                 display: "flex",
-                gap: 3,
+                gap: 4,
                 opacity: hovered || forking ? 1 : 0,
                 pointerEvents: hovered || forking ? "auto" : "none",
-                transition: "opacity 0.12s",
+                transition: "opacity 0.15s",
               }}
             >
               {canNavigate && (
@@ -383,8 +383,8 @@ function UserMessageView({
                   className="flex h-[22px] cursor-pointer items-center gap-[4px] rounded-[5px] border-none bg-transparent px-[8px] py-[3px] text-[11px] font-normal whitespace-nowrap text-[var(--text-dim)] transition-colors hover:text-[var(--accent)]"
                 >
                   <svg
-                    width="11"
-                    height="11"
+                    width="12"
+                    height="12"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -412,8 +412,8 @@ function UserMessageView({
                   className={`flex h-[22px] items-center gap-[4px] rounded-[5px] border-none bg-transparent px-[8px] py-[3px] text-[11px] font-normal whitespace-nowrap transition-colors enabled:cursor-pointer enabled:hover:text-[var(--accent)] disabled:cursor-not-allowed ${forking ? "text-[var(--accent)]" : "text-[var(--text-dim)]"}`}
                 >
                   <svg
-                    width="11"
-                    height="11"
+                    width="12"
+                    height="12"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -646,7 +646,7 @@ function AssistantMessageView({
                               padding: "1px 6px",
                               borderRadius: 4,
                               background: bg,
-                              color: "#fff",
+                              color: "var(--text-on-accent)",
                               fontSize: 11,
                               fontWeight: 400,
                             }}
@@ -702,8 +702,8 @@ function AssistantMessageView({
           >
             {copied ? (
               <svg
-                width="11"
-                height="11"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -715,8 +715,8 @@ function AssistantMessageView({
               </svg>
             ) : (
               <svg
-                width="11"
-                height="11"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -724,7 +724,7 @@ function AssistantMessageView({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <rect x="9" y="9" width="14" height="14" rx="2" ry="2" />
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
               </svg>
             )}
@@ -891,9 +891,9 @@ function ThinkingBlock({
         <div
           style={{
             padding: "8px 10px",
-            color: error ? "#f87171" : "var(--text-muted)",
+            color: error ? "var(--error)" : "var(--text-muted)",
             fontSize: 12,
-            lineHeight: 1.6,
+            lineHeight: 1.5,
             whiteSpace: "pre-wrap",
             background: "var(--bg-panel)",
             borderTop: "1px solid var(--border)",
@@ -966,19 +966,19 @@ function ToolCallBlock({
   return (
     <div
       style={{
-        borderRadius: 7,
+        borderRadius: 8,
         overflow: "hidden",
         fontSize: 12,
         border: isError
-          ? "1px solid rgba(248,113,113,0.45)"
+          ? "1px solid color-mix(in srgb, var(--error) 45%, transparent)"
           : isSubagent
-            ? "1px solid rgba(139,92,246,0.35)"
-            : "1px solid rgba(34,197,94,0.25)",
+            ? "1px solid color-mix(in srgb, var(--accent) 35%, transparent)"
+            : "1px solid color-mix(in srgb, var(--success) 25%, transparent)",
         background: isError
-          ? "rgba(248,113,113,0.05)"
+          ? "color-mix(in srgb, var(--error) 5%, transparent)"
           : isSubagent
-            ? "rgba(139,92,246,0.06)"
-            : "rgba(34,197,94,0.04)",
+            ? "color-mix(in srgb, var(--accent) 6%, transparent)"
+            : "color-mix(in srgb, var(--success) 4%, transparent)",
       }}
     >
       {/* ── Tool call header ── */}
@@ -987,7 +987,7 @@ function ToolCallBlock({
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 7,
+          gap: 8,
           width: "100%",
           padding: "6px 10px",
           background: "none",
@@ -1001,7 +1001,7 @@ function ToolCallBlock({
       >
         <span
           style={{
-            color: isError ? "#f87171" : isSubagent ? "#a78bfa" : "#16a34a",
+            color: isError ? "var(--error)" : isSubagent ? "var(--accent)" : "var(--success)",
             fontFamily: "var(--font-mono)",
             fontWeight: 600,
             fontSize: 11,
@@ -1069,7 +1069,7 @@ function ToolCallBlock({
             fontSize: 12,
             lineHeight: 1.5,
             background: "var(--bg-subtle)",
-            borderTop: "1px solid rgba(139,92,246,0.25)",
+            borderTop: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)",
             fontStyle: "italic",
           }}
         >
@@ -1084,8 +1084,8 @@ function ToolCallBlock({
             alignItems: "center",
             gap: 8,
             padding: "5px 10px",
-            background: "rgba(139,92,246,0.08)",
-            borderTop: "1px solid rgba(139,92,246,0.2)",
+            background: "color-mix(in srgb, var(--accent) 8%, transparent)",
+            borderTop: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
             color: "var(--text-dim)",
             fontSize: 11,
             fontFamily: "var(--font-mono)",
@@ -1096,7 +1096,7 @@ function ToolCallBlock({
               width: 7,
               height: 7,
               borderRadius: "50%",
-              background: "#a78bfa",
+              background: "var(--accent)",
               flexShrink: 0,
             }}
           />
@@ -1115,10 +1115,10 @@ function ToolCallBlock({
             overflow: "auto",
             background: "var(--bg-subtle)",
             borderTop: isError
-              ? "1px solid rgba(248,113,113,0.25)"
+              ? "1px solid color-mix(in srgb, var(--error) 25%, transparent)"
               : isSubagent
-                ? "1px solid rgba(139,92,246,0.2)"
-                : "1px solid rgba(34,197,94,0.2)",
+                ? "1px solid color-mix(in srgb, var(--accent) 20%, transparent)"
+                : "1px solid color-mix(in srgb, var(--success) 20%, transparent)",
             whiteSpace: "pre-wrap",
             wordBreak: "break-all",
           }}
@@ -1153,7 +1153,7 @@ function PairedDiffResult({
   return (
     <div
       style={{
-        borderTop: "1px solid rgba(34,197,94,0.15)",
+        borderTop: "1px solid color-mix(in srgb, var(--success) 15%, transparent)",
         background: "var(--bg)",
       }}
     >
@@ -1185,7 +1185,7 @@ function SplitPatchView({
             borderTop: fileIndex === 0 ? "none" : "1px solid var(--border)",
             fontFamily: "var(--font-mono)",
             fontSize: 12,
-            lineHeight: 1.55,
+            lineHeight: 1.5,
           }}
         >
           {showFileHeaders && (
@@ -1282,15 +1282,19 @@ function SplitDiffHeader({
 function SplitDiffCellView({ cell, side }: { cell: SplitDiffCell; side: "left" | "right" }) {
   const bg =
     cell.type === "added"
-      ? "rgba(34,197,94,0.12)"
+      ? "color-mix(in srgb, var(--success) 12%, transparent)"
       : cell.type === "removed"
-        ? "rgba(248,113,113,0.13)"
+        ? "color-mix(in srgb, var(--error) 13%, transparent)"
         : cell.type === "empty"
           ? "var(--bg-subtle)"
           : "transparent";
   const marker = cell.type === "added" ? "+" : cell.type === "removed" ? "-" : " ";
   const markerColor =
-    cell.type === "added" ? "#22c55e" : cell.type === "removed" ? "#f87171" : "var(--text-dim)";
+    cell.type === "added"
+      ? "var(--success)"
+      : cell.type === "removed"
+        ? "var(--error)"
+        : "var(--text-dim)";
 
   return (
     <div
@@ -1354,7 +1358,7 @@ function PatchTextView({ text }: { text: string }) {
         overflowX: "hidden",
         fontFamily: "var(--font-mono)",
         fontSize: 12,
-        lineHeight: 1.55,
+        lineHeight: 1.5,
         minWidth: 0,
       }}
     >
@@ -1368,17 +1372,17 @@ function PatchTextView({ text }: { text: string }) {
               : "context";
         const bg =
           kind === "added"
-            ? "rgba(34,197,94,0.12)"
+            ? "color-mix(in srgb, var(--success) 12%, transparent)"
             : kind === "removed"
-              ? "rgba(248,113,113,0.13)"
+              ? "color-mix(in srgb, var(--error) 13%, transparent)"
               : kind === "hunk"
-                ? "rgba(96,165,250,0.12)"
+                ? "color-mix(in srgb, var(--accent) 12%, transparent)"
                 : "transparent";
         const color =
           kind === "added"
-            ? "#22c55e"
+            ? "var(--success)"
             : kind === "removed"
-              ? "#f87171"
+              ? "var(--error)"
               : kind === "hunk"
                 ? "var(--accent)"
                 : "var(--text)";
@@ -1466,15 +1470,17 @@ function PairedResult({
   return (
     <div
       style={{
-        borderTop: `1px solid ${isError ? "rgba(248,113,113,0.3)" : "rgba(34,197,94,0.15)"}`,
-        background: isError ? "rgba(248,113,113,0.04)" : "var(--bg-subtle)",
+        borderTop: `1px solid ${isError ? "color-mix(in srgb, var(--error) 30%, transparent)" : "color-mix(in srgb, var(--success) 15%, transparent)"}`,
+        background: isError
+          ? "color-mix(in srgb, var(--error) 4%, transparent)"
+          : "var(--bg-subtle)",
       }}
     >
       <pre
         style={{
           margin: 0,
           padding: "8px 10px",
-          color: isError ? "#f87171" : isEmpty ? "var(--text-dim)" : "var(--text-muted)",
+          color: isError ? "var(--error)" : isEmpty ? "var(--text-dim)" : "var(--text-muted)",
           fontSize: 12,
           lineHeight: 1.5,
           overflow: "auto",
@@ -1518,7 +1524,7 @@ function CompactionMessageView({ message }: { message: CustomMessage }) {
             color: "var(--text-muted)",
           }}
         >
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 650 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600 }}>
             compaction
           </span>
           {time && (
@@ -1529,7 +1535,7 @@ function CompactionMessageView({ message }: { message: CustomMessage }) {
         </div>
 
         <div style={{ padding: "11px 13px 12px" }}>
-          <div style={{ color: "var(--text)", fontSize: 15, fontWeight: 700, lineHeight: 1.35 }}>
+          <div style={{ color: "var(--text)", fontSize: 15, fontWeight: 700, lineHeight: 1.4 }}>
             Conversation compacted
           </div>
           <div
@@ -1654,7 +1660,7 @@ function CustomMessageView({
               color: "var(--text-muted)",
               fontFamily: "var(--font-mono)",
               fontSize: 11,
-              fontWeight: 650,
+              fontWeight: 600,
             }}
           >
             {title}

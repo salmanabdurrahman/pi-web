@@ -132,7 +132,7 @@ function Row({
         alignItems: "flex-start",
         gap: 12,
         padding: "4px 0",
-        borderBottom: "1px solid rgba(128,128,128,0.08)",
+        borderBottom: "1px solid color-mix(in srgb, var(--border) 8%, transparent)",
       }}
     >
       <span style={{ fontSize: 12, color: "var(--text-dim)", flexShrink: 0 }}>{label}</span>
@@ -165,7 +165,7 @@ function Badge({
       style={{
         display: "inline-block",
         padding: "1px 6px",
-        borderRadius: 3,
+        borderRadius: 4,
         fontSize: 10,
         fontWeight: 600,
         color: color ?? "var(--text-muted)",
@@ -231,7 +231,7 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
 
   if (error && !data) {
     return (
-      <div style={{ padding: 20, textAlign: "center", color: "#ef4444", fontSize: 13 }}>
+      <div style={{ padding: 20, textAlign: "center", color: "var(--error)", fontSize: 13 }}>
         Failed to load: {error}
       </div>
     );
@@ -248,7 +248,7 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
         position: "fixed",
         inset: 0,
         zIndex: 1000,
-        background: "rgba(0,0,0,0.35)",
+        background: "var(--backdrop)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -268,7 +268,7 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
           borderRadius: 10,
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+          boxShadow: "var(--shadow-lg)",
           overflow: "hidden",
         }}
       >
@@ -348,7 +348,10 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
               <Row
                 label="Status"
                 value={
-                  <Badge color="#d97706" bgColor="rgba(217,119,6,0.1)">
+                  <Badge
+                    color="var(--warning)"
+                    bgColor="color-mix(in srgb, var(--warning) 10%, transparent)"
+                  >
                     Fallback — {data._error}
                   </Badge>
                 }
@@ -401,7 +404,10 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
               <Row
                 label="piStatus"
                 value={
-                  <Badge color="#6366f1" bgColor="rgba(99,102,241,0.12)">
+                  <Badge
+                    color="#6366f1"
+                    bgColor="color-mix(in srgb, var(--accent) 12%, transparent)"
+                  >
                     Configured
                   </Badge>
                 }
@@ -422,8 +428,12 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
                   label="Enabled"
                   value={
                     <Badge
-                      color={g.compaction.enabled ? "#16a34a" : "var(--text-dim)"}
-                      bgColor={g.compaction.enabled ? "rgba(22,163,74,0.1)" : undefined}
+                      color={g.compaction.enabled ? "var(--success)" : "var(--text-dim)"}
+                      bgColor={
+                        g.compaction.enabled
+                          ? "color-mix(in srgb, var(--success) 10%, transparent)"
+                          : undefined
+                      }
                     >
                       {g.compaction.enabled ? "Yes" : "No"}
                     </Badge>
@@ -452,8 +462,12 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
                   label="Enabled"
                   value={
                     <Badge
-                      color={g.retry.enabled ? "#16a34a" : "var(--text-dim)"}
-                      bgColor={g.retry.enabled ? "rgba(22,163,74,0.1)" : undefined}
+                      color={g.retry.enabled ? "var(--success)" : "var(--text-dim)"}
+                      bgColor={
+                        g.retry.enabled
+                          ? "color-mix(in srgb, var(--success) 10%, transparent)"
+                          : undefined
+                      }
                     >
                       {g.retry.enabled ? "Yes" : "No"}
                     </Badge>
@@ -496,7 +510,9 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
                 <Row
                   label="Skip prompt"
                   value={
-                    <Badge color={g.branchSummary.skipPrompt ? "#d97706" : "var(--text-dim)"}>
+                    <Badge
+                      color={g.branchSummary.skipPrompt ? "var(--warning)" : "var(--text-dim)"}
+                    >
                       {g.branchSummary.skipPrompt ? "Yes" : "No"}
                     </Badge>
                   }
@@ -516,7 +532,10 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
             <Row
               label="Loaded"
               value={
-                <Badge color="#16a34a" bgColor="rgba(22,163,74,0.1)">
+                <Badge
+                  color="var(--success)"
+                  bgColor="color-mix(in srgb, var(--success) 10%, transparent)"
+                >
                   {g.packages.loaded}
                 </Badge>
               }
@@ -525,7 +544,10 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
               label="Disabled"
               value={
                 g.packages.disabled > 0 ? (
-                  <Badge color="#d97706" bgColor="rgba(217,119,6,0.1)">
+                  <Badge
+                    color="var(--warning)"
+                    bgColor="color-mix(in srgb, var(--warning) 10%, transparent)"
+                  >
                     {g.packages.disabled}
                   </Badge>
                 ) : (
@@ -661,7 +683,10 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
               <Row
                 label="Diagnostics"
                 value={
-                  <Badge color="#d97706" bgColor="rgba(217,119,6,0.1)">
+                  <Badge
+                    color="var(--warning)"
+                    bgColor="color-mix(in srgb, var(--warning) 10%, transparent)"
+                  >
                     {data.resources.skills.diagnostics}
                   </Badge>
                 }
@@ -675,7 +700,10 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
               <Row
                 label="Has project settings"
                 value={
-                  <Badge color="#6366f1" bgColor="rgba(99,102,241,0.12)">
+                  <Badge
+                    color="#6366f1"
+                    bgColor="color-mix(in srgb, var(--accent) 12%, transparent)"
+                  >
                     Yes
                   </Badge>
                 }
@@ -695,7 +723,7 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
                     alignItems: "flex-start",
                     gap: 8,
                     padding: "6px 0",
-                    borderBottom: "1px solid rgba(128,128,128,0.08)",
+                    borderBottom: "1px solid color-mix(in srgb, var(--border) 8%, transparent)",
                   }}
                 >
                   <span
@@ -705,7 +733,7 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
                       height: 6,
                       borderRadius: "50%",
                       marginTop: 5,
-                      background: gap.severity === "warning" ? "#d97706" : "#6366f1",
+                      background: gap.severity === "warning" ? "var(--warning)" : "#6366f1",
                     }}
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>

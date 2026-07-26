@@ -43,7 +43,10 @@ function getMessagePreview(msg: AgentMessage | Partial<AgentMessage>): string {
 
 function getNodeColor(msg: AgentMessage | Partial<AgentMessage>): { bg: string; border: string } {
   if (msg.role === "user") {
-    return { bg: "rgba(37,99,235,0.18)", border: "rgba(37,99,235,0.7)" };
+    return {
+      bg: "color-mix(in srgb, var(--accent) 18%, transparent)",
+      border: "color-mix(in srgb, var(--accent) 70%, transparent)",
+    };
   }
   return { bg: "rgba(107,114,128,0.12)", border: "rgba(107,114,128,0.5)" };
 }
@@ -298,9 +301,9 @@ export function ChatMinimap({ messages, streamingMessage, scrollContainer, messa
           right: 0,
           top: `${viewportBoxTop}%`,
           height: `${viewportBoxHeight}%`,
-          background: "rgba(100,100,100,0.1)",
-          borderTop: "1px solid rgba(100,100,100,0.2)",
-          borderBottom: "1px solid rgba(100,100,100,0.2)",
+          background: "var(--bg-hover)",
+          borderTop: "1px solid color-mix(in srgb, var(--border) 20%, transparent)",
+          borderBottom: "1px solid color-mix(in srgb, var(--border) 20%, transparent)",
           pointerEvents: "none",
           zIndex: 1,
         }}
@@ -340,7 +343,7 @@ export function ChatMinimap({ messages, streamingMessage, scrollContainer, messa
                 background: color.bg,
                 border: `1.5px solid ${color.border}`,
                 flexShrink: 0,
-                transition: "transform 0.1s",
+                transition: "transform 0.15s",
                 transform: isNearest ? "scale(1.6)" : "scale(1)",
               }}
             />
@@ -388,7 +391,7 @@ export function ChatMinimap({ messages, streamingMessage, scrollContainer, messa
                 zIndex: 100,
                 pointerEvents: "none",
                 opacity: isNearest ? 1 : 0.45,
-                transition: "top 0.1s, opacity 0.1s",
+                transition: "top 0.15s, opacity 0.15s",
               }}
             >
               <div

@@ -193,7 +193,7 @@ function TreeNodeView({
                 : "var(--border)",
             border: isActive ? "none" : "1px solid var(--text-dim)",
             marginRight: 6,
-            transition: "background 0.12s",
+            transition: "background 0.15s",
           }}
         />
 
@@ -201,12 +201,15 @@ function TreeNodeView({
         {role && (
           <span
             style={{
-              fontSize: 9,
+              fontSize: 10,
               fontFamily: "var(--font-mono)",
               color: role === "user" ? "var(--accent)" : "var(--text-dim)",
-              background: role === "user" ? "rgba(37,99,235,0.08)" : "var(--bg-hover)",
-              border: `1px solid ${role === "user" ? "rgba(37,99,235,0.2)" : "var(--border)"}`,
-              borderRadius: 3,
+              background:
+                role === "user"
+                  ? "color-mix(in srgb, var(--accent) 8%, transparent)"
+                  : "var(--bg-hover)",
+              border: `1px solid ${role === "user" ? "color-mix(in srgb, var(--accent) 20%, transparent)" : "var(--border)"}`,
+              borderRadius: 4,
               padding: "0 4px",
               marginRight: 5,
               flexShrink: 0,
@@ -370,7 +373,7 @@ export function BranchNavigator({
             color: open ? "var(--text)" : "var(--text-muted)",
             fontSize: 11,
             whiteSpace: "nowrap",
-            transition: "color 0.1s, background 0.1s",
+            transition: "color 0.15s, background 0.15s",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = "var(--text)";
@@ -470,7 +473,7 @@ export function BranchNavigator({
             right: 0,
             background: "var(--bg)",
             borderBottom: "1px solid var(--border)",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            boxShadow: "var(--shadow-md)",
             zIndex: 100,
           }}
         >

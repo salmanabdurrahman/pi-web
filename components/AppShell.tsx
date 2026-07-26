@@ -595,7 +595,7 @@ export function AppShell() {
           transform: translateY(0);
           filter: blur(0);
           background: color-mix(in srgb, var(--accent) 8%, var(--bg-panel));
-          box-shadow: 0 18px 44px rgba(37,99,235,0.16);
+          box-shadow: 0 18px 44px color-mix(in srgb, var(--accent) 16%, transparent);
         }
         100% {
           opacity: 1;
@@ -676,7 +676,7 @@ export function AppShell() {
               position: "fixed",
               inset: 0,
               zIndex: 199,
-              background: "rgba(0,0,0,0.4)",
+              background: "var(--backdrop)",
               opacity: sidebarOpen ? 1 : 0,
               pointerEvents: sidebarOpen ? "auto" : "none",
               transition: "opacity 0.25s ease",
@@ -873,13 +873,13 @@ export function AppShell() {
                         disabled={disabled}
                         title={title}
                         aria-label={label}
-                        className={`flex h-full shrink-0 items-center gap-[6px] border-t-2 border-r border-none border-[var(--border)] border-t-transparent bg-transparent px-[12px] text-[11px] whitespace-nowrap transition-colors enabled:cursor-pointer enabled:hover:bg-[var(--bg-hover)] disabled:cursor-not-allowed disabled:text-[var(--text-dim)] ${disabled && autoNameStatus.kind !== "naming" ? "opacity-45" : "opacity-100"} ${isError ? "text-[#dc2626] enabled:hover:text-[#dc2626]" : isSuccess ? "text-[var(--accent)] enabled:hover:text-[var(--text)]" : "text-[var(--text-muted)] enabled:hover:text-[var(--text)]"}`}
+                        className={`flex h-full shrink-0 items-center gap-[6px] border-t-2 border-r border-none border-[var(--border)] border-t-transparent bg-transparent px-[12px] text-[11px] whitespace-nowrap transition-colors enabled:cursor-pointer enabled:hover:bg-[var(--bg-hover)] disabled:cursor-not-allowed disabled:text-[var(--text-dim)] ${disabled && autoNameStatus.kind !== "naming" ? "opacity-45" : "opacity-100"} ${isError ? "text-[var(--error)] enabled:hover:text-[var(--error)]" : isSuccess ? "text-[var(--accent)] enabled:hover:text-[var(--text)]" : "text-[var(--text-muted)] enabled:hover:text-[var(--text)]"}`}
                       >
                         {autoNameStatus.kind === "naming" ? (
                           <svg
                             className="animate-spin"
-                            width="13"
-                            height="13"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             aria-hidden="true"
@@ -901,8 +901,8 @@ export function AppShell() {
                           </svg>
                         ) : isSuccess ? (
                           <svg
-                            width="13"
-                            height="13"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -915,8 +915,8 @@ export function AppShell() {
                           </svg>
                         ) : (
                           <svg
-                            width="13"
-                            height="13"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -994,8 +994,9 @@ export function AppShell() {
                   let ctxStr: string | null = null;
                   if (contextUsage?.contextWindow) {
                     const pct = contextUsage.percent;
-                    if (pct !== null && pct > 90) ctxColor = "#ef4444";
-                    else if (pct !== null && pct > 70) ctxColor = "rgba(234,179,8,0.95)";
+                    if (pct !== null && pct > 90) ctxColor = "var(--error)";
+                    else if (pct !== null && pct > 70)
+                      ctxColor = "color-mix(in srgb, var(--warning) 95%, transparent)";
                     ctxStr =
                       pct !== null
                         ? `${pct.toFixed(0)}% / ${fmt(contextUsage.contextWindow)}`
@@ -1184,7 +1185,7 @@ export function AppShell() {
                             padding: "12px 16px",
                             color: "var(--text-muted)",
                             fontSize: 12,
-                            lineHeight: 1.6,
+                            lineHeight: 1.5,
                             whiteSpace: "pre-wrap",
                             fontFamily: "var(--font-mono)",
                           }}
@@ -1222,7 +1223,7 @@ export function AppShell() {
                       style={{
                         background: "var(--bg-panel)",
                         borderBottom: "1px solid var(--border)",
-                        boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
+                        boxShadow: "var(--shadow-lg)",
                         padding: "12px 16px",
                       }}
                     >
@@ -1380,7 +1381,7 @@ export function AppShell() {
                                     strokeLinejoin="round"
                                     aria-hidden="true"
                                   >
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                    <rect x="9" y="9" width="14" height="14" rx="2" ry="2" />
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                                   </svg>
                                 )}
@@ -1539,7 +1540,9 @@ export function AppShell() {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 14, color: "#dc2626" }}>Unable to open workspace</div>
+                  <div style={{ fontSize: 14, color: "var(--error)" }}>
+                    Unable to open workspace
+                  </div>
                   <div
                     style={{
                       maxWidth: "min(720px, 100%)",

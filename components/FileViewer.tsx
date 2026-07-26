@@ -68,7 +68,7 @@ const DISPLAY_MODE_LABELS: Record<DisplayMode, string> = {
 const FILE_CODE_STYLE: CSSProperties = {
   fontFamily: "var(--font-mono)",
   fontSize: 13,
-  lineHeight: 1.6,
+  lineHeight: 1.5,
 };
 
 const FILE_LINE_NUMBER_STYLE: CSSProperties = {
@@ -425,9 +425,9 @@ function DiffView({ patch }: { patch: string }) {
           const prefix = line.type === "added" ? "+" : line.type === "removed" ? "-" : " ";
           const prefixColor =
             line.type === "added"
-              ? "#4ade80"
+              ? "var(--success)"
               : line.type === "removed"
-                ? "#f87171"
+                ? "var(--error)"
                 : "var(--text-dim)";
 
           return (
@@ -560,7 +560,7 @@ function ImageViewer({ filePath, cwd, sourceSessionId }: Props) {
             display: "flex",
             alignItems: "center",
             gap: 4,
-            color: watching ? "#4ade80" : "var(--text-dim)",
+            color: watching ? "var(--success)" : "var(--text-dim)",
           }}
         >
           <span
@@ -568,7 +568,7 @@ function ImageViewer({ filePath, cwd, sourceSessionId }: Props) {
               width: 7,
               height: 7,
               borderRadius: "50%",
-              background: watching ? "#4ade80" : "var(--border)",
+              background: watching ? "var(--success)" : "var(--border)",
               display: "inline-block",
               boxShadow: watching ? "0 0 4px #4ade80" : "none",
             }}
@@ -593,7 +593,7 @@ function ImageViewer({ filePath, cwd, sourceSessionId }: Props) {
         }}
       >
         {error ? (
-          <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>
+          <div style={{ color: "var(--error)", fontSize: 13 }}>{error}</div>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -608,7 +608,7 @@ function ImageViewer({ filePath, cwd, sourceSessionId }: Props) {
               maxWidth: "100%",
               maxHeight: "100%",
               objectFit: "contain",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              boxShadow: "var(--shadow-sm)",
             }}
           />
         )}
@@ -700,7 +700,7 @@ function AudioViewer({ filePath, cwd, sourceSessionId }: Props) {
             display: "flex",
             alignItems: "center",
             gap: 4,
-            color: watching ? "#4ade80" : "var(--text-dim)",
+            color: watching ? "var(--success)" : "var(--text-dim)",
           }}
         >
           <span
@@ -708,7 +708,7 @@ function AudioViewer({ filePath, cwd, sourceSessionId }: Props) {
               width: 7,
               height: 7,
               borderRadius: "50%",
-              background: watching ? "#4ade80" : "var(--border)",
+              background: watching ? "var(--success)" : "var(--border)",
               display: "inline-block",
               boxShadow: watching ? "0 0 4px #4ade80" : "none",
             }}
@@ -729,7 +729,9 @@ function AudioViewer({ filePath, cwd, sourceSessionId }: Props) {
       >
         <div style={{ width: "min(680px, 100%)" }}>
           {error && (
-            <div style={{ color: "#f87171", fontSize: 13, marginBottom: 12, textAlign: "center" }}>
+            <div
+              style={{ color: "var(--error)", fontSize: 13, marginBottom: 12, textAlign: "center" }}
+            >
               {error}
             </div>
           )}
@@ -849,7 +851,7 @@ function DocumentViewer({ filePath, cwd, sourceSessionId }: Props) {
             display: "flex",
             alignItems: "center",
             gap: 4,
-            color: watching ? "#4ade80" : "var(--text-dim)",
+            color: watching ? "var(--success)" : "var(--text-dim)",
             flexShrink: 0,
           }}
         >
@@ -858,7 +860,7 @@ function DocumentViewer({ filePath, cwd, sourceSessionId }: Props) {
               width: 7,
               height: 7,
               borderRadius: "50%",
-              background: watching ? "#4ade80" : "var(--border)",
+              background: watching ? "var(--success)" : "var(--border)",
               display: "inline-block",
               boxShadow: watching ? "0 0 4px #4ade80" : "none",
             }}
@@ -875,7 +877,7 @@ function DocumentViewer({ filePath, cwd, sourceSessionId }: Props) {
               alignItems: "center",
               justifyContent: "center",
               padding: 24,
-              color: "#f87171",
+              color: "var(--error)",
               fontSize: 13,
               textAlign: "center",
             }}
@@ -1139,7 +1141,7 @@ function TextFileViewer({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#f87171",
+          color: "var(--error)",
           fontSize: 13,
         }}
       >
@@ -1197,7 +1199,7 @@ function TextFileViewer({
           aria-label={watching ? "Live sync active" : "Not watching"}
           className="file-viewer-live-indicator"
           style={{
-            background: watching ? "#4ade80" : "var(--border)",
+            background: watching ? "var(--success)" : "var(--border)",
             boxShadow: watching ? "0 0 4px #4ade80" : "none",
           }}
         />

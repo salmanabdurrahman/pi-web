@@ -63,7 +63,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: Props) {
               minWidth: 80,
               flexShrink: 0,
               userSelect: "none",
-              transition: "background 0.1s, color 0.1s",
+              transition: "background 0.15s, color 0.15s",
             }}
           >
             <span
@@ -107,14 +107,14 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: Props) {
                 cursor: "pointer",
                 padding: 0,
                 flexShrink: 0,
-                transition: "background 0.1s, color 0.1s",
+                transition: "background 0.15s, color 0.15s",
               }}
               title="Close"
               aria-label={`Close ${tab.label}`}
             >
               <svg
-                width="11"
-                height="11"
+                width="12"
+                height="12"
                 viewBox="0 0 10 10"
                 fill="none"
                 stroke="currentColor"
