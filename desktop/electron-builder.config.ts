@@ -12,8 +12,11 @@ const config: Configuration = {
   },
   files: ["out/**/*", "resources/**/*"],
   extraResources: [
-    // Self-contained Next.js server from `next build` with output: "standalone"
+    // Self-contained Next.js server from `next build` with output: "standalone".
+    // Static/public assets must sit beside the standalone server for offline packaged runs.
     { from: "../.next/standalone", to: "standalone" },
+    { from: "../.next/static", to: "standalone/.next/static" },
+    { from: "../public", to: "standalone/public", filter: ["**/*"] },
   ],
   mac: {
     category: "public.app-category.developer-tools",

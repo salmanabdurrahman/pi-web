@@ -6,13 +6,10 @@ import {
   readFileSync,
   statSync,
   writeFileSync,
-  copyFileSync,
   rmSync,
 } from "node:fs";
 import { join, dirname } from "node:path";
-import { createGzip } from "node:zlib";
-import { pipeline } from "node:stream/promises";
-import { createReadStream, createWriteStream } from "node:fs";
+import { redactLogText, redactManifestValue } from "./log-redaction";
 
 const MAX_LOG_AGE_DAYS = 7;
 const EXPORT_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -84,7 +81,8 @@ export function exportDebugLogs(): string {
             const src = join(full, file);
             const dest = join(exportDir, entry, file);
             mkdirSync(dirname(dest), { recursive: true });
-            copyFileSync(src, dest);
+            const redacted = redactLogText(readFileSync(src, "utf8"));
+            writeFileSync(dest, redacted);
             collected.push(dest);
           }
         }
@@ -107,8 +105,15 @@ export function exportDebugLogs(): string {
     logsDir: root,
     currentRun: runDir,
     collected,
+    warning:
+      "Debug logs are redacted automatically but may still include local paths, session names, project names, and non-secret metadata.",
   };
-  writeFileSync(join(exportDir, "manifest.json"), JSON.stringify(manifest, null, 2));
+  const redactedManifest = redactManifestValue(manifest);
+  writeFileSync(join(exportDir, "manifest.json"), JSON.stringify(redactedManifest, null, 2));
+  writeFileSync(
+    join(exportDir, "README.txt"),
+    "Pi Web debug log export. Secrets are redacted automatically. Review before sharing: bundle may include local paths, session names, project names, and non-secret metadata.\n",
+  );
 
   // Reveal in Finder
   shell.showItemInFolder(exportDir);

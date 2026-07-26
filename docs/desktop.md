@@ -45,6 +45,17 @@ bun run desktop:package:mac
 
 The package command outputs to `desktop/dist/`. Artifacts are unsigned and
 not notarized by default — configure code signing before public distribution.
+Packaged builds include the standalone Next server plus `.next/static` and
+`public` assets so the app can load UI chunks, fonts, and icons offline.
+
+Useful packaging checks:
+
+```bash
+bun run desktop:package:mac:test
+node --test desktop/package-smoke.test.mjs
+```
+
+`desktop:package:mac:test` creates an unpacked `--dir` app for local smoke checks.
 
 ## Per-Launch Security
 
@@ -115,6 +126,12 @@ Desktop logs are written to:
 
 Export all logs from the app: **Pi Web → Export Logs** or View menu.
 
+Exported logs are copied into a timestamped bundle with automatic redaction for
+auth headers, cookies, provider keys, OAuth codes, long bearer/JWT-like tokens,
+and private key blocks. The bundle still may include local paths, session names,
+project names, and non-secret metadata. Review before sharing outside trusted
+support channels.
+
 ### Common Issues
 
 **App won't start**: Check that `bun install` has been run in both the project root and `desktop/`. Check main log for errors.
@@ -144,7 +161,7 @@ For public distribution:
 3. **Notarization**: Add `notarize` config to `electron-builder.config.ts` with your Apple notarization credentials.
 4. **DMG signing**: The `.dmg` must be signed for Gatekeeper to accept it.
 
-Without notarization, users need to right-click → Open on first launch, or run `xattr -cr /Applications/Pi\ Web.app`.
+Without signing/notarization, macOS shows the app as from an unidentified developer. For local testing, users need to right-click → Open on first launch, or run `xattr -cr /Applications/Pi\ Web.app`. Do not distribute unsigned artifacts broadly; use signed and notarized builds for public release.
 
 ## Web vs Desktop
 

@@ -887,7 +887,6 @@ export function SessionSidebar({
             <button
               onClick={handleNewSession}
               disabled={!selectedCwd}
-              disabled={!selectedCwd}
               title={selectedCwd ? `New session in ${selectedCwd}` : "Select a project first"}
               className="flex h-[32px] shrink-0 items-center justify-center gap-[5px] rounded-[7px] border border-[var(--border)] bg-[var(--bg-hover)] pr-[12px] pl-[10px] text-[12px] font-medium tracking-[-0.01em] text-[var(--text-muted)] transition-colors enabled:cursor-pointer enabled:hover:border-[rgba(37,99,235,0.35)] enabled:hover:bg-[var(--bg-selected)] enabled:hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:text-[var(--text-dim)]"
             >
