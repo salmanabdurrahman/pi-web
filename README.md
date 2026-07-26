@@ -66,7 +66,8 @@ bunx @agegr/pi-web@latest
 - **Work across branches**: switch Git worktrees from the sidebar so new sessions and the Explorer follow the checkout you choose.
 - **Chat beside the project**: browse files on the left and preview source, docs, images, audio, and PDFs on the right while the agent works.
 - **See session state clearly**: context usage, cost, compaction state, and system prompt details are visible from the top bar.
-- **Configure less from the terminal**: manage models, login/API keys, model tests, and skill switches from the web UI.
+- **Configure less from the terminal**: manage models, runtime config, login/API keys, plugins, model tests, and skill switches from the web UI.
+- **Review local changes faster**: inspect Git status/diffs from the sidebar review panel.
 
 ## Notes
 
@@ -134,40 +135,56 @@ app/
     auth/           # OAuth and API key management
     cwd/validate/   # custom working directory validation
     default-cwd/    # pi default working directory lookup
+    file-index/     # project file index for fast search/navigation
     files/          # file listing, reading, preview, and watching
+    git/            # local Git status and diff APIs
     home/           # current user home directory
     models/         # available models, default model, thinking levels
     models-config/  # read/write models.json and test models
+    pi/             # runtime config summary and refresh endpoints
+    plugins/        # package plugin management
     sessions/       # session reads, rename, delete, context, HTML export
-    skills/         # skill listing, search, install, enable/disable
+    skills/         # skill listing, search, update, install, enable/disable
+    worktrees/      # Git worktree list/create/remove
 components/
-  AppShell.tsx        # main layout, URL state, top panels, file tabs
-  SessionSidebar.tsx  # project selector, session tree, Explorer
-  ChatWindow.tsx      # messages, SSE, image drag/drop, minimap
-  ChatInput.tsx       # input bar, model/tools/thinking/compact/slash controls
-  MessageView.tsx     # message, thinking, tool call/result rendering
-  ModelsConfig.tsx    # model and auth configuration panel
-  SkillsConfig.tsx    # skill management panel
-  FileExplorer.tsx    # file tree
-  FileViewer.tsx      # source, diff, image, audio, PDF, DOCX preview
+  AppShell.tsx          # main layout, URL state, panels, tabs
+  SessionSidebar.tsx    # project selector, session tree, Explorer, review panel
+  ChatWindow.tsx        # messages, SSE, image drag/drop, minimap
+  ChatInput.tsx         # input bar, model/tools/thinking/compact/slash controls
+  MessageView.tsx       # message, thinking, tool call/result rendering
+  BranchNavigator.tsx   # in-session branch switcher
+  DiffViewer.tsx        # local Git diff viewer
+  ModelsConfig.tsx      # model and auth configuration panel
+  PiRuntimeConfig.tsx   # runtime config summary panel
+  PluginsConfig.tsx     # plugin management panel
+  SkillsConfig.tsx      # skill management panel
+  FileExplorer.tsx      # file tree and fuzzy file search
+  FileViewer.tsx        # source, diff, image, audio, PDF, DOCX preview
+  MarkdownBody.tsx      # Markdown/Mermaid/KaTeX rendering
 lib/
-  http-dispatcher.ts  # HTTP(S) proxy setup for server-side fetch
-  rpc-manager.ts      # AgentSessionWrapper lifecycle and global registry
-  session-reader.ts   # parses .jsonl session files and branch contexts
-  normalize.ts        # normalizes toolCall field names
-  file-access.ts      # file read safety boundary
-  file-paths.ts       # path encoding and relative path helpers
-  markdown.ts         # Markdown/Mermaid/KaTeX plugin configuration
-  pi-types.ts         # pi-related types
+  rpc-manager.ts        # AgentSessionWrapper lifecycle and global registry
+  session-reader.ts     # parses .jsonl session files and branch contexts
+  normalize.ts          # normalizes toolCall field names
+  file-access.ts        # file read safety boundary and allowed roots
+  file-paths.ts         # path encoding and relative path helpers
+  git-status.ts         # local Git status helpers
+  git-changes.ts        # local diff parsing/helpers
+  markdown.ts           # Markdown/Mermaid/KaTeX plugin configuration
+  models-cache.ts       # cached model/provider discovery
+  skills-service.ts     # skill listing/search/install/update support
+  worktree.ts           # project/worktree resolution and operations
+  http-dispatcher.ts    # HTTP(S) proxy setup for server-side fetch
+  server-auth.ts        # desktop auth token checks
 hooks/
-  useAgentSession.ts  # session loading, command sending, SSE state machine
-  useAudio.ts         # completion sound
-  useDragDrop.ts      # image drag/drop
-  useTheme.ts         # theme switching
+  useAgentSession.ts    # session loading, command sending, SSE state machine
+  useAudio.ts           # completion sound
+  useDragDrop.ts        # image drag/drop
+  useKeyboardShortcuts.ts # app keyboard shortcuts
+  useTheme.ts           # theme switching
 bin/
-  pi-web.js           # CLI entrypoint
-instrumentation.ts    # initializes the server HTTP dispatcher
+  pi-web.js             # CLI entrypoint
+instrumentation.ts      # initializes server HTTP dispatcher
 desktop/
-  src/main/           # Electron main process: window, sidecar, menu, logging
-  src/preload/        # contextBridge API for renderer
+  src/main/             # Electron main process: window, sidecar, menu, logging, security
+  src/preload/          # contextBridge API for renderer
 ```

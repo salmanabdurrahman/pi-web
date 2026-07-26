@@ -1,6 +1,6 @@
 # Pi Web Runtime Contract
 
-Current runtime behavior of `@agegr/pi-web` — documented as of version 0.8.0 before modernization phases.
+Current runtime behavior of `@agegr/pi-web` — documented as of version 0.8.0.
 
 ## Overview
 

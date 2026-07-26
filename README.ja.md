@@ -66,7 +66,8 @@ bunx @agegr/pi-web@latest
 - **ブランチをまたいで作業**：サイドバーから Git worktree を切り替えると、新しいセッションと Explorer が選択したチェックアウトに追従します。
 - **プロジェクトを見ながらチャット**：エージェントの作業中に、左側でファイルを閲覧し、右側でソース、ドキュメント、画像、音声、PDF をプレビューできます。
 - **セッションの状態を明確に把握**：コンテキスト使用量、コスト、コンパクション状態、システムプロンプトの詳細をトップバーで確認できます。
-- **ターミナルでの設定を削減**：モデル、ログイン／API キー、モデルテスト、スキルの切り替えを Web UI から管理できます。
+- **ターミナルでの設定を削減**：モデル、ランタイム設定、ログイン／API キー、プラグイン、モデルテスト、スキルの切り替えを Web UI から管理できます。
+- **ローカル変更をすばやく確認**：サイドバーの review パネルから Git status/diff を確認できます。
 
 ## 注意事項
 
@@ -133,40 +134,56 @@ app/
     auth/           # OAuth と API キーの管理
     cwd/validate/   # カスタム作業ディレクトリの検証
     default-cwd/    # pi のデフォルト作業ディレクトリを取得
+    file-index/     # 高速検索/ナビゲーション用のプロジェクトファイル索引
     files/          # ファイルの一覧、読み込み、プレビュー、監視
+    git/            # ローカル Git status/diff API
     home/           # 現在のユーザーのホームディレクトリ
     models/         # 利用可能なモデル、デフォルトモデル、思考レベル
     models-config/  # models.json の読み書きとモデルのテスト
+    pi/             # ランタイム設定サマリーと更新エンドポイント
+    plugins/        # package plugin 管理
     sessions/       # セッションの読み込み、名前変更、削除、コンテキスト、HTML エクスポート
-    skills/         # スキルの一覧、検索、インストール、有効化／無効化
+    skills/         # スキルの一覧、検索、更新、インストール、有効化／無効化
+    worktrees/      # Git worktree の一覧/作成/削除
 components/
-  AppShell.tsx        # メインレイアウト、URL 状態、上部パネル、ファイルタブ
-  SessionSidebar.tsx  # プロジェクト選択、セッションツリー、Explorer
-  ChatWindow.tsx      # メッセージ、SSE、画像のドラッグ＆ドロップ、ミニマップ
-  ChatInput.tsx       # 入力欄、モデル／ツール／思考／コンパクション／スラッシュコントロール
-  MessageView.tsx     # メッセージ、思考、ツール呼び出し／結果の表示
-  ModelsConfig.tsx    # モデルと認証の設定パネル
-  SkillsConfig.tsx    # スキル管理パネル
-  FileExplorer.tsx    # ファイルツリー
-  FileViewer.tsx      # ソース、差分、画像、音声、PDF、DOCX のプレビュー
+  AppShell.tsx          # メインレイアウト、URL 状態、パネル、ファイルタブ
+  SessionSidebar.tsx    # プロジェクト選択、セッションツリー、Explorer、review パネル
+  ChatWindow.tsx        # メッセージ、SSE、画像のドラッグ＆ドロップ、ミニマップ
+  ChatInput.tsx         # 入力欄、モデル／ツール／思考／コンパクション／スラッシュコントロール
+  MessageView.tsx       # メッセージ、思考、ツール呼び出し／結果の表示
+  BranchNavigator.tsx   # セッション内ブランチ切り替え
+  DiffViewer.tsx        # ローカル Git diff ビューア
+  ModelsConfig.tsx      # モデルと認証の設定パネル
+  PiRuntimeConfig.tsx   # ランタイム設定サマリーパネル
+  PluginsConfig.tsx     # プラグイン管理パネル
+  SkillsConfig.tsx      # スキル管理パネル
+  FileExplorer.tsx      # ファイルツリーとファジーファイル検索
+  FileViewer.tsx        # ソース、差分、画像、音声、PDF、DOCX のプレビュー
+  MarkdownBody.tsx      # Markdown／Mermaid／KaTeX 表示
 lib/
-  http-dispatcher.ts  # サーバー側 fetch の HTTP(S) プロキシ設定
-  rpc-manager.ts      # AgentSessionWrapper のライフサイクルとグローバルレジストリ
-  session-reader.ts   # .jsonl セッションファイルとブランチコンテキストの解析
-  normalize.ts        # toolCall フィールド名の正規化
-  file-access.ts      # ファイル読み込みの安全境界
-  file-paths.ts       # ファイルパスのエンコードと相対パスのヘルパー
-  markdown.ts         # Markdown／Mermaid／KaTeX プラグインの設定
-  pi-types.ts         # pi 関連の型
+  rpc-manager.ts        # AgentSessionWrapper のライフサイクルとグローバルレジストリ
+  session-reader.ts     # .jsonl セッションファイルとブランチコンテキストの解析
+  normalize.ts          # toolCall フィールド名の正規化
+  file-access.ts        # ファイル読み込みの安全境界と allowed roots
+  file-paths.ts         # ファイルパスのエンコードと相対パスのヘルパー
+  git-status.ts         # ローカル Git status ヘルパー
+  git-changes.ts        # ローカル diff 解析/ヘルパー
+  markdown.ts           # Markdown／Mermaid／KaTeX プラグインの設定
+  models-cache.ts       # モデル/プロバイダー検出キャッシュ
+  skills-service.ts     # スキル一覧/検索/インストール/更新サポート
+  worktree.ts           # project/worktree 解決と操作
+  http-dispatcher.ts    # サーバー側 fetch の HTTP(S) プロキシ設定
+  server-auth.ts        # desktop auth token 検証
 hooks/
-  useAgentSession.ts  # セッションの読み込み、コマンド送信、SSE ステートマシン
-  useAudio.ts         # 完了通知音
-  useDragDrop.ts      # 画像のドラッグ＆ドロップ
-  useTheme.ts         # テーマの切り替え
+  useAgentSession.ts    # セッションの読み込み、コマンド送信、SSE ステートマシン
+  useAudio.ts           # 完了通知音
+  useDragDrop.ts        # 画像のドラッグ＆ドロップ
+  useKeyboardShortcuts.ts # アプリのキーボードショートカット
+  useTheme.ts           # テーマの切り替え
 bin/
-  pi-web.js           # CLI エントリポイント
-instrumentation.ts    # サーバー HTTP ディスパッチャーの初期化
+  pi-web.js             # CLI エントリポイント
+instrumentation.ts      # サーバー HTTP ディスパッチャーの初期化
 desktop/
-  src/main/           # Electron メインプロセス：ウィンドウ、サイドカー、メニュー、ログ
-  src/preload/        # レンダラー向け contextBridge API
+  src/main/             # Electron メインプロセス：ウィンドウ、サイドカー、メニュー、ログ、セキュリティ
+  src/preload/          # レンダラー向け contextBridge API
 ```

@@ -1,12 +1,12 @@
 # Pi CLI vs Pi Web vs Desktop — Compatibility Matrix
 
-Documents feature parity between Pi CLI (`pi`), Pi Web (`@agegr/pi-web`), and future Pi Desktop.
+Documents feature parity between Pi CLI (`pi`), Pi Web (`@agegr/pi-web`), and Pi Web Desktop.
 
 Version: 0.8.0 | Analysis date: 2026-07-25
 
 ## Feature Matrix
 
-| Feature | Pi CLI | Pi Web | Desktop (planned) |
+| Feature | Pi CLI | Pi Web | Desktop |
 |---------|--------|--------|-------------------|
 | **Session Management** |
 | List sessions | ✅ | ✅ | ✅ |
@@ -72,9 +72,9 @@ Version: 0.8.0 | Analysis date: 2026-07-25
 | File write (agent) | ✅ | ✅ | ✅ |
 | File upload | N/A | ✅ | ✅ |
 | File download | N/A | ✅ | ✅ |
-| Image paste | N/A | ❌ | ✅ (planned) |
-| Open in editor | ✅ (external) | ❌ | ✅ (planned) |
-| Reveal in Finder | N/A | ❌ | ✅ (planned) |
+| Image paste | N/A | ❌ | ✅ |
+| Open in editor | ✅ (external) | ❌ | ✅ |
+| Reveal in Finder | N/A | ❌ | ✅ |
 | **Git & Worktrees** |
 | Git status | ✅ | ✅ | ✅ |
 | Git diff | ✅ | ✅ | ✅ |
@@ -87,8 +87,8 @@ Version: 0.8.0 | Analysis date: 2026-07-25
 | App menu | ❌ | ❌ | ✅ |
 | Native notifications | ❌ | ❌ | ✅ |
 | Single-instance lock | ❌ | ❌ | ✅ |
-| Auto-update | ❌ | ❌ | ✅ |
-| Loopback auth | N/A | ✅ (origin guard) | ✅ |
+| Auto-update | ❌ | ❌ | ❌ |
+| Loopback auth | N/A | ✅ (origin guard) | ✅ (origin guard + token) |
 | **Config Fields** |
 | defaultProvider | ✅ | ✅ | ✅ |
 | defaultModel | ✅ | ✅ | ✅ |
@@ -120,4 +120,4 @@ Version: 0.8.0 | Analysis date: 2026-07-25
 2. **Custom TUI**: Standard extension dialogs work. Terminal-only calls may degrade and show diagnostics guidance.
 3. **Computer use**: TUI-dependent; cannot work in web context.
 4. **piStatus**: CLI-only TUI status bar; not applicable to web UI.
-5. **Desktop features**: Directory picker uses browser API in web mode; native picker planned for desktop.
+5. **Desktop features**: Directory picker uses browser API in web mode; desktop mode uses native pickers, notifications, app menu, clipboard image paste, Reveal in Finder, and Open in Editor.

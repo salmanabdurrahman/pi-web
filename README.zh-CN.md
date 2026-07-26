@@ -62,7 +62,8 @@ bunx @agegr/pi-web@latest
 - **跨分支工作**：在侧边栏切换 Git worktree，让新会话和 Explorer 跟随你选择的 checkout。
 - **边聊边看项目文件**：左侧浏览项目文件，右侧打开源码、文档、图片、音频和 PDF；文件变化会自动刷新，适合边让 agent 改边检查结果。
 - **随时掌握会话状态**：在顶部就能看到上下文占用、花费、压缩结果和系统提示，长会话不再像黑箱。
-- **少离开当前界面**：模型、登录/API key、模型测试和技能开关都能在网页里处理，配置 agent 时不用在多个工具之间来回切换。
+- **少离开当前界面**：模型、运行时配置、登录/API key、插件、模型测试和技能开关都能在网页里处理，配置 agent 时不用在多个工具之间来回切换。
+- **更快审查本地改动**：可从侧边栏的 review 面板查看 Git status/diff。
 
 ## 注意事项
 
@@ -129,40 +130,56 @@ app/
     auth/           # OAuth 和 API key 管理
     cwd/validate/   # 自定义工作目录校验
     default-cwd/    # 获取 pi 默认工作目录
+    file-index/     # 项目文件索引，用于快速搜索/导航
     files/          # 文件列表、读取、预览、watch
+    git/            # 本地 Git status 和 diff API
     home/           # 当前用户 home 目录
     models/         # 可用模型、默认模型、thinking levels
     models-config/  # 读写 models.json、测试模型
+    pi/             # 运行时配置摘要和刷新接口
+    plugins/        # package plugin 管理
     sessions/       # 会话读取、重命名、删除、上下文、HTML 导出
-    skills/         # skills 列表、搜索、安装、启停
+    skills/         # skills 列表、搜索、更新、安装、启停
+    worktrees/      # Git worktree 列表/创建/删除
 components/
-  AppShell.tsx        # 主布局、URL 状态、顶部面板、文件标签
-  SessionSidebar.tsx  # 项目选择、会话树、Explorer
-  ChatWindow.tsx      # 消息区、SSE、拖拽图片、minimap
-  ChatInput.tsx       # 输入栏、模型/工具/thinking/compact/slash controls
-  MessageView.tsx     # 消息、thinking、tool call/result 渲染
-  ModelsConfig.tsx    # 模型和认证配置面板
-  SkillsConfig.tsx    # 技能管理面板
-  FileExplorer.tsx    # 文件树
-  FileViewer.tsx      # 源码、diff、图片、音频、PDF、DOCX 预览
+  AppShell.tsx          # 主布局、URL 状态、面板、文件标签
+  SessionSidebar.tsx    # 项目选择、会话树、Explorer、review 面板
+  ChatWindow.tsx        # 消息区、SSE、拖拽图片、minimap
+  ChatInput.tsx         # 输入栏、模型/工具/thinking/compact/slash controls
+  MessageView.tsx       # 消息、thinking、tool call/result 渲染
+  BranchNavigator.tsx   # 会话内分支切换器
+  DiffViewer.tsx        # 本地 Git diff 查看器
+  ModelsConfig.tsx      # 模型和认证配置面板
+  PiRuntimeConfig.tsx   # 运行时配置摘要面板
+  PluginsConfig.tsx     # 插件管理面板
+  SkillsConfig.tsx      # 技能管理面板
+  FileExplorer.tsx      # 文件树和模糊文件搜索
+  FileViewer.tsx        # 源码、diff、图片、音频、PDF、DOCX 预览
+  MarkdownBody.tsx      # Markdown/Mermaid/KaTeX 渲染
 lib/
-  http-dispatcher.ts  # 服务端 fetch 的 HTTP(S) 代理配置
-  rpc-manager.ts      # AgentSessionWrapper 生命周期和全局 registry
-  session-reader.ts   # 解析 .jsonl 会话文件和分支上下文
-  normalize.ts        # 规范化 toolCall 字段名
-  file-access.ts      # 文件读取安全边界
-  file-paths.ts       # 文件路径编码/相对路径工具
-  markdown.ts         # Markdown/Mermaid/KaTeX 插件配置
-  pi-types.ts         # pi 相关类型
+  rpc-manager.ts        # AgentSessionWrapper 生命周期和全局 registry
+  session-reader.ts     # 解析 .jsonl 会话文件和分支上下文
+  normalize.ts          # 规范化 toolCall 字段名
+  file-access.ts        # 文件读取安全边界和 allowed roots
+  file-paths.ts         # 文件路径编码/相对路径工具
+  git-status.ts         # 本地 Git status 工具
+  git-changes.ts        # 本地 diff 解析/工具
+  markdown.ts           # Markdown/Mermaid/KaTeX 插件配置
+  models-cache.ts       # 模型/提供商发现缓存
+  skills-service.ts     # skill 列表/搜索/安装/更新支持
+  worktree.ts           # project/worktree 解析和操作
+  http-dispatcher.ts    # 服务端 fetch 的 HTTP(S) 代理配置
+  server-auth.ts        # desktop auth token 校验
 hooks/
-  useAgentSession.ts  # 会话加载、发送命令、SSE 状态机
-  useAudio.ts         # 完成提示音
-  useDragDrop.ts      # 图片拖拽
-  useTheme.ts         # 主题切换
+  useAgentSession.ts    # 会话加载、发送命令、SSE 状态机
+  useAudio.ts           # 完成提示音
+  useDragDrop.ts        # 图片拖拽
+  useKeyboardShortcuts.ts # 应用快捷键
+  useTheme.ts           # 主题切换
 bin/
-  pi-web.js           # CLI 入口
-instrumentation.ts    # 初始化服务端 HTTP dispatcher
+  pi-web.js             # CLI 入口
+instrumentation.ts      # 初始化服务端 HTTP dispatcher
 desktop/
-  src/main/           # Electron 主进程：窗口、sidecar、菜单、日志
-  src/preload/        # 渲染进程 contextBridge API
+  src/main/             # Electron 主进程：窗口、sidecar、菜单、日志、安全
+  src/preload/          # 渲染进程 contextBridge API
 ```
