@@ -116,8 +116,8 @@ Version: 0.8.0 | Analysis date: 2026-07-25
 
 ## Known Gaps
 
-1. **MCP tools**: Pi Web has read-only status via MCP adapter but no auth/connect controls. Only server names and status shown.
-2. **Custom TUI**: Rendered as plain text lines; layout differs from CLI terminal rendering.
+1. **MCP tools**: Pi Web shows read-only config status and parsed tool groups. MCP adapter owns lazy/connected/error runtime state; no auth/connect controls.
+2. **Custom TUI**: Standard extension dialogs work. Terminal-only calls may degrade and show diagnostics guidance.
 3. **Computer use**: TUI-dependent; cannot work in web context.
 4. **piStatus**: CLI-only TUI status bar; not applicable to web UI.
 5. **Desktop features**: Directory picker uses browser API in web mode; native picker planned for desktop.

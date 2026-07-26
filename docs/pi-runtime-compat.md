@@ -28,7 +28,7 @@ How Pi Web reads, uses, and mutates the global Pi agent config at `~/.pi/agent/s
 | `defaultProjectTrust` | ❌ | ❌ | CLI trust config; not Pi Web file-access allow-list |
 | `enableInstallTelemetry` | ❌ | ❌ | CLI telemetry |
 | `enableAnalytics` | ❌ | ❌ | CLI analytics |
-| `mcp.json` servers | ✅ | ❌ | Shows counts/auth-ref type/status only; never token values |
+| `mcp.json` servers | ✅ | ❌ | Shows counts, configured server names in details mode, auth-ref type, directTools/proxy mode; never token values |
 | `trust.json` roots | ⚠️ | ❌ | CLI trust config only; Pi Web allowed roots come from sessions, selected dirs, project roots, and runtime additions |
 
 ## Config Mutations
@@ -68,19 +68,19 @@ Pi Web mutates these config paths:
 | Local path packages | ✅ | Loaded if present on filesystem |
 | Prompts | ✅ | Available as slash commands |
 | Skills | ✅ | List/install/search/toggle |
-| MCP servers | ⚠️ | Tools visible; read-only status; no auth/connect controls |
-| Extensions with TUI | ⚠️ | Rendered as text lines; layout differs from CLI terminal |
+| MCP servers | ⚠️ | Tools visible; read-only config status; no auth/connect controls |
+| Extensions with TUI | ⚠️ | Standard dialogs supported; terminal-only calls may degrade |
 | Extensions with web UI | ✅ | Select/confirm/input/editor dialogs fully supported |
 | Extension widgets | ⚠️ | Text-only rendering |
 | Computer use | ❌ | TUI-dependent; cannot work in web context |
 
 ## Known Gaps
 
-1. **MCP server management**: Pi Web shows MCP tool names and server status read-only. Auth and connect controls are not yet available in the UI.
+1. **MCP server management**: Pi Web shows MCP tool names plus read-only config status. Lazy/connected/error runtime state remains owned by the MCP adapter; auth/connect controls are not available in UI.
 
-2. **Custom TUI extensions**: Rendered as plain text lines without terminal layout. Functionally equivalent but visually different.
+2. **Custom TUI extensions**: Standard select/confirm/input/editor/custom UI is supported. Terminal-only calls may degrade; Pi Web surfaces unsupported-call guidance instead of pretending terminal parity.
 
-3. **RTK optimizer**: Shell gate is enforced in CLI; Pi Web uses its own shell gating through proxy middleware.
+3. **RTK optimizer**: Pi Web shows tool/package availability. Shell command policy enforcement lives in Pi runtime/tooling, not the runtime config panel.
 
 4. **Theme synchronization**: Pi Web uses its own dark/light theme; does not read `settings.json → theme`.
 

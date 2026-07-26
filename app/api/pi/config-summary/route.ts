@@ -54,14 +54,30 @@ function packageSourceToString(pkg: PackageSource): string {
   return typeof pkg === "string" ? pkg : pkg.source;
 }
 
+interface McpServerSummary {
+  name: string;
+  status: "configured" | "invalid";
+  authRefTypes: string[];
+  directTools: boolean | null;
+  mode: "direct-tools" | "proxy" | "unspecified";
+}
+
 interface McpSummary {
   serverCount: number;
   authRefTypes: string[];
   directTools: { enabled: number; disabled: number };
+  servers: McpServerSummary[];
+  statusNote: string;
 }
 
-function summarizeMcpConfig(agentDir: string): McpSummary {
-  const empty = { serverCount: 0, authRefTypes: [], directTools: { enabled: 0, disabled: 0 } };
+function summarizeMcpConfig(agentDir: string, includeDetails = false): McpSummary {
+  const empty = {
+    serverCount: 0,
+    authRefTypes: [],
+    directTools: { enabled: 0, disabled: 0 },
+    servers: [],
+    statusNote: "mcp.json not found; runtime tools may still come from loaded extensions.",
+  };
   const path = join(agentDir, "mcp.json");
   if (!existsSync(path)) return empty;
   try {
@@ -79,15 +95,57 @@ function summarizeMcpConfig(agentDir: string): McpSummary {
       if (s.directTools === true) directEnabled += 1;
       if (s.directTools === false) directDisabled += 1;
       const env = s.env;
-      if (typeof env === "object" && env !== null && !Array.isArray(env)) authTypes.add("env");
-      if (s.auth !== undefined || s.authRef !== undefined) authTypes.add("auth-ref");
-      if (s.headers !== undefined) authTypes.add("headers");
-      if (s.oauth !== undefined) authTypes.add("oauth");
+      const serverAuthTypes = new Set<string>();
+      if (typeof env === "object" && env !== null && !Array.isArray(env))
+        serverAuthTypes.add("env");
+      if (s.auth !== undefined || s.authRef !== undefined) serverAuthTypes.add("auth-ref");
+      if (s.headers !== undefined) serverAuthTypes.add("headers");
+      if (s.oauth !== undefined) serverAuthTypes.add("oauth");
+      for (const type of serverAuthTypes) authTypes.add(type);
     }
+    const servers = includeDetails
+      ? Object.entries(serversValue as Record<string, unknown>)
+          .map(([name, server]) => {
+            if (typeof server !== "object" || server === null || Array.isArray(server)) {
+              return {
+                name,
+                status: "invalid" as const,
+                authRefTypes: [],
+                directTools: null,
+                mode: "unspecified" as const,
+              };
+            }
+            const s = server as Record<string, unknown>;
+            const serverAuthTypes = new Set<string>();
+            const env = s.env;
+            if (typeof env === "object" && env !== null && !Array.isArray(env))
+              serverAuthTypes.add("env");
+            if (s.auth !== undefined || s.authRef !== undefined) serverAuthTypes.add("auth-ref");
+            if (s.headers !== undefined) serverAuthTypes.add("headers");
+            if (s.oauth !== undefined) serverAuthTypes.add("oauth");
+            const directTools = typeof s.directTools === "boolean" ? s.directTools : null;
+            return {
+              name,
+              status: "configured" as const,
+              authRefTypes: Array.from(serverAuthTypes).sort(),
+              directTools,
+              mode:
+                directTools === true
+                  ? ("direct-tools" as const)
+                  : directTools === false
+                    ? ("proxy" as const)
+                    : ("unspecified" as const),
+            };
+          })
+          .sort((a, b) => a.name.localeCompare(b.name))
+      : [];
     return {
       serverCount: Object.keys(serversValue as Record<string, unknown>).length,
       authRefTypes: Array.from(authTypes).sort(),
       directTools: { enabled: directEnabled, disabled: directDisabled },
+      servers,
+      statusNote:
+        "Read-only config view. Lazy/connected/error runtime state is owned by MCP adapter and may appear only through loaded extension tools.",
     };
   } catch {
     return empty;
@@ -278,7 +336,7 @@ export async function GET(req: Request) {
     const globalSkills = globalSettings.skills ?? [];
     const globalThemes = globalSettings.themes ?? [];
 
-    const globalMcp = summarizeMcpConfig(agentDir);
+    const globalMcp = summarizeMcpConfig(agentDir, includeDetails);
 
     // ── Project overrides ──
     const projectHasSettings = Object.keys(projectSettings).length > 0;
@@ -373,7 +431,7 @@ export async function GET(req: Request) {
           skills: { count: (global.skills ?? []).length },
           extensions: { count: (global.extensions ?? []).length },
           themes: { count: (global.themes ?? []).length },
-          mcp: summarizeMcpConfig(agentDir),
+          mcp: summarizeMcpConfig(agentDir, includeDetails),
         },
         project: { hasSettings: false, packages: null },
         resources: { skills: { count: 0, diagnostics: 0 } },

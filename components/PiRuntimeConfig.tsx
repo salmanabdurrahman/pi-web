@@ -49,6 +49,14 @@ interface ConfigSummary {
       serverCount: number;
       authRefTypes: string[];
       directTools: { enabled: number; disabled: number };
+      servers: Array<{
+        name: string;
+        status: "configured" | "invalid";
+        authRefTypes: string[];
+        directTools: boolean | null;
+        mode: "direct-tools" | "proxy" | "unspecified";
+      }>;
+      statusNote: string;
     };
   };
   project: {
@@ -597,6 +605,53 @@ export function PiRuntimeConfig({ cwd, onClose }: { cwd: string; onClose: () => 
               mono
             />
             <Row label="directTools enabled" value={g.mcp.directTools.enabled} mono />
+            <Row label="directTools disabled" value={g.mcp.directTools.disabled} mono />
+            <Row label="Runtime status" value={g.mcp.statusNote} muted />
+            {showDetails && g.mcp.servers.length > 0 && (
+              <Row
+                label="Configured servers"
+                value={
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
+                      gap: 4,
+                      maxHeight: 140,
+                      overflowY: "auto",
+                    }}
+                  >
+                    {g.mcp.servers.map((server) => (
+                      <div key={server.name} style={{ textAlign: "right" }}>
+                        <code style={{ fontSize: 10, color: "var(--text)" }}>{server.name}</code>
+                        <div style={{ fontSize: 10, color: "var(--text-dim)" }}>
+                          {server.status} · {server.mode}
+                          {server.authRefTypes.length ? ` · ${server.authRefTypes.join(", ")}` : ""}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                }
+              />
+            )}
+          </Section>
+
+          <Section title="Extension diagnostics">
+            <Row
+              label="Unsupported TUI calls"
+              value="Reported by extension UI errors when SDK exposes them; no unresolved calls in current summary."
+              muted
+            />
+            <Row
+              label="Browser guidance"
+              value="Use select/confirm/input/editor/custom browser-compatible extension UI. Terminal-only calls may degrade."
+              muted
+            />
+            <Row
+              label="Shell policy"
+              value="Pi Web exposes shell tool availability; command enforcement lives in Pi runtime/tooling, not this panel."
+              muted
+            />
           </Section>
 
           {/* Resolved resources */}
