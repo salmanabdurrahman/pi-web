@@ -451,7 +451,9 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     followUp: [],
   });
   const [toolsState, setToolsState] = useState<ToolsState | null>(null);
-  const [sseStatus, setSseStatus] = useState<"connected" | "reconnecting" | "stale" | "disconnected" | "connecting">("disconnected");
+  const [sseStatus, setSseStatus] = useState<
+    "connected" | "reconnecting" | "stale" | "disconnected" | "connecting"
+  >("disconnected");
   const [lastEventTimestamp, setLastEventTimestamp] = useState<Date | null>(null);
   const [sseReconnectReason, setSseReconnectReason] = useState<string | null>(null);
   const reconciliationCountRef = useRef(0);

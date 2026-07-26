@@ -34,7 +34,9 @@
     "release": "npm version patch --no-git-tag-version && bun run build && bun publish --access public",
     "desktop:dev": "cd desktop && bun run dev",
     "desktop:build": "bun run build && cd desktop && bun run build",
-    "desktop:package:mac": "bun run build && cd desktop && bun run build && bun run package:mac"
+    "desktop:package:mac": "bun run build && cd desktop && bun run build && bun run package:mac",
+    "desktop:package:mac:quick": "cd desktop && bun run build && bun run package:mac --dir",
+    "desktop:package:mac:test": "cd desktop && bun run build && bun run package:mac --dir --config.asar=false"
   },
   "dependencies": {
     "@earendil-works/pi-agent-core": "0.81.1",

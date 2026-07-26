@@ -3,12 +3,17 @@ import { createServer } from "node:net";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { appendFileSync } from "node:fs";
+import { app } from "electron";
 import { sidecarOutPath, sidecarErrPath, writeLog } from "./logging";
 
 let sidecarProcess: ChildProcess | null = null;
 
 function getProjectRoot(): string {
-  // __dirname in bundled output points to out/main/; project root is 3 levels up
+  if (app.isPackaged) {
+    // Packaged: extraResources are placed in Contents/Resources/
+    return process.resourcesPath;
+  }
+  // Dev: bundled output points to desktop/out/main/; project root is 2 levels up
   const desktopDir = join(dirname(fileURLToPath(import.meta.url)), "../..");
   return join(desktopDir, "..");
 }
@@ -42,18 +47,33 @@ export async function spawnNextServer(authToken: string): Promise<{
   const projectRoot = getProjectRoot();
 
   const nodeBin = process.execPath;
-  const nextBin = join(projectRoot, "node_modules", "next", "dist", "bin", "next");
-  const nextArgs = ["dev", "-p", String(port)];
+  const isPackaged = app.isPackaged;
+
+  let nextArgs: string[];
+  let spawnCwd: string;
+
+  if (isPackaged) {
+    // Production: run self-contained standalone server
+    const standaloneDir = join(projectRoot, "standalone");
+    nextArgs = [join(standaloneDir, "server.js")];
+    spawnCwd = standaloneDir;
+  } else {
+    // Dev: run next dev with HMR
+    const nextBin = join(projectRoot, "node_modules", "next", "dist", "bin", "next");
+    nextArgs = [nextBin, "dev", "-p", String(port)];
+    spawnCwd = projectRoot;
+  }
 
   const outPath = sidecarOutPath();
   const errPath = sidecarErrPath();
 
-  const child = spawn(nodeBin, [nextBin, ...nextArgs], {
-    cwd: projectRoot,
+  const child = spawn(nodeBin, nextArgs, {
+    cwd: spawnCwd,
     stdio: ["ignore", "pipe", "pipe"],
     env: {
       ...process.env,
       PORT: String(port),
+      ...(isPackaged ? { ELECTRON_RUN_AS_NODE: "1" } : {}),
       PI_DESKTOP_AUTH_TOKEN: authToken,
       // Prevent auto-open browser in dev mode
       PI_WEB_NO_OPEN: "1",

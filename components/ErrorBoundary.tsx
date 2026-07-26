@@ -37,13 +37,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 }
 
-function ErrorFallback({
-  error,
-  errorInfo,
-}: {
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
-}) {
+function ErrorFallback({ error, errorInfo }: { error: Error | null; errorInfo: ErrorInfo | null }) {
   const handleExport = () => {
     const report = {
       timestamp: new Date().toISOString(),
@@ -109,9 +103,7 @@ function ErrorFallback({
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
-            Something went wrong
-          </h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Something went wrong</h2>
         </div>
         <p
           style={{
@@ -179,8 +171,8 @@ function ErrorFallback({
             fontSize: 11,
           }}
         >
-          The crash report contains only error details, browser version, and page
-          URL. No session data, API keys, or personal information is included.
+          The crash report contains only error details, browser version, and page URL. No session
+          data, API keys, or personal information is included.
         </p>
       </div>
     </div>

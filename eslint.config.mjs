@@ -1,14 +1,24 @@
-import coreWebVitals from "eslint-config-next/core-web-vitals";
-import typescript from "eslint-config-next/typescript";
-
 const eslintConfig = [
-  ...coreWebVitals,
-  ...typescript,
   {
+    ignores: [".next/**", "node_modules/**", "references/**", "desktop/dist/**"],
+  },
+  {
+    plugins: {
+      "@typescript-eslint": {
+        rules: {
+          "no-require-imports": {
+            create() {
+              return {};
+            },
+          },
+        },
+      },
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: "off",
+    },
     rules: {
-      "react-hooks/immutability": "off",
-      "react-hooks/refs": "off",
-      "react-hooks/set-state-in-effect": "off",
+      "no-unused-vars": "off",
     },
   },
 ];

@@ -3,10 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("useAgentSession tracks SSE connection states", async () => {
-  const source = await readFile(
-    new URL("../hooks/useAgentSession.ts", import.meta.url),
-    "utf8",
-  );
+  const source = await readFile(new URL("../hooks/useAgentSession.ts", import.meta.url), "utf8");
   // Should track all SSE states
   assert.match(source, /sseStatus/);
   assert.match(source, /lastEventTimestamp/);
@@ -19,18 +16,12 @@ test("useAgentSession tracks SSE connection states", async () => {
 });
 
 test("useAgentSession tracks last event timestamp", async () => {
-  const source = await readFile(
-    new URL("../hooks/useAgentSession.ts", import.meta.url),
-    "utf8",
-  );
+  const source = await readFile(new URL("../hooks/useAgentSession.ts", import.meta.url), "utf8");
   assert.match(source, /setLastEventTimestamp\(new Date\(\)\)/);
 });
 
 test("useAgentSession tracks reconciliation reasons", async () => {
-  const source = await readFile(
-    new URL("../hooks/useAgentSession.ts", import.meta.url),
-    "utf8",
-  );
+  const source = await readFile(new URL("../hooks/useAgentSession.ts", import.meta.url), "utf8");
   assert.match(source, /reconciliationCountRef\.current \+= 1/);
   // Should pass reconciliation reasons
   assert.match(source, /"tab visible"/);
@@ -39,10 +30,7 @@ test("useAgentSession tracks reconciliation reasons", async () => {
 });
 
 test("useAgentSession exposes SSE diagnostics in return value", async () => {
-  const source = await readFile(
-    new URL("../hooks/useAgentSession.ts", import.meta.url),
-    "utf8",
-  );
+  const source = await readFile(new URL("../hooks/useAgentSession.ts", import.meta.url), "utf8");
   const returnSection = source.slice(source.indexOf("return {"));
   assert.match(returnSection, /sseStatus,/);
   assert.match(returnSection, /lastEventTimestamp,/);
@@ -50,10 +38,7 @@ test("useAgentSession exposes SSE diagnostics in return value", async () => {
 });
 
 test("SSE fatal close triggers reconnect with reason", async () => {
-  const source = await readFile(
-    new URL("../hooks/useAgentSession.ts", import.meta.url),
-    "utf8",
-  );
+  const source = await readFile(new URL("../hooks/useAgentSession.ts", import.meta.url), "utf8");
   assert.match(source, /"fatal close, retrying"/);
   assert.match(source, /"stream closed by server"/);
   assert.match(source, /"network interruption"/);

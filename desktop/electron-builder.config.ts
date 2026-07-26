@@ -11,6 +11,10 @@ const config: Configuration = {
     buildResources: "resources",
   },
   files: ["out/**/*", "resources/**/*"],
+  extraResources: [
+    // Self-contained Next.js server from `next build` with output: "standalone"
+    { from: "../.next/standalone", to: "standalone" },
+  ],
   mac: {
     category: "public.app-category.developer-tools",
     hardenedRuntime: true,
