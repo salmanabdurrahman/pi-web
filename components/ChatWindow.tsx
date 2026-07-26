@@ -690,7 +690,7 @@ export function ChatWindow({
             <div
               ref={scrollContainerRef}
               onScroll={handleScroll}
-              className="flex-1 overflow-y-auto pt-4 [scrollbar-width:none]"
+              className="flex-1 overflow-x-hidden overflow-y-auto pt-4 [scrollbar-width:none]"
             >
               <div style={{ padding: `0 ${CHAT_COLUMN_PADDING}px` }}>
                 <div style={{ maxWidth: 820, margin: "0 auto" }}>

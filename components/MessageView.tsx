@@ -262,6 +262,7 @@ function UserMessageView({
             fontSize: 14,
             lineHeight: 1.5,
             color: "var(--text)",
+            overflowWrap: "anywhere",
             wordBreak: "break-word",
           }}
         >
@@ -575,7 +576,7 @@ function AssistantMessageView({
 
   return (
     <div
-      className="group relative mb-4"
+      className="group relative mb-4 min-w-0"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -662,7 +663,7 @@ function AssistantMessageView({
           })()}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
         {blockItems.map(({ block, originalIndex }) => (
           <BlockView
             key={`${entryId ?? "stream"}-${originalIndex}`}
