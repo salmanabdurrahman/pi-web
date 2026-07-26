@@ -11,6 +11,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { getAllowedFileRoots, isExistingFilePathAllowed } from "@/lib/file-access";
 import { auditLog } from "@/lib/audit-log";
+import { redactText } from "@/lib/secret-redaction";
 import type {
   PluginDiagnostic,
   PluginPackageInfo,
@@ -228,7 +229,7 @@ async function readPlugins(cwd: string): Promise<PluginsResponse> {
     const resolved = await packageManager.resolve(async (source) => {
       diagnostics.push({
         type: "warning",
-        source,
+        source: redactText(source),
         message: "Package is configured but not installed yet.",
       });
       return "skip";
@@ -252,12 +253,12 @@ async function readPlugins(cwd: string): Promise<PluginsResponse> {
     if (!pkg.installedPath) {
       diagnostics.push({
         type: "warning",
-        source: pkg.source,
+        source: redactText(pkg.source),
         message: "Configured package path was not found.",
       });
     }
     return {
-      source: pkg.source,
+      source: redactText(pkg.source),
       scope,
       filtered: pkg.filtered,
       disabled,

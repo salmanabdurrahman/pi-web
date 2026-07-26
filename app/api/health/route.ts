@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { join } from "node:path";
 import { getAgentDir, DefaultResourceLoader } from "@earendil-works/pi-coding-agent";
 import { getRunningRpcSessionIds, getRpcSessionCount } from "@/lib/rpc-manager";
 
@@ -9,8 +9,13 @@ let _sdkVersion: string | null | undefined;
 function getSdkVersion(): string | null {
   if (_sdkVersion !== undefined) return _sdkVersion;
   try {
-    const require = createRequire(import.meta.url);
-    const pkgPath = require.resolve("@earendil-works/pi-coding-agent/package.json");
+    const pkgPath = join(
+      process.cwd(),
+      "node_modules",
+      "@earendil-works",
+      "pi-coding-agent",
+      "package.json",
+    );
     const pkg = JSON.parse(readFileSync(pkgPath, "utf-8")) as { version?: string };
     _sdkVersion = pkg.version ?? null;
   } catch {

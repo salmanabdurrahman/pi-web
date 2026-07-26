@@ -27,6 +27,7 @@ import {
 } from "@/lib/file-upload";
 import { parseFormDataWithinLimit, RequestBodyTooLargeError } from "@/lib/bounded-form-data";
 import { auditLog } from "@/lib/audit-log";
+import { isSensitiveFilePath, isSensitiveUploadTarget } from "@/lib/sensitive-paths";
 
 const IGNORED_NAMES = new Set([
   "node_modules",
@@ -163,6 +164,9 @@ async function getUploadDirectory(
   if (!isFilePathAllowed(realDirectory, realRoots)) {
     return { response: NextResponse.json({ error: "Access denied" }, { status: 403 }) };
   }
+  if (isSensitiveFilePath(realDirectory)) {
+    return { response: NextResponse.json({ error: "Access denied" }, { status: 403 }) };
+  }
 
   return { directory: realDirectory };
 }
@@ -195,6 +199,9 @@ export async function POST(
       const validationError = validateUploadFileNames(fileNames);
       if (validationError) {
         return NextResponse.json({ error: validationError }, { status: 400 });
+      }
+      if (isSensitiveUploadTarget(directory, fileNames)) {
+        return NextResponse.json({ error: "Access denied" }, { status: 403 });
       }
       return NextResponse.json(inspectUploadTargets(directory, fileNames));
     }
@@ -230,6 +237,9 @@ export async function POST(
     const validationError = validateUploadFileNames(fileNames);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+    if (isSensitiveUploadTarget(directory, fileNames)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     const inspection = inspectUploadTargets(directory, fileNames);
@@ -521,6 +531,9 @@ export async function GET(
       type !== "list" &&
       (await isFilePathReferencedBySession(filePath, sessionId));
     if (!allowedByRoot && !allowedBySessionReference) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+    if (isSensitiveFilePath(filePath)) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 

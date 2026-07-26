@@ -40,7 +40,21 @@ export function looksEnvRef(value: unknown): boolean {
  *  - `<redacted>` for non-empty string / non-null primitive values
  *  - `<env-ref>` for values that look like env-var references
  */
+export function redactText(value: string): string {
+  let text = value.replace(
+    /([?&](?:api[_-]?key|token|secret|password|auth|credential)=)[^&#\s]+/gi,
+    "$1<redacted>",
+  );
+  text = text.replace(
+    /([a-z][a-z0-9+.-]*:\/\/)([^\s/@:]+)(?::([^\s/@]*))?@/gi,
+    "$1<redacted>@",
+  );
+  text = text.replace(/Bearer\s+[A-Za-z0-9._-]{20,}/gi, "Bearer <redacted>");
+  return text;
+}
+
 export function redactValue(key: string, value: unknown): unknown {
+  if (typeof value === "string") value = redactText(value);
   if (value === undefined || value === null) return value;
   if (Array.isArray(value)) {
     return value.map((item) => redactValue(key, item));

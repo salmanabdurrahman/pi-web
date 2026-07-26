@@ -3,6 +3,7 @@ import { statSync, type Stats } from "fs";
 import { homedir } from "os";
 import { isAbsolute, resolve } from "path";
 import { allowFileRoot } from "@/lib/file-access";
+import { isRestrictedWorkspaceRoot } from "@/lib/sensitive-paths";
 
 function normalizeCwd(cwd: string): string {
   if (cwd === "~") return homedir();
@@ -31,6 +32,12 @@ export async function POST(req: Request) {
 
     if (!stat.isDirectory()) {
       return NextResponse.json({ error: `Path is not a directory: ${cwd}` }, { status: 400 });
+    }
+    if (isRestrictedWorkspaceRoot(normalizedCwd)) {
+      return NextResponse.json(
+        { error: "Select a project directory, not your home or Pi config root" },
+        { status: 400 },
+      );
     }
 
     allowFileRoot(normalizedCwd);

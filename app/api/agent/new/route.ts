@@ -5,6 +5,7 @@ import { allowFileRoot } from "@/lib/file-access";
 import { invalidateSessionListCache } from "@/lib/session-reader";
 import { startRpcSession } from "@/lib/rpc-manager";
 import { auditLog } from "@/lib/audit-log";
+import { isRestrictedWorkspaceRoot } from "@/lib/sensitive-paths";
 // POST /api/agent/new  body: { cwd: string; type: string; message?: string; ... }
 // Spawns a brand-new pi session. Most calls immediately send the first command;
 // type:"ensure_session" only creates the runtime so clients can query commands.
@@ -19,6 +20,12 @@ export async function POST(req: Request) {
     }
     if (!existsSync(cwd)) {
       return NextResponse.json({ error: `Directory does not exist: ${cwd}` }, { status: 400 });
+    }
+    if (isRestrictedWorkspaceRoot(cwd)) {
+      return NextResponse.json(
+        { error: "Select a project directory, not your home or Pi config root" },
+        { status: 400 },
+      );
     }
 
     // Use a one-time key so startRpcSession's lock doesn't conflict with real session ids

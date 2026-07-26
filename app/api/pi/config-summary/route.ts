@@ -310,7 +310,8 @@ export async function GET(req: Request) {
     const globalDefaultThinkingLevel = globalSettings.defaultThinkingLevel ?? null;
     const globalEnabledModels = globalSettings.enabledModels ?? null;
     const globalTransport = globalSettings.transport ?? null;
-    const globalPiStatus = (globalSettings as any).piStatus ?? null;
+    const globalPiStatus =
+      (redactValue("piStatus", (globalSettings as any).piStatus ?? null) as unknown) ?? null;
 
     const globalCompaction = globalSettings.compaction
       ? (redactValue("compaction", globalSettings.compaction) as CompactionSettingsLike)
@@ -326,7 +327,9 @@ export async function GET(req: Request) {
     const globalPackages = globalSettings.packages ?? [];
     const loadedPkgs = globalPackages.filter((p) => !isDisabledPackage(p));
     const disabledPkgs = globalPackages.filter((p) => isDisabledPackage(p));
-    const packageSources = globalPackages.map(packageSourceToString);
+    const packageSources = globalPackages.map((pkg) =>
+      redactValue("packageSource", packageSourceToString(pkg)),
+    ) as string[];
 
     // Prompts
     const globalPrompts = globalSettings.prompts ?? [];
@@ -412,7 +415,7 @@ export async function GET(req: Request) {
           defaultThinkingLevel: global.defaultThinkingLevel ?? null,
           enabledModels: global.enabledModels ?? null,
           transport: global.transport ?? null,
-          piStatus: (global as any).piStatus ?? null,
+          piStatus: redactValue("piStatus", (global as any).piStatus ?? null),
           compaction: global.compaction ? redactValue("compaction", global.compaction) : null,
           retry: global.retry ? redactValue("retry", global.retry) : null,
           branchSummary: global.branchSummary
@@ -422,7 +425,11 @@ export async function GET(req: Request) {
             count: (global.packages ?? []).length,
             loaded: 0,
             disabled: 0,
-            sources: includeDetails ? (global.packages ?? []).map(packageSourceToString) : [],
+            sources: includeDetails
+              ? ((global.packages ?? []).map((pkg) =>
+                  redactValue("packageSource", packageSourceToString(pkg)),
+                ) as string[])
+              : [],
           },
           prompts: {
             count: (global.prompts ?? []).length,

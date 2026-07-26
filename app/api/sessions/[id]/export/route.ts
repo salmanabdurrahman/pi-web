@@ -20,6 +20,10 @@ type ExportHtmlModule = {
   exportFromFile: (inputPath: string, outputPath: string) => Promise<string>;
 };
 
+const runtimeImport = new Function("specifier", "return import(specifier)") as <T>(
+  specifier: string,
+) => Promise<T>;
+
 async function getPiPackageDir(): Promise<string | null> {
   try {
     const { getPackageDir } =
@@ -233,7 +237,7 @@ async function exportSession(filePath: string, outputPath: string): Promise<void
   const exporterUrl = pathToFileURL(
     join(packageDir, "dist", "core", "export-html", "index.js"),
   ).href;
-  const { exportFromFile } = (await import(exporterUrl)) as ExportHtmlModule;
+  const { exportFromFile } = await runtimeImport<ExportHtmlModule>(exporterUrl);
   await exportFromFile(filePath, outputPath);
 }
 

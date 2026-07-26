@@ -2,6 +2,13 @@
   "name": "@agegr/pi-web-desktop",
   "private": true,
   "version": "0.8.0",
+  "description": "Desktop shell for Pi Web",
+  "author": "Earendil Works",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/earendil-works/pi.git",
+    "directory": "agent/app/desktop"
+  },
   "type": "module",
   "license": "MIT",
   "main": "./out/main/index.js",

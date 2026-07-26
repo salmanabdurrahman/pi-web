@@ -165,23 +165,40 @@ type SlashCommandPaletteItem =
 type SlashCommandSource = SlashCommandPaletteItem["source"];
 
 const BUILTIN_SLASH_COMMANDS: SlashCommandPaletteItem[] = [
+  { name: "settings", description: "Open settings menu", source: "builtin" },
+  { name: "model", description: "Select model (opens selector UI)", source: "builtin" },
   {
-    name: "compact",
-    description: "Compress context, optionally with instructions",
+    name: "scoped-models",
+    description: "Enable/disable models for Ctrl+P cycling",
     source: "builtin",
   },
+  {
+    name: "export",
+    description: "Export session (HTML default, or specify path: .html/.jsonl)",
+    source: "builtin",
+  },
+  { name: "import", description: "Import and resume a session from a JSONL file", source: "builtin" },
+  { name: "share", description: "Share session as a secret GitHub gist", source: "builtin" },
+  { name: "copy", description: "Copy last agent message to clipboard", source: "builtin" },
+  { name: "name", description: "Set session display name", source: "builtin" },
+  { name: "session", description: "Show session info and stats", source: "builtin" },
+  { name: "changelog", description: "Show changelog entries", source: "builtin" },
+  { name: "hotkeys", description: "Show all keyboard shortcuts", source: "builtin" },
+  { name: "fork", description: "Create a new fork from a previous user message", source: "builtin" },
+  { name: "clone", description: "Duplicate the current session at the current position", source: "builtin" },
+  { name: "tree", description: "Navigate session tree (switch branches)", source: "builtin" },
+  { name: "trust", description: "Save project trust decision for future sessions", source: "builtin" },
+  { name: "login", description: "Configure provider authentication", source: "builtin" },
+  { name: "logout", description: "Remove provider authentication", source: "builtin" },
+  { name: "new", description: "Start a new session", source: "builtin" },
+  { name: "compact", description: "Manually compact the session context", source: "builtin" },
+  { name: "resume", description: "Resume a different session", source: "builtin" },
   {
     name: "reload",
-    description: "Reload extensions, skills, prompts, and tools",
+    description: "Reload keybindings, extensions, skills, prompts, themes, and context files",
     source: "builtin",
   },
-  { name: "name", description: "Set the session display name", source: "builtin" },
-  {
-    name: "session",
-    description: "Show session message, token, and cost stats",
-    source: "builtin",
-  },
-  { name: "copy", description: "Copy the last assistant message", source: "builtin" },
+  { name: "quit", description: "Quit Pi", source: "builtin" },
 ];
 
 const SLASH_SOURCES: SlashCommandSource[] = ["builtin", "extension", "prompt", "skill"];

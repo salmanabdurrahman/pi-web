@@ -1,6 +1,20 @@
-import type { Configuration } from "electron-builder";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import type { Configuration, FileSet } from "electron-builder";
 
 const APP_ID = "com.agegr.pi-web";
+const appRoot = join(import.meta.dirname, "..");
+
+const extraResources: FileSet[] = [
+  // Self-contained Next.js server from `next build` with output: "standalone".
+  // Static/public assets must sit beside the standalone server for offline packaged runs.
+  { from: "../.next/standalone", to: "standalone" },
+  { from: "../.next/static", to: "standalone/.next/static" },
+];
+
+if (existsSync(join(appRoot, "public"))) {
+  extraResources.push({ from: "../public", to: "standalone/public", filter: ["**/*"] });
+}
 
 const config: Configuration = {
   appId: APP_ID,
@@ -11,15 +25,11 @@ const config: Configuration = {
     buildResources: "resources",
   },
   files: ["out/**/*", "resources/**/*"],
-  extraResources: [
-    // Self-contained Next.js server from `next build` with output: "standalone".
-    // Static/public assets must sit beside the standalone server for offline packaged runs.
-    { from: "../.next/standalone", to: "standalone" },
-    { from: "../.next/static", to: "standalone/.next/static" },
-    { from: "../public", to: "standalone/public", filter: ["**/*"] },
-  ],
+  extraResources,
+  publish: [],
   mac: {
     icon: "resources/icon.png",
+    identity: null,
     category: "public.app-category.developer-tools",
     hardenedRuntime: true,
     gatekeeperAssess: false,
